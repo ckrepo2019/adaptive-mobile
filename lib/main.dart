@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
 
 void main() {
@@ -16,8 +17,64 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      initialRoute: AppRoutes.getStarted,
+      // Use a splash gate that decides where to go
+      home: const _LaunchGate(),
       routes: AppRoutes.routes,
     );
+  }
+}
+
+class _LaunchGate extends StatefulWidget {
+  const _LaunchGate({super.key});
+
+  @override
+  State<_LaunchGate> createState() => _LaunchGateState();
+}
+
+class _LaunchGateState extends State<_LaunchGate> {
+  @override
+  void initState() {
+    super.initState();
+    _bootstrap();
+  }
+
+  Future<void> _bootstrap() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final token = prefs.getString('token');
+    final uid = prefs.getString('uid');
+    final userType = prefs.getInt('usertype_ID');
+    final id = prefs.getInt('id'); // optional, if you also stored it
+
+    if (token != null && uid != null && userType != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.getUser,
+          (route) => false,
+          arguments: {
+            'token': token,
+            'uid': uid,
+            'usertype_ID': userType,
+            if (id != null) 'id': id,
+          },
+        );
+      });
+    } else {
+      // No saved session -> go to get-started
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.signIn,
+          (route) => false,
+        );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Tiny splash while we decide
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

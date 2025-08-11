@@ -10,12 +10,12 @@ class CustomTextField extends BaseWidget {
     super.key,
     required this.title,
     required this.obscure,
-    required this.textController
+    required this.textController,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       height: 50,
       width: double.infinity,
       child: Center(

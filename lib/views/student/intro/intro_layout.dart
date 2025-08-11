@@ -9,12 +9,7 @@ class IntroLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF234FF5), // #234FF5
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: child,
-        ),
-      ),
+      body: SafeArea(child: child),
     );
   }
 }

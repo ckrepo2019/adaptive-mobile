@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../controllers/get_user.dart';
-import '../../config/routes.dart';
+import 'package:flutter_lms/config/routes.dart';
+import 'package:flutter_lms/controllers/get_user.dart';
+import 'package:flutter_lms/controllers/api_response.dart';
 
 class GetUserPage extends StatefulWidget {
   const GetUserPage({super.key});
@@ -10,55 +11,120 @@ class GetUserPage extends StatefulWidget {
 }
 
 class _GetUserPageState extends State<GetUserPage> {
-  Map<String, dynamic>? user;
-  String? error;
-  bool loading = true;
+  bool _loading = true;
+  String? _error;
+
+  Map<String, dynamic>? _user;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)!.settings.arguments as Map;
-    _load(
-      args['token'] as String,
-      args['id'] as int,
-      args['usertype_ID'] as int,
-    );
+
+    // Expecting: { token:String, id:int, usertype_ID:int }
+    final argsRaw = ModalRoute.of(context)?.settings.arguments;
+    if (argsRaw is! Map) {
+      setState(() {
+        _loading = false;
+        _error = 'Missing arguments.';
+      });
+      return;
+    }
+
+    final token = argsRaw['token'] as String?;
+    final uid = argsRaw['uid'] as String?;
+    final userType = argsRaw['usertype_ID'] as int?;
+
+    if (token == null || uid == null || userType == null) {
+      setState(() {
+        _loading = false;
+        _error = 'Invalid arguments received.';
+      });
+      return;
+    }
+
+    _load(token, uid, userType);
   }
 
-  Future<void> _load(String token, int id, int type) async {
-    final resp = await UserController.getUser(
+  Future<void> _load(String token, String uid, int userType) async {
+    final ApiResponse<Map<String, dynamic>> resp = await UserController.getUser(
       token: token,
-      id: id,
-      userType: type,
+      uid: uid,
+      userType: userType,
     );
-    setState(() => loading = false);
 
-    if (resp.success) {
-      setState(() => user = resp.data!);
+    if (!mounted) return;
+
+    if (resp.success && resp.data != null) {
+      _user = resp.data;
 
       // Redirect based on userType
-      if (type == 4) {
-        Navigator.pushReplacementNamed(context, '/student-home');
-      } else if (type == 5) {
-        Navigator.pushReplacementNamed(context, '/teacher-home');
-      } else if (type == 6) {
-        Navigator.pushReplacementNamed(context, '/collaborator-home');
+      switch (userType) {
+        case 4: // student
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.studentHome,
+            (route) => false, // remove all previous routes
+            arguments: {
+              'token': token,
+              'uid': uid,
+              'userType': 4,
+            }, // pass your args
+          );
+          break;
+        case 5: // teacher
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.teacherHome, // or teacher/collaborator
+            (route) => false, // remove all previous routes
+            arguments: {
+              'token': token,
+              'uid': uid,
+              'userType': 5,
+            }, // pass your args
+          );
+          break;
+        case 6: // collaborator (adjust to your mapping)
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            AppRoutes.collaboratorHome, // or teacher/collaborator
+            (route) => false, // remove all previous routes
+            arguments: {
+              'token': token,
+              'uid': uid,
+              'userType': 6,
+            }, // pass your args
+          );
+          break;
+        default:
+          // Fallback if unknown type
+          setState(() {
+            _loading = false;
+            _error = 'Unknown user type: $userType';
+          });
       }
     } else {
-      setState(() => error = resp.message ?? 'Failed to fetch user');
+      setState(() {
+        _loading = false;
+        _error = resp.message ?? 'Failed to fetch user.';
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : error != null
-          ? Center(
-              child: Text(error!, style: const TextStyle(color: Colors.red)),
-            )
-          : const SizedBox.shrink(), // will not display, as we redirect
-    );
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    if (_error != null) {
+      return Scaffold(
+        body: Center(
+          child: Text(_error!, style: const TextStyle(color: Colors.red)),
+        ),
+      );
+    }
+
+    // Shouldn’t be seen—redirect happens on success.
+    return const Scaffold(body: SizedBox.shrink());
   }
 }

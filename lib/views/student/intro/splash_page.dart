@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lms/views/base_view.dart';
 
 class SplashPage extends BaseView {
-  const SplashPage({Key? key}) : super(key: key);
+  const SplashPage({super.key});
 
   @override
   Widget build(BuildContext context) {
