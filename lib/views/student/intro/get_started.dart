@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'intro_layout.dart';
@@ -120,7 +119,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(24.0),
             child: SizedBox(
               width: double.infinity,
               height: 56,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // <-- GetX
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
 
@@ -11,21 +12,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
+      // <-- use GetMaterialApp
       debugShowCheckedModeBanner: false,
       title: 'Flutter LMS Adaptive',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      // Use a splash gate that decides where to go
-      home: const _LaunchGate(),
-      routes: AppRoutes.routes,
+      home: const _LaunchGate(), // <-- splash/boot gate
+      getPages: AppPages.pages, // <-- your GetPage list
+      // no initialRoute when using `home`
     );
   }
 }
 
 class _LaunchGate extends StatefulWidget {
-  const _LaunchGate({super.key});
+  const _LaunchGate();
 
   @override
   State<_LaunchGate> createState() => _LaunchGateState();
@@ -44,14 +46,13 @@ class _LaunchGateState extends State<_LaunchGate> {
     final token = prefs.getString('token');
     final uid = prefs.getString('uid');
     final userType = prefs.getInt('usertype_ID');
-    final id = prefs.getInt('id'); // optional, if you also stored it
+    final id = prefs.getInt('id'); // optional
 
     if (token != null && uid != null && userType != null) {
+      // go straight to get-user with args
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
+        Get.offAllNamed(
           AppRoutes.getUser,
-          (route) => false,
           arguments: {
             'token': token,
             'uid': uid,
@@ -61,20 +62,15 @@ class _LaunchGateState extends State<_LaunchGate> {
         );
       });
     } else {
-      // No saved session -> go to get-started
+      // no session -> sign-in
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          AppRoutes.signIn,
-          (route) => false,
-        );
+        Get.offAllNamed(AppRoutes.signIn);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Tiny splash while we decide
     return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

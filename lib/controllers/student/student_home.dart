@@ -51,9 +51,7 @@ class StudentHomeController {
     required int learnerAssessmentID,
     required List<Map<String, dynamic>>
     responses, // {question_id, question_number, answer}
-    required List<int> favoriteSubjects,
     required List<int> hobbies,
-    String? anythingElse,
   }) async {
     // Resolve token from SharedPreferences if not provided
     final resolvedToken = await _resolveToken(token);
@@ -79,9 +77,7 @@ class StudentHomeController {
           'syID': syID,
           'learnerassessmentID': learnerAssessmentID,
           'responses': responses,
-          'favoriteSubjects': favoriteSubjects,
           'hobbies': hobbies,
-          'anythingElse': anythingElse,
         }),
       );
 
