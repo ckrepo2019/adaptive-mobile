@@ -218,18 +218,27 @@ class _IntroductionPageState extends State<IntroductionPage> {
 
     setState(() => _submitting = true);
     try {
-      // Replace `Api` with your class name if different
       final res = await StudentHomeController.submitGetStarted(
         token: _token,
-        syID: _syID!, // <- now sourced from studentHomeData.sy
-        learnerAssessmentID:
-            _learnerAssessmentID!, // <- from studentHomeData.learner_assessment
+        syID: _syID!,
+        learnerAssessmentID: _learnerAssessmentID!,
         responses: responses,
         hobbies: _selectedHobbyIds.toList(),
       );
 
       if (res.success) {
-        Navigator.pushReplacementNamed(context, AppRoutes.analyzing);
+        // ✅ Extract student ID from _studentHomeData['student']
+        int? studentId;
+        final studentData = _studentHomeData?['student'];
+        if (studentData is Map) {
+          studentId = (studentData['id'] as num?)?.toInt();
+        }
+
+        Navigator.pushReplacementNamed(
+          context,
+          AppRoutes.analyzing,
+          arguments: {'studentId': studentId},
+        );
       } else {
         ScaffoldMessenger.of(
           context,

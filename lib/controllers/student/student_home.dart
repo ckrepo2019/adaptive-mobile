@@ -4,11 +4,13 @@ import 'package:flutter_lms/config/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api_response.dart';
 
-// fetch this to get the learner's_profile
-// learner's profile == 0 && enrollment_data !== null
-// intro page == show
-
 class StudentHomeController {
+  static Future<String?> _resolveToken(String? token) async {
+    if (token != null && token.isNotEmpty) return token;
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
   static Future<ApiResponse<Map<String, dynamic>>> fetchStudentHome({
     required String token,
     required String uid,
@@ -27,7 +29,6 @@ class StudentHomeController {
       final body = jsonDecode(res.body);
 
       if (res.statusCode == 200 && body['success'] == true) {
-        // body['data'] is a JSON object with all sub-sections
         return ApiResponse(
           success: true,
           data: Map<String, dynamic>.from(body['data']),
@@ -49,11 +50,9 @@ class StudentHomeController {
     String? token,
     required int syID,
     required int learnerAssessmentID,
-    required List<Map<String, dynamic>>
-    responses, // {question_id, question_number, answer}
+    required List<Map<String, dynamic>> responses,
     required List<int> hobbies,
   }) async {
-    // Resolve token from SharedPreferences if not provided
     final resolvedToken = await _resolveToken(token);
     if (resolvedToken == null) {
       return ApiResponse(
@@ -84,7 +83,6 @@ class StudentHomeController {
       final body = jsonDecode(res.body);
 
       if (res.statusCode == 200 && body['success'] == true) {
-        // sample return: { success, message, data: { studentID, syID, learnerassessmentID, learningStyleIDs } }
         return ApiResponse(
           success: true,
           data: Map<String, dynamic>.from(body['data'] ?? {}),
@@ -102,9 +100,59 @@ class StudentHomeController {
     }
   }
 
-  static Future<String?> _resolveToken(String? token) async {
-    if (token != null && token.isNotEmpty) return token;
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('token');
+  static Future<ApiResponse<List<dynamic>>> fetchLearnerProfiles({
+    String? token,
+    int?
+    studentId, // optional: if provided, backend will use this instead of auth user
+  }) async {
+    final resolvedToken = await _resolveToken(token);
+    if (resolvedToken == null) {
+      return ApiResponse(
+        success: false,
+        message: 'Missing auth token. Pass token or login first.',
+      );
+    }
+
+    // If no studentId passed, try to get from SharedPreferences
+    if (studentId == null) {
+      final prefs = await SharedPreferences.getInstance();
+      final storedId = prefs.getInt('id'); // assuming you store it as int
+      if (storedId != null) {
+        studentId = storedId;
+      }
+    }
+
+    // Build URL with optional ?student_id=
+    final base = '${AppConstants.baseURL}/get-learners-profile';
+    final uri = Uri.parse(
+      studentId == null ? base : '$base?student_id=$studentId',
+    );
+
+    try {
+      final res = await http.get(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $resolvedToken',
+        },
+      );
+
+      final body = jsonDecode(res.body);
+
+      // Backend: { success: bool, data: [...] }
+      if (res.statusCode == 200 && body is Map && body['success'] == true) {
+        final data = (body['data'] is List)
+            ? List<dynamic>.from(body['data'])
+            : <dynamic>[];
+        return ApiResponse(success: true, data: data);
+      }
+
+      final msg = (body is Map && body['message'] != null)
+          ? body['message'].toString()
+          : 'Fetch failed (${res.statusCode})';
+      return ApiResponse(success: false, message: msg);
+    } catch (e) {
+      return ApiResponse(success: false, message: 'Network error: $e');
+    }
   }
 }

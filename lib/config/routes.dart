@@ -22,6 +22,7 @@ class AppRoutes {
   static const String teacherHome = '/teacher-home';
   static const String collaboratorHome = '/collaborator-home';
   static const String getUser = '/get-user';
+  static const String resultLearnerType = '/result-learner-type';
 }
 
 /// Use GetX pages so we can attach per-route bindings.
@@ -30,7 +31,6 @@ class AppPages {
     GetPage(name: AppRoutes.getStarted, page: () => const GetStartedPage()),
     GetPage(name: AppRoutes.signIn, page: () => const SignInPage()),
     GetPage(name: AppRoutes.analyzing, page: () => const AnalyzingPage()),
-    GetPage(name: AppRoutes.result, page: () => const ResultPage()),
     // 👇 Bind StudentHomeController only when visiting the intro page
     GetPage(
       name: AppRoutes.introduction,
@@ -44,5 +44,9 @@ class AppPages {
       page: () => const CollaboratorHomePage(),
     ),
     GetPage(name: AppRoutes.getUser, page: () => const GetUserPage()),
+    GetPage(
+      name: AppRoutes.resultLearnerType,
+      page: () => const ResultLeanerPage(),
+    ),
   ];
 }
