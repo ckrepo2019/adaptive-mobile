@@ -25,6 +25,8 @@ class AuthController {
 
       final body = jsonDecode(res.body);
 
+      print(body);
+
       if (res.statusCode == 200 && body['success'] == true) {
         return ApiResponse(
           success: true,
