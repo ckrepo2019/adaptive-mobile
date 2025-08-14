@@ -8,66 +8,42 @@ class StudentClassPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final textScale = MediaQuery.of(context).textScaleFactor;
+
     return StudentGlobalLayout(
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ===== Top Row =====
           Row(
             children: [
               Text(
                 "Classes",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 32),
-              ),
-
-              Spacer(),
-
-              InkWell(
-
-                // TODO : Add routes
-                onTap: () => null,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: 44,
-                    minHeight: 44,
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(
-                      MediaQuery.of(context).size.width * 0.01,
-                    ),
-                    child: Image.asset(
-                      'assets/images/student-home/ci_bell-notification.png',
-                      width: MediaQuery.of(context).size.width * 0.01,
-                      height: MediaQuery.of(context).size.height * 0.01,
-                    ),
-                  ),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: screenWidth * 0.08, // responsive title
                 ),
               ),
-              InkWell(
+              const Spacer(),
 
-                // TODO : Add routes
-                onTap: () => null,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: 44,
-                    minHeight: 44,
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(
-                      MediaQuery.of(context).size.width * 0.01,
-                    ),
-                    child: Image.asset(
-                      'assets/images/student-home/profile-icon.png',
-                      width: MediaQuery.of(context).size.width * 0.01,
-                      height: MediaQuery.of(context).size.height * 0.01,
-                    ),
-                  ),
-                ),
+              _buildIconButton(
+                context,
+                'assets/images/student-home/ci_bell-notification.png',
+                screenWidth,
+              ),
+              _buildIconButton(
+                context,
+                'assets/images/student-home/profile-icon.png',
+                screenWidth,
               ),
             ],
           ),
 
-          SizedBox(height: 20),
+          SizedBox(height: screenHeight * 0.02),
 
-          // === Badges Row ===
+          // ===== Chips Row + Add Button =====
           Row(
             children: [
               CustomChip(
@@ -77,7 +53,7 @@ class StudentClassPage extends StatelessWidget {
                 chipTitle: 'Current',
                 iconData: Icons.access_time,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: screenWidth * 0.02),
               CustomChip(
                 backgroundColor: Colors.white,
                 textColor: Colors.black54,
@@ -85,45 +61,76 @@ class StudentClassPage extends StatelessWidget {
                 chipTitle: 'Archived',
                 iconData: Icons.archive_outlined,
               ),
-
-              Spacer(),
-
+              const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.03,
+                  vertical: screenHeight * 0.008,
                 ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
                   color: const Color.fromARGB(255, 35, 78, 244),
                 ),
-                child: Center(
-                  child: Row(
-                    children: [
-                      Icon(Icons.add, size: 14, color: Colors.white),
-                      SizedBox(width: 5),
-                      Text("Add Class", style: TextStyle(color: Colors.white)),
-                    ],
-                  ),
+                child: Row(
+                  children: [
+                    Icon(Icons.add,
+                        size: screenWidth * 0.04, color: Colors.white),
+                    SizedBox(width: screenWidth * 0.015),
+                    Text(
+                      "Add Class",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: screenWidth * 0.035,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
 
-          SizedBox(height: 25),
+          SizedBox(height: screenHeight * 0.03),
 
-          GlobalSubjectWidget(
-            subject: 'Mathematics', classCode: 'Math Class 101', time: 'Today, 11:00 AM', teacherName: 'Alix, John Richard',
-            
-          ),
-
-          GlobalSubjectWidget(
-            subject: 'Mathematics', classCode: 'Math Class 101', time: 'Today, 11:00 AM', teacherName: 'Alix, John Richard',
-            
+          // ===== Subject List =====
+          Expanded(
+            child: ListView(
+              children: [
+                GlobalSubjectWidget(
+                  subject: 'Mathematics',
+                  classCode: 'Math Class 101',
+                  time: 'Today, 11:00 AM',
+                  teacherName: 'Alix, John Richard',
+                ),
+                GlobalSubjectWidget(
+                  subject: 'Science',
+                  classCode: 'Science Class 202',
+                  time: 'Tomorrow, 2:00 PM',
+                  teacherName: 'Jane Doe',
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
-}
 
+  // Reusable Icon Button
+  Widget _buildIconButton(
+      BuildContext context, String assetPath, double screenWidth) {
+    return InkWell(
+      onTap: () {},
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+        child: Padding(
+          padding: EdgeInsets.all(screenWidth * 0.015),
+          child: Image.asset(
+            assetPath,
+            width: screenWidth * 0.06,
+            height: screenWidth * 0.06,
+          ),
+        ),
+      ),
+    );
+  }
+}
