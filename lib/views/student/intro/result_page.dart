@@ -14,7 +14,7 @@ class ResultLeanerPage extends BaseView {
 }
 
 class _ResultLeanerBody extends StatefulWidget {
-  const _ResultLeanerBody({super.key});
+  const _ResultLeanerBody();
 
   @override
   State<_ResultLeanerBody> createState() => _ResultLeanerBodyState();
@@ -115,10 +115,12 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
     final t = typeName.toLowerCase();
     if (t.contains('visual')) return Icons.remove_red_eye_outlined;
     if (t.contains('auditory') || t.contains('aural')) return Icons.hearing;
-    if (t.contains('read') || t.contains('write'))
+    if (t.contains('read') || t.contains('write')) {
       return Icons.menu_book_outlined;
-    if (t.contains('kinesthetic') || t.contains('hands'))
+    }
+    if (t.contains('kinesthetic') || t.contains('hands')) {
       return Icons.pan_tool_alt_outlined;
+    }
     return Icons.school_outlined;
   }
 

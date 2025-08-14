@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'package:color_palette_generator/color_palette_generator.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -12,8 +11,8 @@ enum CardVariant { assignment, progress }
 class AssignmentItem {
   final String title;
   final String subject;
-  final String date; // "Today, 3:00 PM"
-  final String duration; // "20 min"
+  final String date;
+  final String duration;
   const AssignmentItem({
     required this.title,
     required this.subject,
@@ -328,7 +327,6 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
   }
 
   /// Lightweight "dominant" color extractor (averages non‑transparent pixels).
-  /// We sample a small version for speed.
   Future<void> _computeAccentFromImage(String path) async {
     try {
       final provider = _imageProviderFor(path);
@@ -336,11 +334,7 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
       // Downsize to ~48x48 so we don't process large images
       final resized = provider is ResizeImage
           ? provider
-          : ResizeImage(
-              provider as ImageProvider<Object>,
-              width: 48,
-              height: 48,
-            );
+          : ResizeImage(provider, width: 48, height: 48);
 
       final uiImage = await _loadUiImage(resized);
       final byteData = await uiImage.toByteData(

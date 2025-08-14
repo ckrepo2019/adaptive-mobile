@@ -1,13 +1,12 @@
 import 'dart:convert';
-import 'dart:math' as math;
-import 'package:color_palette_generator/color_palette_generator.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/controllers/student/student_home.dart';
 import 'package:flutter_lms/views/student/home/cards_list.dart';
 import 'package:flutter_lms/views/student/home/quick_actions.dart';
+import 'package:flutter_lms/views/student/widgets/fancy_student_navbar.dart';
+import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/config/constants.dart';
 
@@ -31,6 +30,21 @@ class _StudentHomePageState extends State<StudentHomePage> {
   bool _initialized = false; // run arg bootstrap exactly once
   bool _navigated = false; // prevent multiple redirects
   String? _lastFetchKey; // avoid duplicate fetch for same (token,uid)
+  int _index = 0; // Home is active
+
+  void _onNavChanged(int i) {
+    if (i == 0) return; // already home
+    // Keep Home active for now; show lightweight feedback.
+    ScaffoldMessenger.of(context).removeCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Other tabs coming soon'),
+        duration: Duration(milliseconds: 900),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+    setState(() => _index = 0);
+  }
 
   @override
   void didChangeDependencies() {
@@ -95,6 +109,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
     if (d.containsKey('learners_profile') && d['learners_profile'] != null) {
       if (d['learners_profile'] is! List) return false;
     }
+    if (d.containsKey('student') &&
+        d['student'] != null &&
+        d['student'] is! Map) {
+      return false;
+    }
     return true;
   }
 
@@ -113,6 +132,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           (d['learner_questions'] as List?) ?? const <dynamic>[],
       'learners_profile': (d['learners_profile'] as List?) ?? const <dynamic>[],
       'enrollment_data': (d['enrollment_data'] as Map?) ?? <String, dynamic>{},
+      'student': (d['student'] as Map?) ?? <String, dynamic>{},
     };
   }
 
@@ -186,6 +206,15 @@ class _StudentHomePageState extends State<StudentHomePage> {
     });
   }
 
+  String get _welcomeFirstName {
+    final s = _data?['student'];
+    if (s is Map) {
+      final first = (s['firstname'] ?? s['first_name'] ?? '').toString().trim();
+      if (first.isNotEmpty) return first;
+    }
+    return 'Student';
+  }
+
   final assignments = <AssignmentItem>[
     const AssignmentItem(
       title: 'Math Quiz: Quadratic Equations',
@@ -215,13 +244,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
     if (lower.startsWith('http://') || lower.startsWith('https://')) return p;
 
     // Build origin (scheme://host[:port]) from your API base URL
-    String _originFromBase(String base) {
+    String originFromBase(String base) {
       final u = Uri.parse(base);
       final port = u.hasPort ? ':${u.port}' : '';
       return '${u.scheme}://${u.host}$port';
     }
 
-    final origin = _originFromBase(AppConstants.baseURL);
+    final origin = originFromBase(AppConstants.baseURL);
 
     if (p.contains('/')) return '$origin/storage/$p';
 
@@ -316,75 +345,21 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        titleSpacing: sidePadding, // equal left/right with actions padding
-        iconTheme: const IconThemeData(color: Colors.black),
-        title: Text(
-          'Home',
-          style: GoogleFonts.poppins(
-            color: Colors.black,
-            fontWeight: FontWeight.w700,
-            fontSize: titleSize,
-            height: 1.1,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: sidePadding),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                InkWell(
-                  onTap: () {
-                    /* notifications */
-                  },
-                  borderRadius: BorderRadius.circular(12),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: 44,
-                      minHeight: 44,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(clampNum(w * 0.01, 6, 10)),
-                      child: Image.asset(
-                        'assets/images/student-home/ci_bell-notification.png',
-                        width: iconSize,
-                        height: iconSize,
-                      ),
-                    ),
-                  ),
-                ),
-                // No negative SizedBox; use translate to overlap slightly
-                Transform.translate(
-                  offset: const Offset(-overlapPx, 0),
-                  child: InkWell(
-                    onTap: () {
-                      /* profile */
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minWidth: 44,
-                        minHeight: 44,
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(clampNum(w * 0.01, 6, 10)),
-                        child: Image.asset(
-                          'assets/images/student-home/profile-icon.png',
-                          width: iconSize,
-                          height: iconSize,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      appBar: GlobalAppBar(
+        title: 'Home',
+        onNotificationsTap: () {
+          Navigator.pushNamed(context, '/notifications');
+        },
+        onProfileTap: () {
+          final s = _data?['student'];
+          if (s is Map && s.isNotEmpty) {
+            Navigator.pushNamed(
+              context,
+              AppRoutes.profilePage, // ensure this route exists
+              arguments: {'student': s},
+            );
+          }
+        },
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -453,12 +428,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Welcome Emma.',
+                                        'Welcome ${_welcomeFirstName}.',
                                         style: GoogleFonts.poppins(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w500,
                                           color: Colors.black,
                                         ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                       Text(
                                         'Visual Learner',
@@ -617,6 +594,16 @@ class _StudentHomePageState extends State<StudentHomePage> {
                             ],
                           )
                         : const Center(child: CircularProgressIndicator()))),
+      ),
+      bottomNavigationBar: FancyStudentNavBar(
+        currentIndex: _index, // always 0 for now
+        onChanged: _onNavChanged,
+        items: const [
+          NavItem(icon: Icons.home_rounded), // Home (active)
+          NavItem(icon: Icons.pie_chart_rounded), // Future: Analytics
+          NavItem(icon: Icons.access_time_rounded), // Future: Schedule
+          NavItem(icon: Icons.notifications_rounded), // Future: Notifications
+        ],
       ),
     );
   }
