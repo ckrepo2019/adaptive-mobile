@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'components/intro_theme.dart';
@@ -35,7 +33,7 @@ class _IntroductionPageState extends State<IntroductionPage> {
           .length; // 0:Welcome, 1:Getting Started, 2:Hobbies, then N questions
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  String? _token, _uid;
+  String? _token;
   int? _userType;
   int? _syID;
   int? _learnerAssessmentID;
@@ -86,8 +84,9 @@ class _IntroductionPageState extends State<IntroductionPage> {
       final number = (qm['question_number'] as num?)?.toInt() ?? (i + 1);
       i++;
       if (id == null || id <= 0 || text.isEmpty) continue;
-      if (seen.add(id))
+      if (seen.add(id)) {
         out.add(LearnerQuestion(id: id, number: number, text: text));
+      }
     }
     return out;
   }
@@ -153,7 +152,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
       _learnerAssessmentID ??= _coerceInt(args['learnerassessmentID']);
 
       _token = args['token'] as String?;
-      _uid = args['uid'] as String?;
       _userType = args['userType'] as int?;
     }
 
