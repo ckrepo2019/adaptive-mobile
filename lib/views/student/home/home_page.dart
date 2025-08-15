@@ -279,10 +279,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
       for (final row in tbc) {
         if (row is! Map) continue;
-        final id = row['hierarchyID'];
+        final level = row['hierarchyLevel'];
         String name = (row['hierarchyName'] ?? '').toString().trim();
 
-        if (id == 1) {
+        if (level == 1) {
           firstCount++;
           if (name.isNotEmpty) {
             // Pluralize if count > 1
@@ -290,7 +290,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                 ? '${name}S'
                 : name;
           }
-        } else if (id == 2) {
+        } else if (level == 2) {
           secondCount++;
           if (name.isNotEmpty) {
             // Pluralize if count > 1
