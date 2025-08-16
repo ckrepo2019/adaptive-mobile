@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/assignments/assignment_page.dart';
-import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:flutter_lms/views/utilities/calendar_page.dart';
-import 'package:flutter_lms/views/utilities/notification_page.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';

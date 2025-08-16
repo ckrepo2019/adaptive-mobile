@@ -1,18 +1,75 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/views/student/home/student_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_basic_information_widget.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 
-class CalendarPage extends StatelessWidget {
+class CalendarPage extends StatefulWidget {
   const CalendarPage({super.key});
 
   @override
+  State<CalendarPage> createState() => _CalendarPageState();
+}
+
+class _CalendarPageState extends State<CalendarPage> {
+  DateTime _focusedMonth = DateTime.now();
+
+  List<Widget> _buildCalendarDays(DateTime month, double cellSize) {
+    final firstDayOfMonth = DateTime(month.year, month.month, 1);
+    final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
+    final firstWeekday = firstDayOfMonth.weekday % 7; // Sunday = 0
+    final daysInMonth = lastDayOfMonth.day;
+
+    List<Widget> dayWidgets = [];
+
+    // Empty slots before the first day
+    for (int i = 0; i < firstWeekday; i++) {
+      dayWidgets.add(SizedBox(width: cellSize, height: cellSize));
+    }
+
+    // Actual days
+    for (int day = 1; day <= daysInMonth; day++) {
+      final isToday = DateTime.now().day == day &&
+          DateTime.now().month == month.month &&
+          DateTime.now().year == month.year;
+
+      dayWidgets.add(
+        Container(
+          width: cellSize,
+          height: cellSize,
+          decoration: isToday
+              ? BoxDecoration(
+                  color: Colors.deepOrange,
+                  shape: BoxShape.circle,
+                )
+              : null,
+          child: Center(
+            child: Text(
+              "$day",
+              style: GoogleFonts.poppins(
+                fontSize: cellSize * 0.35,
+                fontWeight: FontWeight.bold,
+                color: isToday ? Colors.white : Colors.grey.shade700,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return dayWidgets;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final monthName = DateFormat("MMMM yyyy").format(_focusedMonth);
+
     final screenWidth = MediaQuery.of(context).size.width;
-    // final screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    // Calculate responsive sizes
+    final cellSize = screenWidth / 9; // dynamic day size
+    final calendarHeight = screenHeight * 0.45; // 45% of screen height
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -20,72 +77,160 @@ class CalendarPage extends StatelessWidget {
       body: StudentGlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: 20,),
+          children: [
+            const SizedBox(height: 20),
 
-          Card(
-          elevation: 20,
-          child: Container(
-            height: 100,
-            width: double.infinity,
-            decoration: BoxDecoration(
+            /// Streak card
+            Card(
+            elevation: 20,
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
-              gradient: LinearGradient(
-                colors: [
-                  Color.fromARGB(255, 0, 52, 248),
-                  Color.fromARGB(255, 8, 43, 171),
+            ),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: const LinearGradient(
+                  colors: [
+                    Color.fromARGB(255, 0, 52, 248),
+                    Color.fromARGB(255, 8, 43, 171),
+                  ],
+                  stops: [0.1, 0.8],
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Your Streak",
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          "22 Days",
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 40,
+                            color: Colors.white,
+                            height: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  Positioned(
+                  bottom: -MediaQuery.of(context).size.height * 0.04, // ~1.5% of screen height
+                  right: -MediaQuery.of(context).size.width * 0.05,    // ~2% of screen width
+                  child: Image.asset(
+                    "assets/images/utilities/streak_icon.png",
+                    height: MediaQuery.of(context).size.height * 0.15, // ~8% of screen height
+                    width: MediaQuery.of(context).size.width * 0.25,   // ~18% of screen width
+                    fit: BoxFit.contain,
+                  ),
+                ),
+
                 ],
-                stops: [0.1, 0.8],
               ),
             ),
-            child: Stack(
-              children: [
-                // Text content on top-left
-                Padding(
-                  padding: EdgeInsets.all(15),
+          ),
+
+            const SizedBox(height: 15),
+
+            /// Calendar card
+            Card(
+              elevation: 5,
+              child: Container(
+                height: calendarHeight,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        "Your Streak",
-                        style: GoogleFonts.poppins(
-                          color: Colors.grey.shade200,
-                          fontSize: 12,
-                          height: 2.1
-                        ),
+                      /// Month selector row
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _focusedMonth = DateTime(
+                                    _focusedMonth.year, _focusedMonth.month - 1);
+                              });
+                            },
+                            child: Icon(Icons.arrow_back_ios,
+                                size: screenWidth * 0.04,
+                                color: Colors.grey.shade500),
+                          ),
+                          Text(
+                            monthName,
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth * 0.045,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _focusedMonth = DateTime(
+                                    _focusedMonth.year, _focusedMonth.month + 1);
+                              });
+                            },
+                            child: Icon(Icons.arrow_forward_ios,
+                                size: screenWidth * 0.04,
+                                color: Colors.grey.shade500),
+                          ),
+                        ],
                       ),
-                      Text(
-                        "22 Days",
-                        style: GoogleFonts.poppins(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 40,
-                          color: Colors.white,
-                          height: 0.9,
+                      const SizedBox(height: 20),
+
+                      /// Weekday headers
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                            .map((day) => Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      day,
+                                      style: GoogleFonts.poppins(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: screenWidth * 0.03,
+                                        color: Colors.grey.shade400,
+                                      ),
+                                    ),
+                                  ),
+                                ))
+                            .toList(),
+                      ),
+                      const SizedBox(height: 10),
+
+                      /// Calendar days
+                      Expanded(
+                        child: GridView.count(
+                          physics: const NeverScrollableScrollPhysics(),
+                          crossAxisCount: 7,
+                          children: _buildCalendarDays(_focusedMonth, cellSize),
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                // Fire icon on bottom-right
-                Positioned(
-                  bottom: -15,
-                  right: -10,
-                  child: Image.asset(
-                    "assets/images/utilities/streak_icon.png",
-                    height: 100,
-                    width: 100,
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        )
-
-
-        ],
-      ),
+          ],
+        ),
       ),
     );
   }
