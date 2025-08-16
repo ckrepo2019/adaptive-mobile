@@ -17,7 +17,7 @@ class AnalyzingPage extends BaseView {
 }
 
 class _AnalyzingBody extends StatefulWidget {
-  const _AnalyzingBody({super.key});
+  const _AnalyzingBody();
 
   @override
   State<_AnalyzingBody> createState() => _AnalyzingBodyState();
