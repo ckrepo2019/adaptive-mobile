@@ -17,7 +17,7 @@ class _CalendarPageState extends State<CalendarPage> {
   List<Widget> _buildCalendarDays(DateTime month, double cellSize) {
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
     final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
-    final firstWeekday = firstDayOfMonth.weekday % 7; // Sunday = 0
+    final firstWeekday = firstDayOfMonth.weekday % 7;
     final daysInMonth = lastDayOfMonth.day;
 
     List<Widget> dayWidgets = [];
@@ -127,12 +127,12 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   
                   Positioned(
-                  bottom: -MediaQuery.of(context).size.height * 0.04, // ~1.5% of screen height
-                  right: -MediaQuery.of(context).size.width * 0.05,    // ~2% of screen width
+                  bottom: -MediaQuery.of(context).size.height * 0.04,
+                  right: -MediaQuery.of(context).size.width * 0.05,   
                   child: Image.asset(
                     "assets/images/utilities/streak_icon.png",
-                    height: MediaQuery.of(context).size.height * 0.15, // ~8% of screen height
-                    width: MediaQuery.of(context).size.width * 0.25,   // ~18% of screen width
+                    height: MediaQuery.of(context).size.height * 0.15, 
+                    width: MediaQuery.of(context).size.width * 0.25, 
                     fit: BoxFit.contain,
                   ),
                 ),

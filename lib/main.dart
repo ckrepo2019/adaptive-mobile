@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/views/utilities/calendar_page.dart';
+import 'package:flutter_lms/views/utilities/leaderboard_page.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
       ),
       initialBinding: StudentHomeBindings(),
       // home: const _LaunchGate(),
-      home: CalendarPage(),
+      home: LeaderboardPage(),
       getPages: AppPages.pages,
     );
   }
