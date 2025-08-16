@@ -1,3 +1,7 @@
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz_intro.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz_result.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_info.dart';
 import 'package:flutter_lms/views/student/profile/profile_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
@@ -26,6 +30,10 @@ class AppRoutes {
   static const String collaboratorHome = '/collaborator-home';
   static const String resultLearnerType = '/result-learner-type';
   static const String profilePage = '/profile-page';
+  static const String quizInfo = '/quiz-info';
+  static const String practiceQuizIntro = '/practice-quiz-intro';
+  static const String practiceQuiz = '/practice-quiz';
+  static const String practiceQuizResult = '/practice-quiz-result';
 }
 
 /// Use GetX pages so we can attach per-route bindings.
@@ -54,5 +62,15 @@ class AppPages {
       page: () => const ResultLeanerPage(),
     ),
     GetPage(name: AppRoutes.profilePage, page: () => const ProfilePage()),
+    GetPage(name: AppRoutes.quizInfo, page: () => const QuizInfoPage()),
+    GetPage(
+      name: AppRoutes.practiceQuizIntro,
+      page: () => const PracticeQuizIntroPage(),
+    ),
+    GetPage(name: AppRoutes.practiceQuiz, page: () => const PracticeQuizPage()),
+    GetPage(
+      name: AppRoutes.practiceQuizResult,
+      page: () => const PracticeQuizResultPage(score: 0, total: 0),
+    ),
   ];
 }

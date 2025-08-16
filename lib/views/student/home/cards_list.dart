@@ -13,11 +13,16 @@ class AssignmentItem {
   final String subject;
   final String date;
   final String duration;
+  final String type;
+  final String? description;
+
   const AssignmentItem({
     required this.title,
     required this.subject,
     required this.date,
     required this.duration,
+    required this.type,
+    this.description,
   });
 }
 
@@ -60,6 +65,10 @@ class CardsList<T> extends StatelessWidget {
   final VoidCallback? onCta;
   final EdgeInsetsGeometry? padding;
 
+  /// NEW: optional item tap callbacks
+  final void Function(AssignmentItem item)? onAssignmentTap;
+  final void Function(ClassProgressItem item)? onProgressTap;
+
   const CardsList({
     super.key,
     required this.headerTitle,
@@ -69,6 +78,8 @@ class CardsList<T> extends StatelessWidget {
     this.ctaLabel,
     this.onCta,
     this.padding,
+    this.onAssignmentTap,
+    this.onProgressTap,
   });
 
   @override
@@ -112,9 +123,15 @@ class CardsList<T> extends StatelessWidget {
             final item = items[i];
             switch (variant) {
               case CardVariant.assignment:
-                return _AssignmentCard(item: item as AssignmentItem);
+                return _AssignmentCard(
+                  item: item as AssignmentItem,
+                  onTap: onAssignmentTap,
+                );
               case CardVariant.progress:
-                return _ClassProgressCard(item: item as ClassProgressItem);
+                return _ClassProgressCard(
+                  item: item as ClassProgressItem,
+                  onTap: onProgressTap,
+                );
             }
           }),
 
@@ -150,31 +167,40 @@ class CardsList<T> extends StatelessWidget {
   }
 }
 
-/// Shared card container (rounded, left accent, soft shadow)
+/// Shared card container (rounded, left accent, soft shadow) — now tap-aware
 class _CardShell extends StatelessWidget {
   final Widget child;
   final Color leftAccent;
-  const _CardShell({required this.child, required this.leftAccent});
+  final VoidCallback? onTap;
+  const _CardShell({required this.child, required this.leftAccent, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 12,
-            spreadRadius: 2,
-            offset: const Offset(0, 4),
+    final radius = BorderRadius.circular(12);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: radius,
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: radius,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                spreadRadius: 2,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border(left: BorderSide(color: leftAccent, width: 3)),
           ),
-        ],
-        border: Border(left: BorderSide(color: leftAccent, width: 3)),
+          child: child,
+        ),
       ),
-      child: child,
     );
   }
 }
@@ -182,23 +208,30 @@ class _CardShell extends StatelessWidget {
 /// Assignment card content
 class _AssignmentCard extends StatelessWidget {
   final AssignmentItem item;
-  const _AssignmentCard({required this.item});
+  final void Function(AssignmentItem item)? onTap;
+
+  const _AssignmentCard({required this.item, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return _CardShell(
       leftAccent: Colors.redAccent,
+      onTap: onTap == null ? null : () => onTap!(item),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Combined subject + type + title in one line
           Text(
-            item.title,
+            '${item.subject} ${item.type} ${item.title}',
             style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: FontWeight.w600,
               color: Colors.black87,
             ),
+            maxLines: null,
+            overflow: TextOverflow.ellipsis,
           ),
+
           Text(
             item.subject,
             style: GoogleFonts.poppins(fontSize: 13, color: Colors.black54),
@@ -241,10 +274,10 @@ const String kDefaultSubjectIcon =
     'assets/images/student-home/default-class.png';
 
 /// Class progress card content
-
 class _ClassProgressCard extends StatefulWidget {
   final ClassProgressItem item;
-  const _ClassProgressCard({required this.item});
+  final void Function(ClassProgressItem item)? onTap;
+  const _ClassProgressCard({required this.item, this.onTap});
 
   @override
   State<_ClassProgressCard> createState() => _ClassProgressCardState();
@@ -326,7 +359,7 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
     }
   }
 
-  /// Lightweight "dominant" color extractor (averages non‑transparent pixels).
+  /// Lightweight "dominant" color extractor (averages non-transparent pixels).
   Future<void> _computeAccentFromImage(String path) async {
     try {
       final provider = _imageProviderFor(path);
@@ -351,7 +384,7 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
         final bb = bytes[i + 2]; // B
         final aa = bytes[i + 3]; // A
 
-        if (aa < 16) continue; // skip near‑transparent
+        if (aa < 16) continue; // skip near-transparent
         r += rr;
         g += gg;
         b += bb;
@@ -399,6 +432,7 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
 
     return _CardShell(
       leftAccent: _accent,
+      onTap: widget.onTap == null ? null : () => widget.onTap!(item),
       child: Row(
         children: [
           // Icon tile

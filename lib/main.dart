@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/classes/classes_page.dart';
-import 'package:flutter_lms/views/student/home/home_page.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
@@ -23,7 +21,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       initialBinding: StudentHomeBindings(),
-      home: const StudentClassPage(),
+      home: const _LaunchGate(),
       getPages: AppPages.pages,
     );
   }
@@ -65,7 +63,7 @@ class _LaunchGateState extends State<_LaunchGate> {
       });
     } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Get.offAllNamed(AppRoutes.studentHome);
+        Get.offAllNamed(AppRoutes.signIn);
       });
     }
   }

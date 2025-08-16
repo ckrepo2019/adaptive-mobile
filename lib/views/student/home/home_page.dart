@@ -166,6 +166,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
     // Single-fire redirect rule
     final learnersProfile = (raw['learners_profile'] as List?) ?? const [];
+
     final enrollmentData = raw['enrollment_data'];
     if (!_navigated && learnersProfile.isEmpty && enrollmentData != null) {
       _navigated = true;
@@ -217,22 +218,25 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   final assignments = <AssignmentItem>[
     const AssignmentItem(
-      title: 'Math Quiz: Quadratic Equations',
+      title: 'Quadratic Equations',
       subject: 'Mathematics',
       date: 'Today, 3:00 PM',
       duration: '20 min',
+      type: 'Quiz',
     ),
     const AssignmentItem(
-      title: 'Science Assignment: Photosynthesis',
+      title: 'Photosynthesis',
       subject: 'Science',
       date: 'Tomorrow, 9:00 AM',
       duration: '45 min',
+      type: 'Assignment',
     ),
     const AssignmentItem(
-      title: 'History Essay: World War II',
+      title: 'World War II',
       subject: 'History',
       date: 'Aug 15, 1:30 PM',
       duration: '1 hr',
+      type: 'Essay',
     ),
   ];
 
@@ -343,6 +347,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
       28,
     ); // Vertical padding (min 16, max 28)
 
+    final learnersProfiles = (_data?['learners_profile'] as List?) ?? [];
+    final learnerTypesText = learnersProfiles.isNotEmpty
+        ? learnersProfiles
+              .map((lp) {
+                if (lp is Map && lp['learners_types'] is Map) {
+                  return (lp['learners_types']['name'] ?? '').toString();
+                }
+                return '';
+              })
+              .where((name) => name.isNotEmpty)
+              .join(', ')
+        : 'No Learner Type';
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: GlobalAppBar(
@@ -428,7 +445,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Welcome ${_welcomeFirstName}.',
+                                        'Welcome $_welcomeFirstName.',
                                         style: GoogleFonts.poppins(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w500,
@@ -437,12 +454,83 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
-                                      Text(
-                                        'Visual Learner',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 13,
-                                          color: Colors.black,
-                                        ),
+                                      Wrap(
+                                        spacing: 6, // space between items
+                                        runSpacing:
+                                            4, // space between rows if wrapping
+                                        children: learnersProfiles.isNotEmpty
+                                            ? learnersProfiles.map<Widget>((
+                                                lp,
+                                              ) {
+                                                if (lp is Map &&
+                                                    lp['learners_types']
+                                                        is Map) {
+                                                  final typeName =
+                                                      (lp['learners_types']['name'] ??
+                                                              '')
+                                                          .toString();
+
+                                                  return Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 10,
+                                                          vertical: 6,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.blue
+                                                          .withOpacity(0.1),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            999,
+                                                          ),
+                                                      border: Border.all(
+                                                        color: Colors.blue
+                                                            .withOpacity(0.25),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      "$typeName Learner",
+                                                      style:
+                                                          GoogleFonts.poppins(
+                                                            fontSize: 12,
+                                                            color: Colors
+                                                                .blue[800],
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                          ),
+                                                    ),
+                                                  );
+                                                }
+                                                return const SizedBox.shrink();
+                                              }).toList()
+                                            : [
+                                                Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 6,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey
+                                                        .withOpacity(0.1),
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          999,
+                                                        ),
+                                                    border: Border.all(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.25),
+                                                    ),
+                                                  ),
+                                                  child: Text(
+                                                    'No Learner Type',
+                                                    style: GoogleFonts.poppins(
+                                                      fontSize: 12,
+                                                      color: Colors.grey[700],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
                                       ),
                                     ],
                                   ),
@@ -533,8 +621,20 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                 onCta: () {
                                   /* navigate */
                                 },
+                                onAssignmentTap: (a) {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.quizInfo,
+                                    arguments: {
+                                      'title': a.title,
+                                      'subject': a.subject,
+                                      'date': a.date,
+                                      'duration': a.duration,
+                                      'type': a.type,
+                                    },
+                                  );
+                                },
                               ),
-
                               const SizedBox(height: 20),
 
                               CardsList<ClassProgressItem>(

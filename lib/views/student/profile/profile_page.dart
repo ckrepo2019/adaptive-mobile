@@ -37,19 +37,24 @@ class ProfilePage extends StatelessWidget {
       appBar: const GlobalAppBar(title: 'Profile', showBack: true),
       body: Stack(
         children: [
-          // ---------- Header (ROW: text | illustration) ----------
           Positioned.fill(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(bottom: _clamp(h * 0.18, 140, 220)),
               child: Column(
                 children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(padX, 12, padX, 0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                  // --- Header: text left, big illo right (no Row to avoid squeezing) ---
+                  SizedBox(
+                    height: _clamp(h * 0.36, 260, 340), // header height
+                    width: double.infinity,
+                    child: Stack(
                       children: [
-                        // Texts on the left
-                        Expanded(
+                        // Text area (fixed max width so it won't wrap vertically)
+                        Positioned(
+                          left: padX,
+                          top: 12,
+                          width:
+                              (w - padX * 2) -
+                              _clamp(w * 0.48, 160, 260), // leave room for illo
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -60,36 +65,43 @@ class ProfilePage extends StatelessWidget {
                                   fontSize: helloSize,
                                   color: Colors.black87,
                                 ),
-                                textAlign: TextAlign.start,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 6),
                               Text(
-                                'Visual Learner',
+                                'Visual Learner', // or your dynamic learnerTypesText
                                 style: GoogleFonts.poppins(
                                   fontSize: subSize,
                                   color: Colors.black54,
                                 ),
-                                textAlign: TextAlign.start,
                               ),
                             ],
                           ),
                         ),
 
-                        // Illustration on the right (asset image)
-                        SizedBox(
-                          width: illoSize,
-                          height: illoSize * 0.78,
-                          child: Image.asset(
-                            'assets/images/student-profile/default-female-profile.png',
-                            fit: BoxFit.contain,
+                        // Big illustration on the right, slightly offscreen (bleed)
+                        Positioned(
+                          right: -_clamp(
+                            w * 0.10,
+                            16,
+                            32,
+                          ), // push out for the "bleed" look
+                          bottom: -_clamp(h * 0.01, 0, 12),
+                          child: SizedBox(
+                            width: _clamp(w * 0.78, 240, 380), // LARGE
+                            height: _clamp(w * 0.78, 240, 380) * 0.78,
+                            child: Image.asset(
+                              'assets/images/student-profile/default-female-profile.png',
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ),
 
+                  // spacing before the blue sheet
                   SizedBox(height: _clamp(h * 0.12, 48, 80)),
                 ],
               ),
@@ -230,10 +242,10 @@ class _Field extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    double _clamp(double v, double min, double max) =>
+    double clamp(double v, double min, double max) =>
         v < min ? min : (v > max ? max : v);
-    final double labelSize = _clamp(w * 0.032, 11, 13);
-    final double valueSize = _clamp(w * 0.045, 15, 18);
+    final double labelSize = clamp(w * 0.032, 11, 13);
+    final double valueSize = clamp(w * 0.045, 15, 18);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
