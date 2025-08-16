@@ -14,7 +14,6 @@ class StudentJoinClass extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppConstants.mainColorTheme,
       body: StudentGlobalLayout(
-        true,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,

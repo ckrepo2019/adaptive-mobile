@@ -37,7 +37,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
     final mq = MediaQuery.of(context);
     final w = mq.size.width;
 
-    final double sp = sidePadding ?? _clampNum(w * 0.05, 16, 24);
+    final double sp = sidePadding ?? _clampNum(w * 0.02, 16, 24);
     final double tSize = titleSize ?? _clampNum(w * 0.065, 20, 28);
     final double iSize = iconSize ?? _clampNum(w * 0.060, 20, 26);
     final double iconPad = _clampNum(w * 0.01, 6, 10);
@@ -46,7 +46,9 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
-      titleSpacing: sp,
+
+      // TODO : Get back to this
+      // titleSpacing: sp,
       iconTheme: const IconThemeData(color: Colors.black),
       leadingWidth: showBack ? (sp + 44) : 0,
       leading: showBack

@@ -2,12 +2,11 @@
 import 'package:flutter/material.dart';
 
 class StudentGlobalLayout extends StatelessWidget {
-  final bool showBack;
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final bool useSafeArea;
 
-  const StudentGlobalLayout(this.showBack, {
+  const StudentGlobalLayout({
     super.key,
     required this.child,
     this.padding,
