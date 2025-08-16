@@ -26,7 +26,6 @@ class ProfilePage extends StatelessWidget {
     final double padX = _clamp(w * 0.06, 16, 24);
     final double helloSize = _clamp(w * 0.055, 16, 20);
     final double subSize = _clamp(w * 0.040, 12, 16);
-    final double illoSize = _clamp(w * 0.48, 160, 230);
 
     // where the blue card starts
     final double sheetTop = _clamp(h * 0.40, 340, 460);
@@ -151,8 +150,6 @@ class _ProfileSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    final double labelSize = _clamp(w * 0.032, 11, 13);
-    final double valueSize = _clamp(w * 0.045, 15, 18);
 
     return Material(
       elevation: 10,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
@@ -21,7 +22,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       initialBinding: StudentHomeBindings(),
-      home: const _LaunchGate(),
+      // home: const _LaunchGate(),
+      home: StudentClassPage(),
       getPages: AppPages.pages,
     );
   }

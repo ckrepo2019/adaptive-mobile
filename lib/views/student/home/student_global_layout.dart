@@ -1,7 +1,5 @@
 // lib/views/student/home/student_global_layout.dart
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 class StudentGlobalLayout extends StatelessWidget {
   final bool showBack;
@@ -9,7 +7,7 @@ class StudentGlobalLayout extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final bool useSafeArea;
 
-  const StudentGlobalLayout({
+  const StudentGlobalLayout(this.showBack, {
     super.key,
     required this.child,
     this.padding,

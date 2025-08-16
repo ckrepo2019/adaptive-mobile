@@ -2,6 +2,9 @@ import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_q
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz_intro.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz_result.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_info.dart';
+import 'package:flutter_lms/views/student/classes/classes_page.dart';
+import 'package:flutter_lms/views/student/classes/join_class.dart';
+import 'package:flutter_lms/views/student/classes/join_class_success.dart';
 import 'package:flutter_lms/views/student/profile/profile_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
@@ -65,5 +68,16 @@ class AppPages {
       page: () => const ResultLeanerPage(),
     ),
     GetPage(name: AppRoutes.profilePage, page: () => const ProfilePage()),
+
+    GetPage(name: AppRoutes.studentClass, page: () => StudentClassPage()),
+    GetPage(
+      name: AppRoutes.studentJoinClass,
+      page: () => StudentJoinClass(),
+      transition: Transition.leftToRightWithFade,
+    ),
+    GetPage(
+      name: AppRoutes.studentJoinClassSuccess,
+      page: () => const StudentJoinClassSuccess(),
+    ),
   ];
 }
