@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lms/widgets/app_bar.dart'; // <—
 import 'package:flutter_lms/views/student/home/student_global_layout.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
-import 'package:flutter_lms/widgets/global_subject_widget.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class StudentClassPage extends StatelessWidget {
   const StudentClassPage({super.key});
