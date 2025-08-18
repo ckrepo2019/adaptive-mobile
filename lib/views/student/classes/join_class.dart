@@ -15,7 +15,6 @@ class StudentJoinClass extends StatelessWidget {
       backgroundColor: AppConstants.mainColorTheme,
       body: StudentGlobalLayout(
         useSafeArea: true,
-        showBack: false,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

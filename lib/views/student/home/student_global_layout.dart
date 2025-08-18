@@ -11,7 +11,7 @@ class StudentGlobalLayout extends StatelessWidget {
     required this.child,
     this.padding,
     this.useSafeArea = true,
-    this.showBack = false, // default so it's initialized
+
   });
 
   @override
