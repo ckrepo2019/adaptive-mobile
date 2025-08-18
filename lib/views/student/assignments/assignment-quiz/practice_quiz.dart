@@ -430,7 +430,7 @@ class _QuestionCard extends StatelessWidget {
           // Answer choices
           for (int i = 0; i < choices.length; i++) ...[
             _AnswerTile(
-              label: '${String.fromCharCode(0x41 + i)}',
+              label: String.fromCharCode(0x41 + i),
               text: choices[i],
               selected: selected == i,
               showResult: answered,

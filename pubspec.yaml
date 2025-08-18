@@ -69,6 +69,8 @@ flutter:
     - assets/images/auth/
     - assets/images/student-home/
     - assets/images/student-class/
+    - assets/images/assignments/
+    - assets/images/student-profile/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

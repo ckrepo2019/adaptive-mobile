@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Global AppBar widget — no hardcoded navigation.
-/// The calling page supplies the title, whether to show back arrow,
-/// and the callbacks for taps.
+/// Global AppBar widget
+/// Allows hiding the default back arrow (via automaticallyImplyLeading: false)
+/// and only shows back if `showBack: true`.
 class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   const GlobalAppBar({
     super.key,
@@ -47,6 +47,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: false,
       titleSpacing: sp,
+      automaticallyImplyLeading: false, // ✅ disables the default back arrow
       iconTheme: const IconThemeData(color: Colors.black),
       leadingWidth: showBack ? (sp + 44) : 0,
       leading: showBack
