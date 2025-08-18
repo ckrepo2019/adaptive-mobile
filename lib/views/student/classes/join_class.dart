@@ -1,9 +1,9 @@
+// lib/views/student/classes/join_class.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/views/student/home/student_global_layout.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class StudentJoinClass extends StatelessWidget {
@@ -14,6 +14,9 @@ class StudentJoinClass extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppConstants.mainColorTheme,
       body: StudentGlobalLayout(
+        useSafeArea: true,
+        showBack: false,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,18 +33,17 @@ class StudentJoinClass extends StatelessWidget {
                 fontSize: 38,
               ),
             ),
-            SizedBox(height: 5),
+            const SizedBox(height: 5),
             Text(
-              "To begin, enter the class code provided by\nyour teacher. This will allow you to access\nclass materials, track your progress, and\ncollborate with classmates.",
+              "To begin, enter the class code provided by\nyour teacher. This will allow you to access\nclass materials, track your progress, and\ncollaborate with classmates.",
               style: GoogleFonts.poppins(
                 color: Colors.grey.shade300,
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
               ),
             ),
-      
-            SizedBox(height: 10),
-      
+            const SizedBox(height: 10),
+
             Card(
               elevation: 10,
               color: Colors.blue.shade900,
@@ -51,16 +53,14 @@ class StudentJoinClass extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  TextField(
+                  const TextField(
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
                       hintText: "Class Code",
                       hintStyle: TextStyle(color: Colors.black38),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
-                        vertical: 16,
-                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
                   Positioned(
@@ -69,7 +69,7 @@ class StudentJoinClass extends StatelessWidget {
                       onPressed: () {
                         Get.toNamed(AppRoutes.studentJoinClassSuccess);
                       },
-                      icon: Icon(Icons.add, color: Colors.white),
+                      icon: const Icon(Icons.add, color: Colors.white),
                     ),
                   ),
                 ],

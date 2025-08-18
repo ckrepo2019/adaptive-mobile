@@ -5,7 +5,6 @@ import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_info.
 import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:flutter_lms/views/student/classes/join_class.dart';
 import 'package:flutter_lms/views/student/classes/join_class_success.dart';
-import 'package:flutter_lms/views/utilities/notification_page.dart';
 import 'package:flutter_lms/views/utilities/profile_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
@@ -34,14 +33,13 @@ class AppRoutes {
   static const String collaboratorHome = '/collaborator-home';
   static const String resultLearnerType = '/result-learner-type';
   static const String profilePage = '/profile-page';
+  static const String studentJoinClass = '/join-class';
+  static const String studentJoinClassSuccess = '/join-class-success';
+  static const String studentClass = '/student-class-page';
   static const String quizInfo = '/quiz-info';
   static const String practiceQuizIntro = '/practice-quiz-intro';
   static const String practiceQuiz = '/practice-quiz';
   static const String practiceQuizResult = '/practice-quiz-result';
-  static const String studentJoinClass = '/join-class';
-  static const String studentJoinClassSuccess = '/join-class-success';
-  static const String studentClass = '/student-class-page';
-  static const String notificationPage = '/notification-page';
 }
 
 /// Use GetX pages so we can attach per-route bindings.
@@ -81,8 +79,15 @@ class AppPages {
       name: AppRoutes.studentJoinClassSuccess,
       page: () => const StudentJoinClassSuccess(),
     ),
-
-    // Utilities
-    GetPage(name: AppRoutes.notificationPage, page: () => NotificationPage()),
+    GetPage(name: AppRoutes.quizInfo, page: () => const QuizInfoPage()),
+    GetPage(
+      name: AppRoutes.practiceQuizIntro,
+      page: () => const PracticeQuizIntroPage(),
+    ),
+    GetPage(name: AppRoutes.practiceQuiz, page: () => const PracticeQuizPage()),
+    GetPage(
+      name: AppRoutes.practiceQuizResult,
+      page: () => const PracticeQuizResultPage(score: 0, total: 0),
+    ),
   ];
 }

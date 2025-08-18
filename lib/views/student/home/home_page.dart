@@ -643,6 +643,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                     'assets/images/student-home/class-progress-vector.png',
                                 items: classes,
                                 variant: CardVariant.progress,
+                                ctaLabel: 'View All Classes',
+                                onCta: () {
+                                  Navigator.pushNamed(
+                                    context,
+                                    AppRoutes.studentClass,
+                                  );
+                                },
                               ),
                               const SizedBox(height: 20),
                               Row(

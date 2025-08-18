@@ -11,13 +11,13 @@ class StudentGlobalLayout extends StatelessWidget {
     required this.child,
     this.padding,
     this.useSafeArea = true,
+    this.showBack = false, // default so it's initialized
   });
 
   @override
   Widget build(BuildContext context) {
-    Widget content = Padding(
-      padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+    final content = Padding(
+      padding: padding ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: child,
     );
     return useSafeArea ? SafeArea(child: content) : content;
