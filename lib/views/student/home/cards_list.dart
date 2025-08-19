@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:ui' as ui;
-
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/utils/dominant_color_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
