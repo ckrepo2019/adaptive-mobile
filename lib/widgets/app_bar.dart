@@ -8,16 +8,19 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   const GlobalAppBar({
     super.key,
     required this.title,
+    this.subtitle,
     this.showBack = false,
     this.onBack,
     this.onNotificationsTap,
     this.onProfileTap,
     this.sidePadding,
     this.titleSize,
+    this.subtitleSize,
     this.iconSize,
   });
 
   final String title;
+  final String? subtitle; // 🔹 New optional subtitle
   final bool showBack;
   final VoidCallback? onBack;
   final VoidCallback? onNotificationsTap;
@@ -25,6 +28,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final double? sidePadding;
   final double? titleSize;
+  final double? subtitleSize; // 🔹 control subtitle font size
   final double? iconSize;
 
   static const double _overlapPx = 6.0;
@@ -38,7 +42,8 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
     final w = mq.size.width;
 
     final double sp = sidePadding ?? _clampNum(w * 0.02, 16, 24);
-    final double tSize = titleSize ?? _clampNum(w * 0.065, 20, 28);
+    final double tSize = titleSize ?? _clampNum(w * 0.055, 20, 28);
+    final double stSize = subtitleSize ?? _clampNum(w * 0.025, 14, 18);
     final double iSize = iconSize ?? _clampNum(w * 0.060, 20, 26);
     final double iconPad = _clampNum(w * 0.01, 6, 10);
 
@@ -63,17 +68,42 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             )
           : null,
-      title: Text(
-        title,
-        overflow: TextOverflow.ellipsis,
-        maxLines: 1,
-        style: GoogleFonts.poppins(
-          color: Colors.black,
-          fontWeight: FontWeight.w700,
-          fontSize: tSize,
-          height: 1.1,
-        ),
-      ),
+      title: subtitle == null
+          ? Text(
+              title,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: GoogleFonts.poppins(
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+                fontSize: tSize,
+                height: 1.1,
+              ),
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.poppins(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w700,
+                    fontSize: tSize,
+                    height: 1.1,
+                  ),
+                ),
+                Text(
+                  subtitle!,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w400,
+                    fontSize: stSize,
+                    height: 1.2,
+                  ),
+                ),
+              ],
+            ),
       actions: [
         Padding(
           padding: EdgeInsets.symmetric(horizontal: sp),

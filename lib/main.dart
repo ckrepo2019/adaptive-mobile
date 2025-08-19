@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/utilities/badges.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
       ),
       initialBinding: StudentHomeBindings(),
       // home: const _LaunchGate(),
-      home: const GlobalBadgesPage(),
+      home: const StudentMyClassmatePage(),
       getPages: AppPages.pages,
     );
   }
