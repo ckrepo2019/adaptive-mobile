@@ -5,6 +5,8 @@ import 'package:flutter_lms/utils/utils.dart'; // ScheduleUtils, NameUtils, Medi
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/widgets/global_subject_widget.dart';
 import 'package:flutter_lms/config/routes.dart';
@@ -131,7 +133,7 @@ class _StudentClassPageState extends State<StudentClassPage> {
                 InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.studentJoinClass);
+                    Get.toNamed(AppRoutes.studentJoinClass);
                   },
                   child: Container(
                     padding: EdgeInsets.symmetric(

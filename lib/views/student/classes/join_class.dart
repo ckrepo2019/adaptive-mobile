@@ -1,4 +1,3 @@
-// lib/views/student/classes/join_class.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/config/routes.dart';
@@ -12,8 +11,8 @@ class StudentJoinClass extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppConstants.mainColorTheme,
       body: StudentGlobalLayout(
+        backgroundColor: AppConstants.mainColorTheme,
         useSafeArea: true,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Column(

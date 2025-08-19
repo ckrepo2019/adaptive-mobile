@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
-import 'package:flutter_lms/views/utilities/badges.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';

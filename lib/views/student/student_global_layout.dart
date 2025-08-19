@@ -29,6 +29,8 @@ class StudentGlobalLayout extends StatelessWidget {
   final Widget? bottom;
   final bool safeAreaTop;
   final bool safeAreaBottom;
+  final Color backgroundColor;
+
   const StudentGlobalLayout({
     super.key,
     required this.child,
@@ -43,6 +45,7 @@ class StudentGlobalLayout extends StatelessWidget {
     this.useScaffold = true,
     this.header,
     this.bottom,
+    this.backgroundColor = Colors.white,
   });
   @override
   Widget build(BuildContext context) {
@@ -78,22 +81,23 @@ class StudentGlobalLayout extends StatelessWidget {
         : content;
 
     if (useScaffold) {
-      return Scaffold(
-        appBar: appBar,
-        backgroundColor: Colors.white,
-        body: body,
-      );
-    }
-
-    return Material(
-      color: Colors.white,
-      child: Column(
-        children: [
-          if (header != null) header!,
-          Expanded(child: body),
-          if (bottom != null) bottom!,
-        ],
-      ),
+    return Scaffold(
+      appBar: appBar,
+      backgroundColor: backgroundColor,
+      body: body,
     );
+  }
+
+  return Material(
+    color: backgroundColor,
+    child: Column(
+      children: [
+        if (header != null) header!,
+        Expanded(child: body),
+        if (bottom != null) bottom!,
+      ],
+    ),
+  );
+
   }
 }

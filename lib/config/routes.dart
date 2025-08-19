@@ -97,7 +97,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.studentJoinClass,
       page: () => StudentJoinClass(),
-      transition: Transition.leftToRightWithFade,
+      transition: null,
     ),
     GetPage(
       name: AppRoutes.studentJoinClassSuccess,
