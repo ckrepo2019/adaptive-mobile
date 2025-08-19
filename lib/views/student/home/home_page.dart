@@ -5,13 +5,24 @@ import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/controllers/student/student_home.dart';
 import 'package:flutter_lms/views/student/home/cards_list.dart';
 import 'package:flutter_lms/views/student/home/quick_actions.dart';
-import 'package:flutter_lms/views/student/widgets/fancy_student_navbar.dart';
+import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/config/constants.dart';
+import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
+import 'package:flutter_lms/models/items.dart';
 
 class StudentHomePage extends StatefulWidget {
-  const StudentHomePage({super.key});
+  final String token;
+  final String uid;
+  final int userType;
+
+  const StudentHomePage({
+    super.key,
+    required this.token,
+    required this.uid,
+    required this.userType,
+  });
 
   @override
   State<StudentHomePage> createState() => _StudentHomePageState();
@@ -27,53 +38,21 @@ class _StudentHomePageState extends State<StudentHomePage> {
   String? _uid;
 
   // Loop/dup guards
-  bool _initialized = false; // run arg bootstrap exactly once
+  bool _initialized = false; // run bootstrap exactly once
   bool _navigated = false; // prevent multiple redirects
   String? _lastFetchKey; // avoid duplicate fetch for same (token,uid)
-  int _index = 0; // Home is active
 
-  void _onNavChanged(int i) {
-    if (i == 0) return; // already home
-    // Keep Home active for now; show lightweight feedback.
-    ScaffoldMessenger.of(context).removeCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Other tabs coming soon'),
-        duration: Duration(milliseconds: 900),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-    setState(() => _index = 0);
+  void _goToClasses() {
+    StudentTabs.of(context).setIndex(1);
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_initialized) return; // ensure we only parse args once
+    if (_initialized) return;
 
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is! Map) {
-      setState(() {
-        _loading = false;
-        _ready = false;
-        _error = 'Missing route arguments.';
-      });
-      _initialized = true;
-      return;
-    }
-
-    _token = args['token'] as String?;
-    _uid = args['uid'] as String?;
-
-    if (_token == null || _uid == null) {
-      setState(() {
-        _loading = false;
-        _ready = false;
-        _error = 'Invalid route arguments.';
-      });
-      _initialized = true;
-      return;
-    }
+    _token = widget.token;
+    _uid = widget.uid;
 
     _initialized = true;
     _safeLoad(_token!, _uid!);
@@ -119,11 +98,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   Map<String, dynamic> _normalize(Map<String, dynamic> d) {
     final subjects = (d['subjects'] as List?) ?? const <dynamic>[];
-
-    // Debug print so you can see in console
-    debugPrint(
-      'Subjects received: ${const JsonEncoder.withIndent('  ').convert(subjects)}',
-    );
     return {
       ...d,
       'subjects': (d['subjects'] as List?) ?? const <dynamic>[],
@@ -152,7 +126,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     if (!mounted) return;
 
     if (!(resp.success && resp.data != null)) {
-      debugPrint('[student-home] ❌ ${resp.message}');
       setState(() {
         _loading = false;
         _ready = false;
@@ -162,7 +135,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
 
     final raw = resp.data!;
-    debugPrint('[student-home] ✅ success');
 
     // Single-fire redirect rule
     final learnersProfile = (raw['learners_profile'] as List?) ?? const [];
@@ -216,6 +188,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     return 'Student';
   }
 
+  // Uses shared model: AssignmentItem (from models/items.dart)
   final assignments = <AssignmentItem>[
     const AssignmentItem(
       title: 'Quadratic Equations',
@@ -260,6 +233,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
     // Otherwise assume it's a bundled asset path
     return p;
+    // NOTE: cards_list.dart handles both asset and network paths gracefully.
   }
 
   // Build Class Progress items directly from `_data['subjects']`
@@ -289,7 +263,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
         if (level == 1) {
           firstCount++;
           if (name.isNotEmpty) {
-            // Pluralize if count > 1
             firstLabel = (firstCount > 1 && !name.endsWith('s'))
                 ? '${name}S'
                 : name;
@@ -297,7 +270,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
         } else if (level == 2) {
           secondCount++;
           if (name.isNotEmpty) {
-            // Pluralize if count > 1
             secondLabel = (secondCount > 1 && !name.endsWith('s'))
                 ? '${name}S'
                 : name;
@@ -327,115 +299,88 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
-    final w = mq.size.width;
+    final w = MediaQuery.of(context).size.width;
+
     double clampNum(double v, double min, double max) =>
         v < min ? min : (v > max ? max : v);
 
-    final titleSize = clampNum(w * 0.075, 20, 28);
-    final iconSize = clampNum(w * 0.070, 20, 28);
-    final sidePadding = clampNum(w * 0.06, 20, 28);
-    const overlapPx = 3.0;
-    final bodyPadH = clampNum(
-      w * 0.07,
-      20,
-      32,
-    ); // Horizontal padding (min 20, max 32)
-    final bodyPadV = clampNum(
-      w * 0.04,
-      16,
-      28,
-    ); // Vertical padding (min 16, max 28)
+    final double sp = clampNum(w * 0.05, 0, 3);
+
+    final bodyPadH = clampNum(w * 0.07, 20, 32);
+    final bodyPadV = clampNum(w * 0.04, 16, 28);
 
     final learnersProfiles = (_data?['learners_profile'] as List?) ?? [];
-    final learnerTypesText = learnersProfiles.isNotEmpty
-        ? learnersProfiles
-              .map((lp) {
-                if (lp is Map && lp['learners_types'] is Map) {
-                  return (lp['learners_types']['name'] ?? '').toString();
-                }
-                return '';
-              })
-              .where((name) => name.isNotEmpty)
-              .join(', ')
-        : 'No Learner Type';
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: GlobalAppBar(
+    final viewInset = MediaQuery.of(context).padding.bottom;
+    const navBarHeight = 88.0; // <-- FancyStudentNavBar’s actual height
+    final bottomGap = navBarHeight + viewInset + 24.0;
+
+    final _usedAccents = <int>{};
+
+    return StudentGlobalLayout(
+      useScaffold: false,
+      useSafeArea: false,
+      header: GlobalAppBar(
+        // render your app bar as a header widget
         title: 'Home',
-        onNotificationsTap: () {
-          Navigator.pushNamed(context, '/notifications');
-        },
+        onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
         onProfileTap: () {
           final s = _data?['student'];
           if (s is Map && s.isNotEmpty) {
             Navigator.pushNamed(
               context,
-              AppRoutes.profilePage, // ensure this route exists
+              AppRoutes.profilePage,
               arguments: {'student': s},
             );
           }
         },
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          if (_token != null && _uid != null) {
-            await _safeLoad(_token!, _uid!);
-          }
-        },
-        child: _loading
-            ? const Center(child: CircularProgressIndicator())
-            : (_error != null
-                  ? ListView(
-                      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.symmetric(horizontal: sp),
+      onRefresh: (_token != null && _uid != null)
+          ? () => _safeLoad(_token!, _uid!)
+          : null,
+      child: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : (_error != null
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 120),
-                        Padding(
-                          padding: EdgeInsets.fromLTRB(
-                            bodyPadH,
-                            bodyPadV,
-                            bodyPadH,
-                            bodyPadV,
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                _error!,
-                                style: const TextStyle(color: Colors.red),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 12),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (_token != null && _uid != null) {
-                                    _safeLoad(_token!, _uid!);
-                                  }
-                                },
-                                child: const Text('Retry'),
-                              ),
-                            ],
-                          ),
+                        Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (_token != null && _uid != null) {
+                              _safeLoad(_token!, _uid!);
+                            }
+                          },
+                          child: const Text('Retry'),
                         ),
                       ],
-                    )
-                  : (_ready
-                        ? ListView(
-                            padding: EdgeInsets.fromLTRB(
-                              bodyPadH,
-                              bodyPadV,
-                              bodyPadH,
-                              bodyPadV,
-                            ),
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            children: [
-                              // === Welcome Row ===
-                              Row(
+                    ),
+                  )
+                : (_ready
+                      ? Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            // === Welcome Row (NON-SCROLLABLE) ===
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                bodyPadH,
+                                bodyPadV,
+                                bodyPadH,
+                                12, // keep your 12px spacing after welcome
+                              ),
+                              child: Row(
                                 children: [
-                                  CircleAvatar(
+                                  const CircleAvatar(
                                     radius: 26,
-                                    backgroundColor: const Color(0xFFF1F3F6),
-                                    backgroundImage: const AssetImage(
+                                    backgroundColor: Color(0xFFF1F3F6),
+                                    backgroundImage: AssetImage(
                                       'assets/images/student-home/default-avatar-female.png',
                                     ),
                                   ),
@@ -455,9 +400,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                       Wrap(
-                                        spacing: 6, // space between items
-                                        runSpacing:
-                                            4, // space between rows if wrapping
+                                        spacing: 6,
+                                        runSpacing: 4,
                                         children: learnersProfiles.isNotEmpty
                                             ? learnersProfiles.map<Widget>((
                                                 lp,
@@ -469,7 +413,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                                       (lp['learners_types']['name'] ??
                                                               '')
                                                           .toString();
-
                                                   return Container(
                                                     padding:
                                                         const EdgeInsets.symmetric(
@@ -536,11 +479,17 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                   ),
                                 ],
                               ),
+                            ),
 
-                              const SizedBox(height: 12),
-
-                              // === Badges Row ===
-                              Row(
+                            // === Badges Row (NON-SCROLLABLE) ===
+                            Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                bodyPadH,
+                                0,
+                                bodyPadH,
+                                20, // keep your 20px spacing after badges
+                              ),
+                              child: Row(
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -600,7 +549,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                           'Level 5',
                                           style: GoogleFonts.poppins(
                                             fontSize: 12,
-                                            color: const Color(0xFF0288D1),
+                                            color: Color(0xFF0288D1),
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -609,109 +558,141 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                   ),
                                 ],
                               ),
+                            ),
 
-                              const SizedBox(height: 20),
-                              CardsList<AssignmentItem>(
-                                headerTitle: 'My Assignments',
-                                headerIcon:
-                                    'assets/images/student-home/my-assignments-vector.png',
-                                items: assignments,
-                                variant: CardVariant.assignment,
-                                ctaLabel: 'View All Assignments',
-                                onCta: () {
-                                  /* navigate */
-                                },
-                                onAssignmentTap: (a) {
-                                  Navigator.pushNamed(
-                                    context,
-                                    AppRoutes.quizInfo,
-                                    arguments: {
-                                      'title': a.title,
-                                      'subject': a.subject,
-                                      'date': a.date,
-                                      'duration': a.duration,
-                                      'type': a.type,
+                            // === Scrollable content below ===
+                            Expanded(
+                              child: ListView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: EdgeInsets.fromLTRB(
+                                  bodyPadH,
+                                  0, // content starts right after badges' 20px spacer
+                                  bodyPadH,
+                                  bodyPadV,
+                                ),
+                                children: [
+                                  // === Assignments ===
+                                  CardsList<AssignmentItem>(
+                                    headerTitle: 'My Assignments',
+                                    headerIcon:
+                                        'assets/images/student-home/my-assignments-vector.png',
+                                    items: assignments,
+                                    variant: CardVariant.assignment,
+                                    ctaLabel: 'View All Assignments',
+                                    onCta: () {
+                                      /* navigate */
                                     },
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 20),
+                                    onAssignmentTap: (a) {
+                                      Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.quizInfo,
+                                        arguments: {
+                                          'title': a.title,
+                                          'subject': a.subject,
+                                          'date': a.date,
+                                          'duration': a.duration,
+                                          'type': a.type,
+                                        },
+                                      );
+                                    },
+                                  ),
 
-                              CardsList<ClassProgressItem>(
-                                headerTitle: 'Class Progress',
-                                headerIcon:
-                                    'assets/images/student-home/class-progress-vector.png',
-                                items: classes,
-                                variant: CardVariant.progress,
-                                ctaLabel: 'View All Classes',
-                                onCta: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    AppRoutes.studentClass,
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.access_time_outlined,
-                                    color: Colors.black87,
+                                  const SizedBox(height: 20),
+
+                                  // === Class Progress ===
+                                  CardsList<ClassProgressItem>(
+                                    headerTitle: 'Class Progress',
+                                    headerIcon:
+                                        'assets/images/student-home/class-progress-vector.png',
+                                    items: classes,
+                                    variant: CardVariant.progress,
+                                    ctaLabel: 'View All Classes',
+                                    onCta: _goToClasses,
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Quick Actions',
-                                    style: GoogleFonts.poppins(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                      color: Colors.black87,
-                                    ),
+
+                                  const SizedBox(height: 20),
+
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.access_time_outlined,
+                                        color: Colors.black87,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Quick Actions',
+                                        style: GoogleFonts.poppins(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                  const SizedBox(height: 12),
+
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: QuickActionTile(
+                                          iconAsset:
+                                              'assets/images/student-home/lessons-vector.png',
+                                          label: 'Lessons',
+                                          onTap: () {
+                                            /* navigate */
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: QuickActionTile(
+                                          iconAsset:
+                                              'assets/images/student-home/assignments.png',
+                                          label: 'Assignments',
+                                          onTap: () {
+                                            /* navigate */
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: QuickActionTile(
+                                          iconAsset:
+                                              'assets/images/student-home/classes-quickactions.png',
+                                          label: 'Classes',
+                                          onTap: () {
+                                            /* navigate */
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: QuickActionTile(
+                                          iconAsset:
+                                              'assets/images/student-home/leaderboards-quickactions.png',
+                                          label: 'Assignments',
+                                          onTap: () {
+                                            /* navigate */
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+
+                                  const SizedBox(height: 12),
+                                  // keep your extra bottom space so last item isn't hidden by navbar
+                                  SizedBox(height: bottomGap - 100),
                                 ],
                               ),
-                              const SizedBox(height: 12),
-
-                              // Two tiles in a row
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: QuickActionTile(
-                                      iconAsset:
-                                          'assets/images/student-home/lessons-vector.png',
-                                      label: 'Lessons',
-                                      onTap: () {
-                                        // TODO: navigate to lessons
-                                      },
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: QuickActionTile(
-                                      iconAsset:
-                                          'assets/images/student-home/assignments.png',
-                                      label: 'Assignments',
-                                      onTap: () {
-                                        // TODO: navigate to assignments
-                                      },
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                            ],
-                          )
-                        : const Center(child: CircularProgressIndicator()))),
-      ),
-      bottomNavigationBar: FancyStudentNavBar(
-        currentIndex: _index, // always 0 for now
-        onChanged: _onNavChanged,
-        items: const [
-          NavItem(icon: Icons.home_rounded), // Home (active)
-          NavItem(icon: Icons.pie_chart_rounded), // Future: Analytics
-          NavItem(icon: Icons.access_time_rounded), // Future: Schedule
-          NavItem(icon: Icons.notifications_rounded), // Future: Notifications
-        ],
-      ),
+                            ),
+                          ],
+                        )
+                      : const Center(child: CircularProgressIndicator()))),
     );
   }
 }

@@ -47,7 +47,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
       elevation: 0,
       centerTitle: false,
       titleSpacing: sp,
-      automaticallyImplyLeading: false, // ✅ disables the default back arrow
+      automaticallyImplyLeading: false,
       iconTheme: const IconThemeData(color: Colors.black),
       leadingWidth: showBack ? (sp + 44) : 0,
       leading: showBack

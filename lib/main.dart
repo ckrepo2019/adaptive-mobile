@@ -57,7 +57,7 @@ class _LaunchGateState extends State<_LaunchGate> {
             'token': token,
             'uid': uid,
             'usertype_ID': userType,
-            if (id != null) 'id': id,
+            'id': id,
           },
         );
       });

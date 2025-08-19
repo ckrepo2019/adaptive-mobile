@@ -1,56 +1,24 @@
 import 'dart:async';
 import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_lms/utils/dominant_color_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart' show rootBundle;
+
+import '../../../models/items.dart';
+import '../../../utils/image_utils.dart';
+import '../../../utils/progress_utils.dart';
+import '../../../utils/assignment_utils.dart';
+import '../../../widgets/ui_widgets.dart';
+import '../../../utils/palette_utils.dart';
 
 /// Which layout to render
 enum CardVariant { assignment, progress }
 
-/// Assignment item model
-class AssignmentItem {
-  final String title;
-  final String subject;
-  final String date;
-  final String duration;
-  final String type;
-  final String? description;
-
-  const AssignmentItem({
-    required this.title,
-    required this.subject,
-    required this.date,
-    required this.duration,
-    required this.type,
-    this.description,
-  });
-}
-
-/// Class progress item model
-class ClassProgressItem {
-  final String title;
-  final int firstHierarchy;
-  final int secondHierarchy;
-
-  final String firstHierarchyLabel; // e.g., "Chapters"
-  final String secondHierarchyLabel; // e.g., "Units"
-
-  /// 0..1
-  final double progress;
-  final String iconAsset;
-  final Color accent;
-
-  const ClassProgressItem({
-    required this.title,
-    required this.firstHierarchy,
-    required this.secondHierarchy,
-    required this.firstHierarchyLabel,
-    required this.secondHierarchyLabel,
-    required this.progress,
-    required this.iconAsset,
-    this.accent = Colors.redAccent,
-  });
-}
+/// Default subject icon for fallbacks (project-specific path).
+const String kDefaultSubjectIcon =
+    'assets/images/student-home/default-class.png';
 
 /// Reusable list section widget for BOTH Assignments & Class Progress
 class CardsList<T> extends StatelessWidget {
@@ -65,14 +33,14 @@ class CardsList<T> extends StatelessWidget {
   final VoidCallback? onCta;
   final EdgeInsetsGeometry? padding;
 
-  /// NEW: optional item tap callbacks
+  /// optional item tap callbacks
   final void Function(AssignmentItem item)? onAssignmentTap;
   final void Function(ClassProgressItem item)? onProgressTap;
 
   const CardsList({
     super.key,
     required this.headerTitle,
-    required this.headerIcon, // dynamic now
+    required this.headerIcon,
     required this.items,
     required this.variant,
     this.ctaLabel,
@@ -97,6 +65,7 @@ class CardsList<T> extends StatelessWidget {
     } else {
       iconWidget = const SizedBox.shrink();
     }
+    final _usedAccents = <int>{};
 
     return Padding(
       padding: padding ?? EdgeInsets.zero,
@@ -131,6 +100,7 @@ class CardsList<T> extends StatelessWidget {
                 return _ClassProgressCard(
                   item: item as ClassProgressItem,
                   onTap: onProgressTap,
+                  usedAccents: _usedAccents, // NEW
                 );
             }
           }),
@@ -167,44 +137,6 @@ class CardsList<T> extends StatelessWidget {
   }
 }
 
-/// Shared card container (rounded, left accent, soft shadow) — now tap-aware
-class _CardShell extends StatelessWidget {
-  final Widget child;
-  final Color leftAccent;
-  final VoidCallback? onTap;
-  const _CardShell({required this.child, required this.leftAccent, this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(12);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius,
-        child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: radius,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.08),
-                blurRadius: 12,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
-              ),
-            ],
-            border: Border(left: BorderSide(color: leftAccent, width: 3)),
-          ),
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
 /// Assignment card content
 class _AssignmentCard extends StatelessWidget {
   final AssignmentItem item;
@@ -214,15 +146,15 @@ class _AssignmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _CardShell(
+    return InkCardShell(
       leftAccent: Colors.redAccent,
       onTap: onTap == null ? null : () => onTap!(item),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Combined subject + type + title in one line
+          // Combined subject + type + title in one line (reusable helper)
           Text(
-            '${item.subject} ${item.type} ${item.title}',
+            assignmentTitleLine(item),
             style: GoogleFonts.poppins(
               fontSize: 15,
               fontWeight: FontWeight.w600,
@@ -270,167 +202,105 @@ class _AssignmentCard extends StatelessWidget {
   }
 }
 
-const String kDefaultSubjectIcon =
-    'assets/images/student-home/default-class.png';
-
 /// Class progress card content
 class _ClassProgressCard extends StatefulWidget {
   final ClassProgressItem item;
   final void Function(ClassProgressItem item)? onTap;
-  const _ClassProgressCard({required this.item, this.onTap});
+  final Set<int>? usedAccents;
+  const _ClassProgressCard({required this.item, this.onTap, this.usedAccents});
 
   @override
   State<_ClassProgressCard> createState() => _ClassProgressCardState();
 }
 
-ImageProvider<Object> _imageProviderFor(String path) {
-  final p = path.trim();
-  if (p.startsWith('http://') || p.startsWith('https://')) {
-    return NetworkImage(p);
-  }
-  return AssetImage(p);
-}
-
-// For UI display in the tile (RETURNS Widget)
-bool _isNetworkPath(String p) =>
-    p.startsWith('http://') || p.startsWith('https://');
-
-Widget _buildIconImage(String path, {double w = 26, double h = 26}) {
-  if (_isNetworkPath(path)) {
-    return Image.network(
-      path,
-      width: w,
-      height: h,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => Image.asset(
-        kDefaultSubjectIcon,
-        width: w,
-        height: h,
-        fit: BoxFit.contain,
-      ),
-      loadingBuilder: (context, child, progress) =>
-          progress == null ? child : const SizedBox.shrink(),
-      gaplessPlayback: true,
-      filterQuality: FilterQuality.low,
-    );
-  }
-  return Image.asset(path, width: w, height: h, fit: BoxFit.contain);
-}
-
 class _ClassProgressCardState extends State<_ClassProgressCard> {
   static final Map<String, bool> _assetOkCache = {};
-  late String _iconPath; // asset path or URL; always valid after init
-  late Color _accent; // computed from image, fallback to item.accent
+  late String _iconPath;
+  late Color _accent;
+
+  static const String kDefaultFallback =
+      'assets/images/default-images/default-classes.jpg';
 
   @override
   void initState() {
     super.initState();
+    _initFromItem();
+  }
 
-    // Start with provided path or default icon
+  @override
+  void didUpdateWidget(covariant _ClassProgressCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the bound item changes (list recycling), re-init/recompute
+    if (oldWidget.item.iconAsset != widget.item.iconAsset) {
+      _initFromItem();
+    }
+  }
+
+  void _initFromItem() {
     final provided = widget.item.iconAsset.trim();
-    _iconPath = provided.isNotEmpty ? provided : kDefaultSubjectIcon;
-
-    // Fallback accent first (we'll try to compute from image next)
+    _iconPath = provided.isNotEmpty ? provided : kDefaultFallback;
     _accent = widget.item.accent;
 
-    // If it's an asset path, verify it exists; if not, fallback to default
-    if (!(_iconPath.startsWith('http://') ||
-        _iconPath.startsWith('https://'))) {
+    if (!isNetworkPath(_iconPath)) {
       _upgradeIfExists(_iconPath);
     }
-
-    // Try to compute an accent color from the image (asset or network)
     _computeAccentFromImage(_iconPath);
   }
 
   Future<void> _upgradeIfExists(String path) async {
     final cached = _assetOkCache[path];
     if (cached == true) return;
+
     if (cached == false) {
-      if (mounted) setState(() => _iconPath = kDefaultSubjectIcon);
+      if (mounted) {
+        setState(() => _iconPath = kDefaultFallback);
+        // ⬇️ Recompute for fallback immediately
+        _computeAccentFromImage(kDefaultFallback);
+      }
       return;
     }
+
     try {
       await rootBundle.load(path);
       _assetOkCache[path] = true;
     } catch (_) {
       _assetOkCache[path] = false;
-      if (mounted) setState(() => _iconPath = kDefaultSubjectIcon);
-    }
-  }
-
-  /// Lightweight "dominant" color extractor (averages non-transparent pixels).
-  Future<void> _computeAccentFromImage(String path) async {
-    try {
-      final provider = _imageProviderFor(path);
-
-      // Downsize to ~48x48 so we don't process large images
-      final resized = provider is ResizeImage
-          ? provider
-          : ResizeImage(provider, width: 48, height: 48);
-
-      final uiImage = await _loadUiImage(resized);
-      final byteData = await uiImage.toByteData(
-        format: ui.ImageByteFormat.rawRgba,
-      );
-      if (byteData == null) return;
-
-      final bytes = byteData.buffer.asUint8List();
-      int r = 0, g = 0, b = 0, a = 0, count = 0;
-
-      for (int i = 0; i + 3 < bytes.length; i += 4) {
-        final rr = bytes[i]; // R
-        final gg = bytes[i + 1]; // G
-        final bb = bytes[i + 2]; // B
-        final aa = bytes[i + 3]; // A
-
-        if (aa < 16) continue; // skip near-transparent
-        r += rr;
-        g += gg;
-        b += bb;
-        a += aa;
-        count++;
+      if (mounted) {
+        setState(() => _iconPath = kDefaultFallback);
+        // ⬇️ Recompute for fallback immediately
+        _computeAccentFromImage(kDefaultFallback);
       }
-
-      if (count == 0) return;
-
-      final c = Color.fromARGB(
-        (a ~/ count).clamp(0, 255),
-        r ~/ count,
-        g ~/ count,
-        b ~/ count,
-      );
-
-      if (mounted) setState(() => _accent = c);
-    } catch (_) {
-      // Keep fallback accent silently
     }
   }
 
-  Future<ui.Image> _loadUiImage(ImageProvider provider) {
-    final completer = Completer<ui.Image>();
-    final stream = provider.resolve(const ImageConfiguration());
-    late final ImageStreamListener listener;
-    listener = ImageStreamListener(
-      (ImageInfo info, bool _) {
-        completer.complete(info.image);
-        stream.removeListener(listener);
-      },
-      onError: (Object error, StackTrace? stackTrace) {
-        completer.completeError(error, stackTrace);
-        stream.removeListener(listener);
-      },
+  Future<void> _computeAccentFromImage(String path) async {
+    // Get a small palette (top 5)
+    final palette = await PaletteUtils.paletteFromPath(path, maxColors: 5);
+    if (!mounted) return;
+
+    // If no palette, keep existing accent
+    if (palette.isEmpty) return;
+
+    // Choose a distinct color vs. already-used accents in this section
+    final chosen = PaletteUtils.pickDistinct(
+      palette,
+      widget.usedAccents ?? const <int>{},
+      minDistance: 40, // tweak if you want stricter separation
     );
-    stream.addListener(listener);
-    return completer.future;
+
+    if (chosen != null && mounted) {
+      setState(() => _accent = chosen);
+      // Register this color as used (RGB only)
+      widget.usedAccents?.add(PaletteUtils.rgbKey(chosen));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
-    final p = item.progress.clamp(0.0, 1.0);
+    final p = clamp01(item.progress);
 
-    return _CardShell(
+    return InkCardShell(
       leftAccent: _accent,
       onTap: widget.onTap == null ? null : () => widget.onTap!(item),
       child: Row(
@@ -443,8 +313,22 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
               color: _accent.withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            alignment: Alignment.center,
-            child: _buildIconImage(_iconPath, w: 48, h: 48),
+            clipBehavior: Clip.antiAlias,
+            child: Image(
+              image: imageProviderFor(_iconPath),
+              fit: BoxFit.cover,
+              errorBuilder: (ctx, err, stack) {
+                // If network/asset fails at render time, switch to fallback AND recompute accent.
+                if (_iconPath != kDefaultFallback) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    setState(() => _iconPath = kDefaultFallback);
+                    _computeAccentFromImage(kDefaultFallback);
+                  });
+                }
+                return Image.asset(kDefaultFallback, fit: BoxFit.cover);
+              },
+            ),
           ),
           const SizedBox(width: 12),
 
@@ -468,7 +352,7 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
                       ),
                     ),
                     Text(
-                      '${(p * 100).round()}%',
+                      percentText(p),
                       style: GoogleFonts.poppins(
                         fontSize: 13,
                         color: Colors.black87,
@@ -479,7 +363,7 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
                 ),
                 const SizedBox(height: 8),
 
-                // Progress bar + knob
+                // Progress bar
                 SizedBox(
                   height: 12,
                   child: Stack(
@@ -528,8 +412,12 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
 
                 // Dynamic labels
                 Text(
-                  '${item.firstHierarchy} ${item.firstHierarchyLabel} • '
-                  '${item.secondHierarchy} ${item.secondHierarchyLabel}',
+                  twoLevelLabel(
+                    item.firstHierarchy,
+                    item.firstHierarchyLabel,
+                    item.secondHierarchy,
+                    item.secondHierarchyLabel,
+                  ),
                   style: GoogleFonts.poppins(
                     fontSize: 12,
                     color: Colors.black54,

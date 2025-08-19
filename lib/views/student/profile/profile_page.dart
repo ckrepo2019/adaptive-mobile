@@ -26,35 +26,44 @@ class ProfilePage extends StatelessWidget {
     final double padX = _clamp(w * 0.06, 16, 24);
     final double helloSize = _clamp(w * 0.055, 16, 20);
     final double subSize = _clamp(w * 0.040, 12, 16);
-    final double illoSize = _clamp(w * 0.48, 160, 230);
 
-    // where the blue card starts
-    final double sheetTop = _clamp(h * 0.40, 340, 460);
+    // Make the header a bit taller so the big illo can bleed nicely
+    final double headerHeight = _clamp(h * 0.38, 280, 360);
+
+    // Start the blue sheet a little higher so the art visibly overlaps it
+    final double sheetTop = _clamp(h * 0.35, 300, 420);
     final double sheetRadius = 26;
+
+    // Illustration sizing/positioning: large + pushed right and down
+    final double illoW = _clamp(w * 1.210, 380, 600); // larger
+    final double illoH = illoW * 0.80;
+    final double illoRightBleed = _clamp(w * 0.28, 40, 100);
+    final double illoDrop = _clamp(h * 0.10, 40, 80); // less drop (higher up)
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const GlobalAppBar(title: 'Profile', showBack: true),
       body: Stack(
         children: [
+          // CONTENT UNDER THE SHEET (including the big illustration)
           Positioned.fill(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(bottom: _clamp(h * 0.18, 140, 220)),
               child: Column(
                 children: [
-                  // --- Header: text left, big illo right (no Row to avoid squeezing) ---
                   SizedBox(
-                    height: _clamp(h * 0.36, 260, 340), // header height
+                    height: headerHeight,
                     width: double.infinity,
                     child: Stack(
+                      clipBehavior: Clip.none,
                       children: [
-                        // Text area (fixed max width so it won't wrap vertically)
-                        Positioned(
-                          left: padX,
-                          top: 12,
-                          width:
-                              (w - padX * 2) -
-                              _clamp(w * 0.48, 160, 260), // leave room for illo
+                        // Text block
+                        Padding(
+                          padding: EdgeInsets.only(
+                            left: padX * 1.3,
+                            right: padX * 1.3,
+                            top: padX * 2.2,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -68,9 +77,8 @@ class ProfilePage extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 6),
                               Text(
-                                'Visual Learner', // or your dynamic learnerTypesText
+                                'Visual Learner',
                                 style: GoogleFonts.poppins(
                                   fontSize: subSize,
                                   color: Colors.black54,
@@ -80,17 +88,13 @@ class ProfilePage extends StatelessWidget {
                           ),
                         ),
 
-                        // Big illustration on the right, slightly offscreen (bleed)
+                        // BIG illustration bleeding to the right and down into the sheet
                         Positioned(
-                          right: -_clamp(
-                            w * 0.10,
-                            16,
-                            32,
-                          ), // push out for the "bleed" look
-                          bottom: -_clamp(h * 0.01, 0, 12),
+                          right: -illoRightBleed,
+                          bottom: -illoDrop,
                           child: SizedBox(
-                            width: _clamp(w * 0.78, 240, 380), // LARGE
-                            height: _clamp(w * 0.78, 240, 380) * 0.78,
+                            width: illoW,
+                            height: illoH,
                             child: Image.asset(
                               'assets/images/student-profile/default-female-profile.png',
                               fit: BoxFit.contain,
@@ -100,15 +104,12 @@ class ProfilePage extends StatelessWidget {
                       ],
                     ),
                   ),
-
-                  // spacing before the blue sheet
-                  SizedBox(height: _clamp(h * 0.12, 48, 80)),
                 ],
               ),
             ),
           ),
 
-          // ---------- Floating Blue Sheet ----------
+          // BLUE SHEET ON TOP (so it overlaps the illustration nicely)
           Positioned(
             left: 0,
             right: 0,
@@ -151,8 +152,6 @@ class _ProfileSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-    final double labelSize = _clamp(w * 0.032, 11, 13);
-    final double valueSize = _clamp(w * 0.045, 15, 18);
 
     return Material(
       elevation: 10,
@@ -172,22 +171,18 @@ class _ProfileSheet extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // edit icon row
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.edit, color: Colors.white),
+              children: const [
+                Padding(
+                  padding: EdgeInsets.only(right: 12),
+                  child: Icon(Icons.edit, color: Colors.white),
                 ),
-                const SizedBox(width: 6),
               ],
             ),
-
-            // fields
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: padX),
+              padding: EdgeInsets.symmetric(horizontal: padX * 1.8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -198,10 +193,7 @@ class _ProfileSheet extends StatelessWidget {
                 ],
               ),
             ),
-
             const Spacer(),
-
-            // logout button
             Padding(
               padding: EdgeInsets.fromLTRB(padX, 8, padX, 18),
               child: SizedBox(
@@ -212,7 +204,7 @@ class _ProfileSheet extends StatelessWidget {
                     backgroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+                      borderRadius: BorderRadius.circular(22),
                     ),
                   ),
                   onPressed: onLogout,
