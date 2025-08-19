@@ -1,0 +1,42 @@
+version: "3.9"
+
+services:
+  flutter-web:
+    build:
+      context: .
+      dockerfile: docker/flutter/Dockerfile.web
+    container_name: flutter_web_dev
+    ports:
+      - "5173:5173"            # Flutter web-server
+    volumes:
+      - ./:/work               # your project
+      - flutter_pub_cache:/root/.pub-cache
+    working_dir: /work
+    command: >
+      bash -lc "
+        flutter pub get &&
+        flutter run -d web-server
+        --web-hostname=0.0.0.0
+        --web-port=5173
+      "
+
+  android-build:
+    build:
+      context: .
+      dockerfile: docker/flutter/Dockerfile.android
+    container_name: flutter_android_build
+    volumes:
+      - ./:/work
+      - flutter_pub_cache:/root/.pub-cache
+      - gradle_cache:/root/.gradle
+    working_dir: /work
+    # Example command (you can override from CLI)
+    command: >
+      bash -lc "
+        flutter pub get &&
+        flutter build apk --release
+      "
+
+volumes:
+  flutter_pub_cache:
+  gradle_cache:

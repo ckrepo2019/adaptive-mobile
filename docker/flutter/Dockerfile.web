@@ -1,0 +1,13 @@
+# Base: maintained Flutter image
+# Note: Flutter doesn't publish an "official" image; CirrusLabs maintains a popular one.
+FROM ghcr.io/cirruslabs/flutter:latest
+
+# Optional: Chrome for better dev workflow (web-server works without it)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl git unzip xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+
+# Enable web
+RUN flutter config --enable-web && flutter --version
+
+WORKDIR /work
