@@ -49,8 +49,8 @@ class _JoinClassSuccessState extends State<StudentJoinClassSuccess> {
               confettiController: _confettiController,
               blastDirection: 3.14 / 2, // downward
               emissionFrequency: 0.05,
-              numberOfParticles: 30,
-              gravity: 0.3,
+              numberOfParticles: 20,
+              gravity: 0.1,
             ),
           ),
           SafeArea(

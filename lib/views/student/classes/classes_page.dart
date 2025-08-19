@@ -97,12 +97,13 @@ class _StudentClassPageState extends State<StudentClassPage> {
     final h = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: GlobalAppBar(
+        // <— set here
         title: 'Classes',
         onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
         onProfileTap: () {},
       ),
+      backgroundColor: Colors.white,
       body: StudentGlobalLayout(
         onRefresh: () => _fetch(),
         child: Column(

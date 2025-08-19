@@ -6,7 +6,6 @@ import 'package:flutter_lms/state/bindings/student/student_home_bindings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // safe for async init later
-  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
