@@ -42,6 +42,7 @@ dependencies:
   google_fonts: ^6.3.0
   color_palette_generator: ^2.0.1
   confetti: ^0.8.0
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
     - assets/images/student-class/
     - assets/images/assignments/
     - assets/images/student-profile/
+    - assets/images/default-images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

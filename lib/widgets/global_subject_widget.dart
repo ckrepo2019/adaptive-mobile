@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 class GlobalSubjectWidget extends BaseWidget {
   final String classCode;
   final String subject;
-  final String time;
-  final String teacherName;
+  final String time; // e.g., "Today, M, T, W • 8:00–9:30 AM"
+  final String teacherName; // full name or 'TBA'
+  final String? imageUrl;
 
   const GlobalSubjectWidget({
     super.key,
@@ -13,6 +14,7 @@ class GlobalSubjectWidget extends BaseWidget {
     required this.time,
     required this.teacherName,
     required this.subject,
+    required this.imageUrl,
   });
 
   @override
@@ -20,33 +22,38 @@ class GlobalSubjectWidget extends BaseWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
+    final iconColor = Colors.grey.shade500;
+    final iconSize = screenWidth * 0.045;
+    final textStyle = TextStyle(
+      color: Colors.grey.shade500,
+      fontSize: screenWidth * 0.032,
+    );
+
     return Card(
+      color: Colors.white, // ✅ full white background
       margin: EdgeInsets.only(bottom: screenHeight * 0.015),
       elevation: 5,
       child: Container(
         decoration: BoxDecoration(
+          color: Colors.white, // ✅ enforce white inside too
           borderRadius: BorderRadius.circular(screenWidth * 0.02),
           border: Border(
-            left: BorderSide(
-              color: Colors.yellow,
-              width: screenWidth * 0.005,
-            ),
+            left: BorderSide(color: Colors.yellow, width: screenWidth * 0.005),
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== Top Image =====
+            // ===== Top Image with fallback =====
             ClipRRect(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(screenWidth * 0.025),
                 topRight: Radius.circular(screenWidth * 0.025),
               ),
-              child: Image.network(
-                'https://qph.cf2.quoracdn.net/main-qimg-5d31a74a0fdc2489c87a65bb61d39507.webp',
-                fit: BoxFit.cover,
-                height: screenHeight * 0.15, // responsive image height
-                width: double.infinity,
+              child: _buildHeaderImage(
+                context,
+                imageUrl: imageUrl,
+                height: screenHeight * 0.15,
               ),
             ),
 
@@ -64,7 +71,7 @@ class GlobalSubjectWidget extends BaseWidget {
                     classCode,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      fontSize: screenWidth * 0.045, // responsive title
+                      fontSize: screenWidth * 0.045,
                     ),
                   ),
 
@@ -79,38 +86,26 @@ class GlobalSubjectWidget extends BaseWidget {
 
                   SizedBox(height: screenHeight * 0.02),
 
-                  // ===== Bottom Row (time & teacher) =====
-                  Row(
+                  // ===== Bottom (time & teacher) — wraps if needed =====
+                  Wrap(
+                    spacing: screenWidth * 0.05,
+                    runSpacing: screenHeight * 0.008,
                     children: [
-                      Icon(
-                        Icons.calendar_month,
-                        color: Colors.grey.shade500,
-                        size: screenWidth * 0.045,
+                      _infoItem(
+                        icon: Icons.calendar_month,
+                        text: time.isNotEmpty ? time : "Schedule TBA",
+                        iconColor: iconColor,
+                        iconSize: iconSize,
+                        textStyle: textStyle,
+                        maxTextWidth: screenWidth * 0.70,
                       ),
-                      SizedBox(width: screenWidth * 0.015),
-                      Text(
-                        "Today, $time",
-                        style: TextStyle(
-                          color: Colors.grey.shade500,
-                          fontSize: screenWidth * 0.032,
-                        ),
-                      ),
-                      SizedBox(width: screenWidth * 0.05),
-                      Icon(
-                        Icons.person,
-                        color: Colors.grey.shade500,
-                        size: screenWidth * 0.045,
-                      ),
-                      SizedBox(width: screenWidth * 0.015),
-                      Flexible(
-                        child: Text(
-                          teacherName,
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: screenWidth * 0.032,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      _infoItem(
+                        icon: Icons.person,
+                        text: teacherName.isNotEmpty ? teacherName : 'TBA',
+                        iconColor: iconColor,
+                        iconSize: iconSize,
+                        textStyle: textStyle,
+                        maxTextWidth: screenWidth * 0.70,
                       ),
                     ],
                   ),
@@ -119,6 +114,79 @@ class GlobalSubjectWidget extends BaseWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  // ---- helpers ----
+
+  Widget _infoItem({
+    required IconData icon,
+    required String text,
+    required Color iconColor,
+    required double iconSize,
+    required TextStyle textStyle,
+    required double maxTextWidth,
+  }) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, color: iconColor, size: iconSize),
+        const SizedBox(width: 6),
+        ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: maxTextWidth),
+          child: Text(
+            text,
+            style: textStyle,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+            softWrap: false,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeaderImage(
+    BuildContext context, {
+    required String? imageUrl,
+    required double height,
+  }) {
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
+      return _fallbackBanner(height);
+    }
+
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      height: height,
+      width: double.infinity,
+      errorBuilder: (_, __, ___) => _fallbackBanner(height),
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return _skeletonBanner(height);
+      },
+    );
+  }
+
+  Widget _fallbackBanner(double height) {
+    return Image.asset(
+      'assets/images/default-images/default-classes.jpg',
+      fit: BoxFit.cover,
+      height: height,
+      width: double.infinity,
+    );
+  }
+
+  Widget _skeletonBanner(double height) {
+    return Container(
+      height: height,
+      width: double.infinity,
+      color: Colors.white,
+      alignment: Alignment.center,
+      child: const CircularProgressIndicator(
+        strokeWidth: 2,
+        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF234EF4)),
       ),
     );
   }

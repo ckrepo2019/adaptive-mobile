@@ -28,6 +28,7 @@ class AppRoutes {
   static const String introduction = '/introduction';
   static const String analyzing = '/analyzing';
   static const String result = '/result';
+  static const String studentShell = '/student';
   static const String studentHome = '/student-home';
   static const String teacherHome = '/teacher-home';
   static const String collaboratorHome = '/collaborator-home';
@@ -57,7 +58,28 @@ class AppPages {
       page: () => const IntroductionPage(),
       binding: StudentHomeBindings(),
     ),
-    GetPage(name: AppRoutes.studentHome, page: () => const StudentHomePage()),
+    GetPage(
+      name: AppRoutes.studentShell,
+      page: () {
+        final args = (Get.arguments as Map?) ?? {};
+        return StudentShell(
+          token: (args['token'] ?? '') as String,
+          uid: (args['uid'] ?? '') as String,
+          userType: (args['userType'] ?? 4) as int,
+        );
+      },
+    ),
+    GetPage(
+      name: AppRoutes.studentHome,
+      page: () {
+        final args = (Get.arguments as Map?) ?? {};
+        return StudentHomePage(
+          token: (args['token'] ?? '') as String,
+          uid: (args['uid'] ?? '') as String,
+          userType: (args['userType'] ?? 4) as int,
+        );
+      },
+    ),
     GetPage(name: AppRoutes.teacherHome, page: () => const TeacherHomePage()),
     GetPage(
       name: AppRoutes.collaboratorHome,
@@ -69,6 +91,7 @@ class AppPages {
     ),
     GetPage(name: AppRoutes.profilePage, page: () => const ProfilePage()),
 
+    GetPage(name: AppRoutes.studentClass, page: () => StudentClassPage()),
     GetPage(name: AppRoutes.studentClass, page: () => StudentClassPage()),
     GetPage(
       name: AppRoutes.studentJoinClass,

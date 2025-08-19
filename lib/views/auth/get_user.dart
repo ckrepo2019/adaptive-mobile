@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/get_user.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:get/get.dart';
 
 class GetUserPage extends StatefulWidget {
   const GetUserPage({super.key});
@@ -60,15 +61,9 @@ class _GetUserPageState extends State<GetUserPage> {
       // Redirect based on userType
       switch (userType) {
         case 4: // student
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            AppRoutes.studentHome,
-            (route) => false, // remove all previous routes
-            arguments: {
-              'token': token,
-              'uid': uid,
-              'userType': 4,
-            }, // pass your args
+          Get.toNamed(
+            AppRoutes.studentShell,
+            arguments: {'token': token, 'uid': uid, 'userType': 4},
           );
           break;
         case 5: // teacher
