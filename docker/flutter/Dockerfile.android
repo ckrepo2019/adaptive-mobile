@@ -1,0 +1,11 @@
+# Flutter + Android toolchain (kept fresh by CirrusLabs)
+FROM ghcr.io/cirruslabs/flutter:latest
+
+# Make sure Android SDK components exist (image typically includes them; these ensure basics)
+RUN yes | sdkmanager --licenses || true && \
+    sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-35"
+
+# Verify toolchains
+RUN flutter doctor -v
+
+WORKDIR /work
