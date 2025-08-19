@@ -23,8 +23,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       initialBinding: StudentHomeBindings(),
-      // home: const _LaunchGate(),
-      home: const StudentMyClassmatePage(),
+      home: const _LaunchGate(),
+      // home: const StudentMyClassmatePage(),
       getPages: AppPages.pages,
     );
   }
