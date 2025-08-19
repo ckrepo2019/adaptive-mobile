@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lms/views/utilities/badges.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'config/routes.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_lms/state/bindings/student/student_home_bindings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // safe for async init later
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -20,7 +22,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
       initialBinding: StudentHomeBindings(),
-      home: const _LaunchGate(),
+      // home: const _LaunchGate(),
+      home: const GlobalBadgesPage(),
       getPages: AppPages.pages,
     );
   }

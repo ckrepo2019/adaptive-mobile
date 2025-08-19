@@ -5,6 +5,7 @@ import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_info.
 import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:flutter_lms/views/student/classes/join_class.dart';
 import 'package:flutter_lms/views/student/classes/join_class_success.dart';
+import 'package:flutter_lms/views/student/student_shell.dart';
 import 'package:flutter_lms/views/utilities/profile_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';

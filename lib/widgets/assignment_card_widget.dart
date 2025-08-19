@@ -24,7 +24,7 @@ class CardWidget extends BaseWidget {
           border: const Border(
             left: BorderSide(
               color: Colors.red,
-              width: 5,
+              width: 2,
             ),
           ),
         ),
@@ -57,8 +57,7 @@ class CardWidget extends BaseWidget {
                       ),
                     ],
                   ),
-                  const Spacer(),
-                  const Text(">")
+                  const Spacer(), 
                 ],
               ),
             ],
