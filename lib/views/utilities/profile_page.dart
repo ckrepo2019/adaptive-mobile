@@ -24,8 +24,8 @@ class ProfilePage extends StatelessWidget {
     final String welcomeName = first.isNotEmpty ? first : 'Student';
 
     final double padX = _clamp(w * 0.06, 16, 24);
-    final double helloSize = _clamp(w * 0.055, 16, 20);
-    final double subSize = _clamp(w * 0.040, 12, 16);
+    final double helloSize = _clamp(w * 0.06, 16, 32);
+    final double subSize = _clamp(w * 0.040, 12, 24);
 
     // Make the header a bit taller so the big illo can bleed nicely
     final double headerHeight = _clamp(h * 0.38, 280, 360);
@@ -35,8 +35,8 @@ class ProfilePage extends StatelessWidget {
     final double sheetRadius = 26;
 
     // Illustration sizing/positioning: large + pushed right and down
-    final double illoW = _clamp(w * 1.210, 380, 600); // larger
-    final double illoH = illoW * 0.80;
+    final double illoW = _clamp(w * 1, 380, 600); // larger
+    final double illoH = illoW * 0.90;
     final double illoRightBleed = _clamp(w * 0.28, 40, 100);
     final double illoDrop = _clamp(h * 0.10, 40, 80); // less drop (higher up)
 
@@ -176,7 +176,7 @@ class _ProfileSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: const [
                 Padding(
-                  padding: EdgeInsets.only(right: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                   child: Icon(Icons.edit, color: Colors.white),
                 ),
               ],
