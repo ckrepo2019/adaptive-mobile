@@ -22,7 +22,7 @@ class GlobalBadgesPage extends StatelessWidget {
         onNotificationsTap: () {},
       ),
       body: SingleChildScrollView(
-        child: StudentGlobalLayout(
+        child: GlobalLayout(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/student/student_global_layout.dart';
+import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 

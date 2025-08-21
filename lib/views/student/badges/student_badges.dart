@@ -17,7 +17,7 @@ class BadgesPage extends StatelessWidget {
     
     return Scaffold(
       appBar: GlobalAppBar(title: 'My Badges', onProfileTap: (){}, onNotificationsTap: (){},),
-      body: StudentGlobalLayout(
+      body: GlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
         children: [

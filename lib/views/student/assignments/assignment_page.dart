@@ -15,7 +15,7 @@ class AssignmentHomePage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: GlobalAppBar(showBack: true, title: 'Assignments'),
-      body: StudentGlobalLayout(
+      body: GlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
         children: [

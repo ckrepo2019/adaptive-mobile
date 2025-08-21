@@ -74,7 +74,7 @@ class _CalendarPageState extends State<CalendarPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: GlobalAppBar(showBack: false, title: 'Calendar'),
-      body: StudentGlobalLayout(
+      body: GlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

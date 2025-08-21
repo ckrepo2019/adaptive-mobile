@@ -17,7 +17,7 @@ class StudentMyClassmatePage extends StatelessWidget {
         subtitle: 'Essential Algebra',
         showBack: true,
       ),
-      body: StudentGlobalLayout(child: Column(
+      body: GlobalLayout(child: Column(
         children: [
           SizedBox(height: 10,),
           Row(

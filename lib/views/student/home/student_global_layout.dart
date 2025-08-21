@@ -1,12 +1,12 @@
 // lib/views/student/home/student_global_layout.dart
 import 'package:flutter/material.dart';
 
-class StudentGlobalLayout extends StatelessWidget {
+class GlobalLayout extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final bool useSafeArea;
 
-  const StudentGlobalLayout({
+  const GlobalLayout({
     super.key,
     required this.child,
     this.padding,

@@ -15,7 +15,7 @@ class NotificationPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: GlobalAppBar(showBack: true, title: 'Notifications'),
-      body: StudentGlobalLayout(
+      body: GlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
         children: [

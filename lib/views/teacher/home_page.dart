@@ -1,145 +1,169 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/controllers/get_user.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:flutter_lms/config/routes.dart';
+import 'package:flutter_lms/views/student/home/quick_actions.dart';
+import 'package:flutter_lms/views/student/home/student_global_layout.dart';
+import 'package:flutter_lms/views/teacher/widgets/class_timeline.dart';
+import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class TeacherHomePage extends StatefulWidget {
+class TeacherHomePage extends StatelessWidget {
   const TeacherHomePage({super.key});
 
   @override
-  State<TeacherHomePage> createState() => _TeacherHomePageState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: const GlobalAppBar(title: 'Home'),
+      body: GlobalLayout(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const WelcomeWidget(),
+            const SizedBox(height: 25),
+
+            // Quick Actions header
+            Row(
+              children: [
+                const Icon(Icons.open_in_new),
+                const SizedBox(width: 10),
+                Text(
+                  "Quick Actions",
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2, // 2 columns
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.5, // > 1 makes it rectangular (width > height)
+            children: [
+              QuickActionTile(
+                iconAsset: 'assets/images/student-home/classes-quickactions.png',
+                label: 'Classes',
+                onTap: () {
+                  /* navigate */
+                },
+              ),
+              QuickActionTile(
+                iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                label: 'Announcements',
+                onTap: () {
+                  /* navigate */
+                  Get.toNamed(AppRoutes.announcementPage);
+                },
+              ),
+              QuickActionTile(
+                iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                label: 'Leaderboards',
+                onTap: () {
+                  /* navigate */
+                },
+              ),
+              QuickActionTile(
+                iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                label: 'Profile',
+                onTap: () {
+                  /* navigate */
+                },
+              ),
+            ],
+          ),
+
+          SizedBox(height: 25,),
+
+          Row(
+            children: [
+              Icon(Icons.book,),
+              SizedBox(width: 5,),
+              Text("Today's Classes"),
+              Spacer(),
+              CustomChip(backgroundColor: Colors.blue.shade100, textColor: Colors.blue.shade500, borderColor: Colors.transparent, chipTitle: '4 Classes'),
+            ],
+          ),
+
+          SizedBox(height: 25,),
+
+          ClassTimeline(),
+          ClassTimeline(),
+
+
+            
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _TeacherHomePageState extends State<TeacherHomePage> {
-  bool _loading = true;
-  String? _error;
-  Map<String, dynamic>? _user;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is! Map) {
-      setState(() {
-        _loading = false;
-        _error = 'Missing route arguments.';
-      });
-      return;
-    }
-    final token = args['token'] as String?;
-    final uid = args['uid'] as String?;
-    final userType = (args['userType'] as int?) ?? 4; // student=4
-    if (token == null || uid == null) {
-      setState(() {
-        _loading = false;
-        _error = 'Invalid route arguments.';
-      });
-      return;
-    }
-    _load(token, uid, userType);
-  }
-
-  Future<void> _load(String token, String uid, int type) async {
-    final ApiResponse<Map<String, dynamic>> resp = await UserController.getUser(
-      token: token,
-      uid: uid,
-      userType: type,
-    );
-
-    if (!mounted) return;
-    if (resp.success) {
-      setState(() {
-        _user = resp.data!;
-        _loading = false;
-      });
-    } else {
-      setState(() {
-        _error = resp.message ?? 'Failed to load user.';
-        _loading = false;
-      });
-    }
-  }
-
-  Widget _row(String label, dynamic value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 160,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.black54,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value?.toString() ?? '—',
-            style: const TextStyle(fontWeight: FontWeight.w500),
-            softWrap: true,
-          ),
-        ),
-      ],
-    ),
-  );
+class WelcomeWidget extends StatelessWidget {
+  const WelcomeWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    if (_error != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Teacher Home')),
-        body: Center(
-          child: Text(_error!, style: const TextStyle(color: Colors.red)),
-        ),
-      );
-    }
-
-    // Keys from `teacherprofile` screenshot
-    final t = _user!;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Teacher Home')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+    return Container(
+      padding: const EdgeInsets.only(top: 10),
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _row('SY ID', t['syID']),
-                  _row('Sem ID', t['semID']),
-                  _row('Academic Prog ID', t['academicprogID']),
-                  _row('Firstname', t['firstname']),
-                  _row('Middlename', t['middlename']),
-                  _row('Lastname', t['lastname']),
-                  _row('TID', t['tid']),
-                  _row('Age', t['age']),
-                  _row('Gender', t['gender']),
-                  _row('Contact No.', t['contactnumber']),
-                  _row('Is Active', t['is_active']),
-                  _row('Email', t['emailaddress']),
-                  _row('Date of Birth', t['date_of_birth']),
-                  _row('Street', t['street']),
-                  _row('Barangay', t['barangay']),
-                  _row('City', t['city']),
-                  _row('Province', t['province']),
-                  _row('Zip', t['zipcode']),
-                  _row('Country', t['country']),
-                  _row('Created At', t['created_at']),
-                  _row('Updated At', t['updated_at']),
-                  _row('leanersprofile', t['lea']),
+          // Avatar + Name
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 40,
+                backgroundColor: Color(0xFFF1F3F6),
+                backgroundImage: AssetImage(
+                  'assets/images/student-home/default-avatar-female.png',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    'Welcome Celine.',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
+                  ),
+                  Text('Teacher'),
                 ],
               ),
-            ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Chips row
+          Row(
+            children: [
+              CustomChip(
+                backgroundColor: Colors.grey,
+                textColor: Colors.white,
+                borderColor: Colors.transparent,
+                chipTitle: '30 Students',
+                iconData: Icons.person,
+              ),
+              const SizedBox(width: 5),
+              CustomChip(
+                backgroundColor: Colors.lightBlueAccent.shade100,
+                textColor: Colors.blue.shade800,
+                borderColor: Colors.transparent,
+                chipTitle: 'Grade 1 : Joy Adviser',
+                iconData: Icons.class_,
+              ),
+            ],
           ),
         ],
       ),
