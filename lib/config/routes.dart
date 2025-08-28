@@ -6,7 +6,9 @@ import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:flutter_lms/views/student/classes/join_class.dart';
 import 'package:flutter_lms/views/student/classes/join_class_success.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
+import 'package:flutter_lms/views/teacher/Students/add_student_page.dart';
 import 'package:flutter_lms/views/utilities/announcements.dart';
+import 'package:flutter_lms/views/utilities/information_page.dart';
 import 'package:flutter_lms/views/utilities/profile_page.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
@@ -46,6 +48,8 @@ class AppRoutes {
 
   // Teacher Routes
   static const String announcementPage = '/announcement-page';
+  static const String informationPage = '/information-page';
+  static const String addStudentPage = '/add-student-page';
 }
 
 /// Use GetX pages so we can attach per-route bindings.
@@ -120,6 +124,16 @@ class AppPages {
     GetPage(
       name: AppRoutes.announcementPage,
       page: () => const AnnouncementsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.informationPage,
+      page: () => const InformationPage(),
+      transition: Transition.rightToLeft,
+    ),
+    GetPage(
+      name: AppRoutes.addStudentPage,
+      page: () => const AddStudentPage(),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

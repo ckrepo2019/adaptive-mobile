@@ -11,7 +11,7 @@ class AnnouncementsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: GlobalAppBar(title: 'Announcements'),
+      appBar: GlobalAppBar(title: 'Announcements', showBack: true,), 
       body: GlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
