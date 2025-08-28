@@ -257,10 +257,10 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
                             onTap: () async {
                               final prefs =
                                   await SharedPreferences.getInstance();
+
                               final token = prefs.getString('token');
-                              final uid = prefs.getString(
-                                'uid',
-                              ); // assuming uid is stored as string
+                              final uid = prefs.getString('uid');
+                              final userType = prefs.getInt('usertype_ID');
 
                               if (token == null || uid == null) {
                                 if (!mounted) return;
@@ -271,12 +271,15 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
                                 );
                                 return;
                               }
-
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
-                                AppRoutes.studentHome,
+                                AppRoutes.studentShell,
                                 (route) => false,
-                                arguments: {'token': token, 'uid': uid},
+                                arguments: {
+                                  'token': token,
+                                  'uid': uid,
+                                  'usertype_ID': userType,
+                                },
                               );
                             },
                             borderRadius: BorderRadius.circular(12),

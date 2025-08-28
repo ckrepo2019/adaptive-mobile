@@ -1,11 +1,16 @@
-import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz.dart';
-import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz_intro.dart';
-import 'package:flutter_lms/views/student/assignments/assignment-quiz/practice_quiz_result.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_result.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_info.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_intro.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_summary.dart';
+import 'package:flutter_lms/views/student/classes/class_page.dart';
+import 'package:flutter_lms/views/student/classes/class_subject_book_content.dart';
+import 'package:flutter_lms/views/student/classes/class_subject_overview.dart';
 import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:flutter_lms/views/student/classes/join_class.dart';
 import 'package:flutter_lms/views/student/classes/join_class_success.dart';
-import 'package:flutter_lms/views/student/profile/profile_page.dart';
+import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
+import 'package:flutter_lms/views/utilities/profile_page.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
@@ -38,10 +43,15 @@ class AppRoutes {
   static const String studentJoinClass = '/join-class';
   static const String studentJoinClassSuccess = '/join-class-success';
   static const String studentClass = '/student-class-page';
+  static const String myClassmates = '/my-classmates';
   static const String quizInfo = '/quiz-info';
-  static const String practiceQuizIntro = '/practice-quiz-intro';
-  static const String practiceQuiz = '/practice-quiz';
-  static const String practiceQuizResult = '/practice-quiz-result';
+  static const String quizIntro = '/quiz-intro';
+  static const String quiz = '/quiz';
+  static const String quizResult = '/quiz-result';
+  static const String subjectClassPage = '/subject-class-page';
+  static const String classSubjectOverview = '/class-subject-overview';
+  static const String classSubjectBookContent = '/book-content';
+  static const String quizSummary = '/quiz-summary/';
 }
 
 /// Use GetX pages so we can attach per-route bindings.
@@ -93,6 +103,7 @@ class AppPages {
     GetPage(name: AppRoutes.profilePage, page: () => const ProfilePage()),
 
     GetPage(name: AppRoutes.studentClass, page: () => StudentClassPage()),
+    GetPage(name: AppRoutes.myClassmates, page: () => MyClassmatesPage()),
     GetPage(
       name: AppRoutes.studentJoinClass,
       page: () => StudentJoinClass(),
@@ -103,14 +114,21 @@ class AppPages {
       page: () => const StudentJoinClassSuccess(),
     ),
     GetPage(name: AppRoutes.quizInfo, page: () => const QuizInfoPage()),
+    GetPage(name: AppRoutes.quizIntro, page: () => const QuizIntroPage()),
+    GetPage(name: AppRoutes.quiz, page: () => const QuizPage()),
+    GetPage(name: AppRoutes.quizResult, page: () => const QuizResultPage()),
     GetPage(
-      name: AppRoutes.practiceQuizIntro,
-      page: () => const PracticeQuizIntroPage(),
+      name: AppRoutes.subjectClassPage,
+      page: () => const SubjectClassPage(),
     ),
-    GetPage(name: AppRoutes.practiceQuiz, page: () => const PracticeQuizPage()),
     GetPage(
-      name: AppRoutes.practiceQuizResult,
-      page: () => const PracticeQuizResultPage(score: 0, total: 0),
+      name: AppRoutes.classSubjectOverview,
+      page: () => const ClassSubjectOverviewPage(),
     ),
+    GetPage(
+      name: AppRoutes.classSubjectBookContent,
+      page: () => const SubjectBookContent(),
+    ),
+    GetPage(name: AppRoutes.quizSummary, page: () => const QuizSummaryPage()),
   ];
 }

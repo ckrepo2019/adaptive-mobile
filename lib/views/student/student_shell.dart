@@ -1,7 +1,9 @@
 // lib/views/student/student_shell.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_lms/views/student/assignments/assignment_page.dart';
 import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:flutter_lms/views/student/home/home_page.dart';
+import 'package:flutter_lms/views/student/notification/student_notification.dart';
 import 'package:flutter_lms/views/student/widgets/fancy_student_navbar.dart';
 import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
 
@@ -10,18 +12,29 @@ class StudentShell extends StatefulWidget {
   final String uid;
   final int userType;
 
+  /// NEW: which tab to open first (0 = Home, 1 = Classes, 2 = Schedule, 3 = Notifications)
+  final int initialIndex;
+
   const StudentShell({
     super.key,
     required this.token,
     required this.uid,
     required this.userType,
+    this.initialIndex = 0, // default to Home
   });
+
   @override
   State<StudentShell> createState() => _StudentShellState();
 }
 
 class _StudentShellState extends State<StudentShell> {
-  int _index = 0;
+  late int _index;
+
+  @override
+  void initState() {
+    super.initState();
+    _index = widget.initialIndex; // ← start on requested tab
+  }
 
   void _setIndex(int i) {
     if (i == _index) return;
@@ -30,7 +43,6 @@ class _StudentShellState extends State<StudentShell> {
 
   @override
   Widget build(BuildContext context) {
-    // Build pages AFTER we have the args (from widget)
     final pages = <Widget>[
       StudentHomePage(
         token: widget.token,
@@ -38,8 +50,8 @@ class _StudentShellState extends State<StudentShell> {
         userType: widget.userType,
       ),
       StudentClassPage(),
-      const ColoredBox(color: Colors.black12), // TODO: Schedule
-      const ColoredBox(color: Colors.black12), // TODO: Notifications
+      StudentAssignmentPage(),
+      StudentNotificationPage(),
     ];
 
     return StudentTabs(
@@ -52,7 +64,7 @@ class _StudentShellState extends State<StudentShell> {
         bottomNavigationBar: FancyStudentNavBar(
           currentIndex: _index,
           onChanged: (i) {
-            if (i == 0 || i == 1) return _setIndex(i);
+            if (i == 0 || i == 1 || i == 2 || i == 3) return _setIndex(i);
             ScaffoldMessenger.of(context).removeCurrentSnackBar();
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(

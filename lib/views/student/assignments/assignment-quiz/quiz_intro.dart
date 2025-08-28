@@ -1,10 +1,13 @@
+// lib/views/student/quiz_intro.dart
+// ignore_for_file: unused_local_variable
+
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 
-class PracticeQuizIntroPage extends StatelessWidget {
-  const PracticeQuizIntroPage({
+class QuizIntroPage extends StatelessWidget {
+  const QuizIntroPage({
     super.key,
     this.onContinue,
     this.learnerLabel = 'Auditory Learner',
@@ -24,23 +27,42 @@ class PracticeQuizIntroPage extends StatelessWidget {
     final w = mq.size.width;
     final h = mq.size.height;
 
+    // NEW: read route args and derive learners_type_name
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    final Map<String, dynamic>? args = (routeArgs is Map)
+        ? Map<String, dynamic>.from(routeArgs)
+        : null;
+
+    // Expecting the bulk blob under 'assessment'
+    final Map<String, dynamic>? assessment = (args?['assessment'] is Map)
+        ? Map<String, dynamic>.from(args!['assessment'])
+        : null;
+
+    // Safely dig into studentprofile.learners_profile[0].learners_type_name
+    String derivedLearner = learnerLabel; // default
+    try {
+      final sp = assessment?['studentprofile'];
+      if (sp is Map) {
+        final lp = sp['learners_profile'];
+        if (lp is List && lp.isNotEmpty && lp.first is Map) {
+          final name = lp.first['learners_type_name'];
+          if (name is String && name.trim().isNotEmpty) {
+            derivedLearner = '${name.trim()} Learner';
+          }
+        }
+      }
+    } catch (_) {
+      // keep default learnerLabel if any parsing fails
+    }
+
     // typography & paddings
-    final titleSize = _clamp(w * 0.095, 28, 36);
+    final titleSize = _clamp(w * 0.050, 25, 25);
     final pillPaddingH = _clamp(w * 0.06, 18, 26);
     final pillHeight = _clamp(h * 0.055, 38, 46);
     final sidePad = _clamp(w * 0.08, 20, 28);
 
     // push title lower
     final titleTop = _clamp(h * 0.15, 104, 170);
-
-    // illustration: bigger and OVERFLOW past bottom
-    final illoHeight = _clamp(h * 0.95, 600, 1000);
-    final illoExtraWidthFactor = 1.22; // wider than screen for that big look
-    final illoBottomOverlap = _clamp(
-      h * 0.22,
-      120,
-      220,
-    ); // negative pushes it below
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -58,19 +80,15 @@ class PracticeQuizIntroPage extends StatelessWidget {
             bottom: false,
             child: Stack(
               children: [
-                // --- Big illustration (centered, overlaps below the screen) ---
+                // --- Big illustration ---
                 Positioned(
-                  left: -w * (1.7 - 1) / 2, // now ~70% wider
+                  left: -w * (1.7 - 1) / 2,
                   right: -w * (1.7 - 1) / 2,
                   bottom: -_clamp(h * 0.35, 200, 340),
                   child: IgnorePointer(
                     ignoring: true,
                     child: SizedBox(
-                      height: _clamp(
-                        h * 1.95, // was 1.45 → now 1.65 (super tall)
-                        900,
-                        1800,
-                      ),
+                      height: _clamp(h * 1.95, 900, 1800),
                       child: OverflowBox(
                         minWidth: w * 1.7,
                         maxWidth: w * 1.7,
@@ -86,7 +104,7 @@ class PracticeQuizIntroPage extends StatelessWidget {
                   ),
                 ),
 
-                // --- Headline + pill ---
+                // --- Headline + learner pill ---
                 Positioned(
                   left: sidePad,
                   right: sidePad,
@@ -95,7 +113,7 @@ class PracticeQuizIntroPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
-                        'You Are Now On\nPractice Mode!',
+                        "You're About to\n Take the Graded Quiz!",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.poppins(
                           color: Colors.white,
@@ -141,8 +159,9 @@ class PracticeQuizIntroPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 10),
+                            // NEW: use derivedLearner instead of prop directly
                             Text(
-                              learnerLabel,
+                              derivedLearner,
                               style: GoogleFonts.poppins(
                                 color: const Color(0xFF245B2E),
                                 fontWeight: FontWeight.w600,
@@ -156,7 +175,7 @@ class PracticeQuizIntroPage extends StatelessWidget {
                   ),
                 ),
 
-                // --- Bottom truly WHITE button (Material + InkWell) ---
+                // --- Bottom continue button ---
                 Positioned(
                   left: sidePad,
                   right: sidePad,
@@ -168,13 +187,29 @@ class PracticeQuizIntroPage extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(28),
                         child: Material(
-                          color: Colors.white, // guaranteed white
+                          color: Colors.white,
                           child: InkWell(
                             onTap: () {
+                              // ensure we forward a non-null Map of ALL data we received
+                              final dynamic routeArgs = ModalRoute.of(
+                                context,
+                              )?.settings.arguments;
+                              final Map<String, dynamic> incoming =
+                                  (routeArgs is Map)
+                                  ? Map<String, dynamic>.from(routeArgs)
+                                  : {};
+
+                              // you can also enrich here if needed before forwarding
+                              final Map<String, dynamic> nextArgs = {
+                                ...incoming, // bulk pass-through of everything (teacherAssessmentID, assessment, etc.)
+                                // add/override extras if you want:
+                                'from': 'quiz_intro',
+                              };
+
                               Navigator.of(context).pushNamedAndRemoveUntil(
-                                AppRoutes.practiceQuiz,
-                                (route) =>
-                                    false, // clear everything so back can't return here
+                                AppRoutes.quiz,
+                                (route) => false,
+                                arguments: nextArgs,
                               );
                             },
                             child: Center(
