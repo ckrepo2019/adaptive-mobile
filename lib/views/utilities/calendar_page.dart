@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/home/student_global_layout.dart';
+import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -29,7 +29,8 @@ class _CalendarPageState extends State<CalendarPage> {
 
     // Actual days
     for (int day = 1; day <= daysInMonth; day++) {
-      final isToday = DateTime.now().day == day &&
+      final isToday =
+          DateTime.now().day == day &&
           DateTime.now().month == month.month &&
           DateTime.now().year == month.year;
 
@@ -38,10 +39,7 @@ class _CalendarPageState extends State<CalendarPage> {
           width: cellSize,
           height: cellSize,
           decoration: isToday
-              ? BoxDecoration(
-                  color: Colors.deepOrange,
-                  shape: BoxShape.circle,
-                )
+              ? BoxDecoration(color: Colors.deepOrange, shape: BoxShape.circle)
               : null,
           child: Center(
             child: Text(
@@ -71,17 +69,16 @@ class _CalendarPageState extends State<CalendarPage> {
     final cellSize = screenWidth / 9; // dynamic day size
     final calendarHeight = screenHeight * 0.45; // 45% of screen height
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: GlobalAppBar(showBack: false, title: 'Calendar'),
-      body: StudentGlobalLayout(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
+    return StudentGlobalLayout(
+      useSafeArea: false,
+      useScaffold: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
 
-            /// Streak card
-            Card(
+          /// Streak card
+          Card(
             elevation: 20,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -125,82 +122,91 @@ class _CalendarPageState extends State<CalendarPage> {
                       ],
                     ),
                   ),
-                  
-                  Positioned(
-                  bottom: -MediaQuery.of(context).size.height * 0.04,
-                  right: -MediaQuery.of(context).size.width * 0.05,   
-                  child: Image.asset(
-                    "assets/images/utilities/streak_icon.png",
-                    height: MediaQuery.of(context).size.height * 0.15, 
-                    width: MediaQuery.of(context).size.width * 0.25, 
-                    fit: BoxFit.contain,
-                  ),
-                ),
 
+                  Positioned(
+                    bottom: -MediaQuery.of(context).size.height * 0.04,
+                    right: -MediaQuery.of(context).size.width * 0.05,
+                    child: Image.asset(
+                      "assets/images/utilities/streak_icon.png",
+                      height: MediaQuery.of(context).size.height * 0.15,
+                      width: MediaQuery.of(context).size.width * 0.25,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
 
-            const SizedBox(height: 15),
+          const SizedBox(height: 15),
 
-            /// Calendar card
-            Card(
-              elevation: 5,
-              child: Container(
-                height: calendarHeight,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: Colors.white,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      /// Month selector row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _focusedMonth = DateTime(
-                                    _focusedMonth.year, _focusedMonth.month - 1);
-                              });
-                            },
-                            child: Icon(Icons.arrow_back_ios,
-                                size: screenWidth * 0.04,
-                                color: Colors.grey.shade500),
+          /// Calendar card
+          Card(
+            elevation: 5,
+            child: Container(
+              height: calendarHeight,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: Colors.white,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    /// Month selector row
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _focusedMonth = DateTime(
+                                _focusedMonth.year,
+                                _focusedMonth.month - 1,
+                              );
+                            });
+                          },
+                          child: Icon(
+                            Icons.arrow_back_ios,
+                            size: screenWidth * 0.04,
+                            color: Colors.grey.shade500,
                           ),
-                          Text(
-                            monthName,
-                            style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.bold,
-                              fontSize: screenWidth * 0.045,
-                            ),
+                        ),
+                        Text(
+                          monthName,
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth * 0.045,
                           ),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _focusedMonth = DateTime(
-                                    _focusedMonth.year, _focusedMonth.month + 1);
-                              });
-                            },
-                            child: Icon(Icons.arrow_forward_ios,
-                                size: screenWidth * 0.04,
-                                color: Colors.grey.shade500),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _focusedMonth = DateTime(
+                                _focusedMonth.year,
+                                _focusedMonth.month + 1,
+                              );
+                            });
+                          },
+                          child: Icon(
+                            Icons.arrow_forward_ios,
+                            size: screenWidth * 0.04,
+                            color: Colors.grey.shade500,
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
 
-                      /// Weekday headers
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-                            .map((day) => Expanded(
+                    /// Weekday headers
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children:
+                          ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+                              .map(
+                                (day) => Expanded(
                                   child: Center(
                                     child: Text(
                                       day,
@@ -211,26 +217,26 @@ class _CalendarPageState extends State<CalendarPage> {
                                       ),
                                     ),
                                   ),
-                                ))
-                            .toList(),
-                      ),
-                      const SizedBox(height: 10),
+                                ),
+                              )
+                              .toList(),
+                    ),
+                    const SizedBox(height: 10),
 
-                      /// Calendar days
-                      Expanded(
-                        child: GridView.count(
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 7,
-                          children: _buildCalendarDays(_focusedMonth, cellSize),
-                        ),
+                    /// Calendar days
+                    Expanded(
+                      child: GridView.count(
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisCount: 7,
+                        children: _buildCalendarDays(_focusedMonth, cellSize),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

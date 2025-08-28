@@ -1,3 +1,5 @@
+// ignore_for_file: unused_field
+
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/get_user.dart';

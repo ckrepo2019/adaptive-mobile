@@ -1,12 +1,11 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/controllers/student/student_home.dart';
-import 'package:flutter_lms/views/student/home/cards_list.dart';
 import 'package:flutter_lms/views/student/home/quick_actions.dart';
 import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:flutter_lms/widgets/cards_list.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
@@ -46,6 +45,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
     StudentTabs.of(context).setIndex(1);
   }
 
+  void _goToAssignments() {
+    StudentTabs.of(context).setIndex(2);
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -55,7 +58,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     _uid = widget.uid;
 
     _initialized = true;
-    _safeLoad(_token!, _uid!);
+    _safeLoad(_token!, _uid!); // <-- fixed stray quote
   }
 
   // Public retry or pull-to-refresh can call this safely.
@@ -97,7 +100,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   Map<String, dynamic> _normalize(Map<String, dynamic> d) {
-    final subjects = (d['subjects'] as List?) ?? const <dynamic>[];
     return {
       ...d,
       'subjects': (d['subjects'] as List?) ?? const <dynamic>[],
@@ -111,7 +113,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   Future<void> _load(String token, String uid) async {
-    // Keep state churn minimal to avoid layout thrash
     if (mounted) {
       setState(() {
         _loading = true;
@@ -138,7 +139,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
     // Single-fire redirect rule
     final learnersProfile = (raw['learners_profile'] as List?) ?? const [];
-
     final enrollmentData = raw['enrollment_data'];
     if (!_navigated && learnersProfile.isEmpty && enrollmentData != null) {
       _navigated = true;
@@ -188,39 +188,202 @@ class _StudentHomePageState extends State<StudentHomePage> {
     return 'Student';
   }
 
-  // Uses shared model: AssignmentItem (from models/items.dart)
-  final assignments = <AssignmentItem>[
-    const AssignmentItem(
-      title: 'Quadratic Equations',
-      subject: 'Mathematics',
-      date: 'Today, 3:00 PM',
-      duration: '20 min',
-      type: 'Quiz',
-    ),
-    const AssignmentItem(
-      title: 'Photosynthesis',
-      subject: 'Science',
-      date: 'Tomorrow, 9:00 AM',
-      duration: '45 min',
-      type: 'Assignment',
-    ),
-    const AssignmentItem(
-      title: 'World War II',
-      subject: 'History',
-      date: 'Aug 15, 1:30 PM',
-      duration: '1 hr',
-      type: 'Essay',
-    ),
-  ];
+  // ---------- Date & Duration helpers ----------
+  DateTime? _parseDateTime(Object? s) {
+    if (s == null) return null;
+    var raw = s.toString().trim();
+    if (raw.isEmpty) return null;
+    if (raw.contains(' ') && !raw.contains('T')) {
+      raw = raw.replaceFirst(' ', 'T');
+    }
+    try {
+      return DateTime.parse(raw);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String _formatDuration(Duration d) {
+    if (d.inMinutes < 1) return '0m';
+    final days = d.inDays;
+    final hours = d.inHours % 24;
+    final mins = d.inMinutes % 60;
+    final parts = <String>[];
+    if (days > 0) parts.add('${days}d');
+    if (hours > 0) parts.add('${hours}h');
+    if (mins > 0 && days == 0) parts.add('${mins}m');
+    return parts.join(' ');
+  }
+
+  String _assessmentDuration(Map<String, dynamic> a) {
+    final aw = a['active_window'];
+    if (aw is Map) {
+      final int? days = (aw['days'] is int)
+          ? aw['days'] as int
+          : int.tryParse(aw['days']?.toString() ?? '');
+      final int? hours = (aw['hours'] is int)
+          ? aw['hours'] as int
+          : int.tryParse(aw['hours']?.toString() ?? '');
+      if (days != null && days > 0 && hours != null) {
+        return '${days}D ${hours}H';
+      }
+      if (days != null && days > 0) return '${days}D';
+      if (hours != null) return '${hours}H';
+    }
+    return '—';
+  }
+
+  String _assessmentStartLabel(Map<String, dynamic> a) {
+    final aw = a['active_window'];
+    DateTime? dt;
+    if (aw is Map) dt = _parseDateTime(aw['start']);
+    dt ??= _parseDateTime(a['created_at']);
+    if (dt == null) return '—';
+    return _humanDateLabel(dt.toLocal());
+  }
+
+  String _humanDateLabel(DateTime target, {DateTime? now}) {
+    final DateTime nowLocal = (now ?? DateTime.now()).toLocal();
+    final DateTime dNow = DateTime(nowLocal.year, nowLocal.month, nowLocal.day);
+    final DateTime dTar = DateTime(target.year, target.month, target.day);
+    final int dayDiff = dNow.difference(dTar).inDays;
+
+    if (dayDiff == 0) return 'Today';
+    if (dayDiff == 1) return 'Yesterday';
+    if (dayDiff == -1) return 'Tomorrow';
+
+    if (dayDiff > 0) {
+      if (dayDiff < 7) return '$dayDiff day${dayDiff == 1 ? '' : 's'} ago';
+      final int weeks = dayDiff ~/ 7;
+      if (weeks == 1) return '1 week ago';
+      if (weeks == 2) return '2 weeks ago';
+      if (weeks == 3) return '3 weeks ago';
+      if (weeks >= 4 && dayDiff < 60) return 'a month ago';
+      return _formatAbsoluteDate(target);
+    }
+
+    final int ahead = -dayDiff;
+    if (ahead < 7) {
+      return 'in $ahead day${ahead == 1 ? '' : 's'}';
+    }
+    final int weeksAhead = ahead ~/ 7;
+    if (weeksAhead == 1) return 'in 1 week';
+    if (weeksAhead == 2) return 'in 2 weeks';
+    if (weeksAhead == 3) return 'in 3 weeks';
+    if (weeksAhead >= 4 && ahead < 60) return 'in a month';
+    return _formatAbsoluteDate(target);
+  }
+
+  String _formatAbsoluteDate(DateTime dt) {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    final m = months[dt.month - 1];
+    return '$m ${dt.day}, ${dt.year}';
+  }
+
+  DateTime? _assessmentStartDate(Map<String, dynamic> a) {
+    final aw = a['active_window'];
+    DateTime? dt;
+    if (aw is Map) dt = _parseDateTime(aw['start']);
+    dt ??= _parseDateTime(a['created_at']);
+    return dt;
+  }
+
+  T? _asMapGet<T>(Map<String, dynamic>? m, String k) {
+    final v = m?[k];
+    if (v is T) return v;
+    return null;
+  }
+
+  // ---------- Build Assignments from backend assessments ----------
+  List<AssignmentItem> get assignments {
+    final subjects = (_data?['subjects'] as List?) ?? const [];
+    final List<_AssessRow> rows = [];
+
+    for (final s in subjects) {
+      if (s is! Map) continue;
+
+      final subjectName =
+          (s['subject_name'] ??
+                  s['subject'] ??
+                  s['subject_code'] ??
+                  s['code'] ??
+                  'Subject')
+              .toString();
+
+      final assessments = (s['assessments'] as List?) ?? const [];
+      for (final a in assessments) {
+        if (a is! Map<String, dynamic>) continue;
+
+        final title = (a['title'] ?? 'Assessment').toString();
+        final dateLabel = _assessmentStartLabel(a);
+        final durLabel = _assessmentDuration(a);
+
+        String type = 'Assessment';
+        final desc = (a['description'] ?? '').toString().trim();
+        if (desc.isNotEmpty) {
+          type = desc.length > 24 ? '${desc.substring(0, 24)}…' : desc;
+        } else {
+          // Safely cast a['totals'] to Map<String, dynamic>? and read questions
+          final Map<String, dynamic>? totals = (a['totals'] is Map)
+              ? Map<String, dynamic>.from(a['totals'] as Map)
+              : null;
+
+          final int q = _asMapGet<num>(totals, 'questions')?.toInt() ?? 0;
+          type = q > 0 ? 'Quiz' : 'Assessment';
+        }
+
+        final String subjectIcon = _resolveImagePath(
+          ((s['image'] ?? '').toString().trim()),
+        );
+
+        rows.add(
+          _AssessRow(
+            item: AssignmentItem(
+              title: title,
+              subject: subjectName,
+              date: dateLabel,
+              duration: durLabel,
+              type: type,
+              assessment: a,
+              subjectData: s as Map<String, dynamic>,
+              subjectIcon: subjectIcon,
+            ),
+            when: _assessmentStartDate(a) ?? _parseDateTime(a['created_at']),
+          ),
+        );
+      }
+    }
+
+    rows.sort((x, y) {
+      final ax = x.when;
+      final by = y.when;
+      if (ax == null && by == null) return 0;
+      if (ax == null) return 1; // nulls last
+      if (by == null) return -1; // nulls last
+      return by.compareTo(ax); // newest first
+    });
+
+    return rows.map((e) => e.item).toList();
+  }
 
   String _resolveImagePath(String p) {
     if (p.isEmpty) return '';
-
-    // Absolute URL? Use as-is.
     final lower = p.toLowerCase();
     if (lower.startsWith('http://') || lower.startsWith('https://')) return p;
 
-    // Build origin (scheme://host[:port]) from your API base URL
     String originFromBase(String base) {
       final u = Uri.parse(base);
       final port = u.hasPort ? ':${u.port}' : '';
@@ -228,12 +391,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
 
     final origin = originFromBase(AppConstants.baseURL);
-
     if (p.contains('/')) return '$origin/storage/$p';
-
-    // Otherwise assume it's a bundled asset path
     return p;
-    // NOTE: cards_list.dart handles both asset and network paths gracefully.
   }
 
   // Build Class Progress items directly from `_data['subjects']`
@@ -246,8 +405,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
       final title = (s['subject_name'] ?? s['subject'] ?? 'Untitled')
           .toString();
-
-      // teacher_book_content: list with hierarchyID & hierarchyName
       final tbc = (s['teacher_book_content'] as List?) ?? const [];
 
       int firstCount = 0;
@@ -258,7 +415,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       for (final row in tbc) {
         if (row is! Map) continue;
         final level = row['hierarchyLevel'];
-        String name = (row['hierarchyName'] ?? '').toString().trim();
+        final name = (row['hierarchyName'] ?? '').toString().trim();
 
         if (level == 1) {
           firstCount++;
@@ -277,7 +434,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
         }
       }
 
-      // Image can be absolute URL, relative storage path ("Subject/...png"), or asset
       final rawImage = (s['image'] ?? '').toString().trim();
       final iconPath = _resolveImagePath(rawImage);
 
@@ -288,9 +444,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
           secondHierarchy: secondCount,
           firstHierarchyLabel: firstLabel,
           secondHierarchyLabel: secondLabel,
-          progress: 0.6, // temporary default
-          iconAsset: iconPath, // asset or URL; card handles both
-          accent: Colors.blueAccent, // fallback; card computes dominant color
+          progress: 0.6,
+          iconAsset: iconPath,
+          accent: Colors.blueAccent,
+          subject: s as Map<String, dynamic>, // attach full subject
         ),
       );
     }
@@ -312,16 +469,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final learnersProfiles = (_data?['learners_profile'] as List?) ?? [];
 
     final viewInset = MediaQuery.of(context).padding.bottom;
-    const navBarHeight = 88.0; // <-- FancyStudentNavBar’s actual height
+    const navBarHeight = 88.0; // FancyStudentNavBar height
     final bottomGap = navBarHeight + viewInset + 24.0;
-
-    final _usedAccents = <int>{};
 
     return StudentGlobalLayout(
       useScaffold: false,
       useSafeArea: false,
       header: GlobalAppBar(
-        // render your app bar as a header widget
         title: 'Home',
         onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
         onProfileTap: () {
@@ -373,7 +527,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                 bodyPadH,
                                 bodyPadV,
                                 bodyPadH,
-                                12, // keep your 12px spacing after welcome
+                                12,
                               ),
                               child: Row(
                                 children: [
@@ -487,7 +641,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                 bodyPadH,
                                 0,
                                 bodyPadH,
-                                20, // keep your 20px spacing after badges
+                                20,
                               ),
                               child: Row(
                                 children: [
@@ -560,18 +714,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               ),
                             ),
 
-                            // === Scrollable content below ===
+                            // === Scrollable content ===
                             Expanded(
                               child: ListView(
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 padding: EdgeInsets.fromLTRB(
                                   bodyPadH,
-                                  0, // content starts right after badges' 20px spacer
+                                  0,
                                   bodyPadH,
                                   bodyPadV,
                                 ),
                                 children: [
-                                  // === Assignments ===
+                                  // === Assignments (from assessments) ===
                                   CardsList<AssignmentItem>(
                                     headerTitle: 'My Assignments',
                                     headerIcon:
@@ -579,20 +733,13 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                     items: assignments,
                                     variant: CardVariant.assignment,
                                     ctaLabel: 'View All Assignments',
-                                    onCta: () {
-                                      /* navigate */
-                                    },
+                                    onCta: _goToAssignments,
                                     onAssignmentTap: (a) {
                                       Navigator.pushNamed(
                                         context,
                                         AppRoutes.quizInfo,
-                                        arguments: {
-                                          'title': a.title,
-                                          'subject': a.subject,
-                                          'date': a.date,
-                                          'duration': a.duration,
-                                          'type': a.type,
-                                        },
+                                        arguments: a
+                                            .assessment, // <- pass the specific assessment
                                       );
                                     },
                                   ),
@@ -608,6 +755,56 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                     variant: CardVariant.progress,
                                     ctaLabel: 'View All Classes',
                                     onCta: _goToClasses,
+                                    onProgressTap: (c) {
+                                      int? subjectIdFrom(
+                                        Map<String, dynamic>? m,
+                                      ) {
+                                        if (m == null) return null;
+                                        final candidates = [
+                                          'subject_ID',
+                                          'subjectId',
+                                          'subject_id',
+                                          'subjectID',
+                                          'id',
+                                        ];
+                                        for (final k in candidates) {
+                                          final v = m[k];
+                                          if (v == null) continue;
+                                          if (v is int) return v;
+                                          if (v is num) return v.toInt();
+                                          final parsed = int.tryParse(
+                                            v.toString(),
+                                          );
+                                          if (parsed != null) return parsed;
+                                        }
+                                        return null;
+                                      }
+
+                                      final int? subjectId = subjectIdFrom(
+                                        c.subject,
+                                      );
+                                      if (subjectId == null) {
+                                        // Optional: show a toast/snackbar if the payload is missing an id
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Subject ID not found',
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      Navigator.pushNamed(
+                                        context,
+                                        AppRoutes.subjectClassPage,
+                                        arguments: {
+                                          'subject_ID': subjectId,
+                                        }, // pass just the ID
+                                      );
+                                    },
                                   ),
 
                                   const SizedBox(height: 20),
@@ -638,9 +835,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                           iconAsset:
                                               'assets/images/student-home/lessons-vector.png',
                                           label: 'Lessons',
-                                          onTap: () {
-                                            /* navigate */
-                                          },
+                                          onTap: () {},
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -649,9 +844,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                           iconAsset:
                                               'assets/images/student-home/assignments.png',
                                           label: 'Assignments',
-                                          onTap: () {
-                                            /* navigate */
-                                          },
+                                          onTap: () {},
                                         ),
                                       ),
                                     ],
@@ -665,9 +858,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                           iconAsset:
                                               'assets/images/student-home/classes-quickactions.png',
                                           label: 'Classes',
-                                          onTap: () {
-                                            /* navigate */
-                                          },
+                                          onTap: () {},
                                         ),
                                       ),
                                       const SizedBox(width: 12),
@@ -676,16 +867,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                           iconAsset:
                                               'assets/images/student-home/leaderboards-quickactions.png',
                                           label: 'Assignments',
-                                          onTap: () {
-                                            /* navigate */
-                                          },
+                                          onTap: () {},
                                         ),
                                       ),
                                     ],
                                   ),
 
                                   const SizedBox(height: 12),
-                                  // keep your extra bottom space so last item isn't hidden by navbar
+                                  // leave room above bottom navbar
                                   SizedBox(height: bottomGap - 100),
                                 ],
                               ),
@@ -695,4 +884,11 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       : const Center(child: CircularProgressIndicator()))),
     );
   }
+}
+
+// ---- helper row (top-level; Dart does NOT support nested classes) ----
+class _AssessRow {
+  final AssignmentItem item;
+  final DateTime? when;
+  _AssessRow({required this.item, required this.when});
 }

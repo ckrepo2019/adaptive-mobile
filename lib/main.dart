@@ -1,15 +1,75 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'config/routes.dart';
 import 'package:flutter_lms/state/bindings/student/student_home_bindings.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // safe for async init later
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Optional: lock portrait
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+
+  // App-wide immersive (hide status + nav bars)
+  _goImmersive();
+
+  runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+void _goImmersive() {
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
+}
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+/// Keep immersive mode even after keyboard, gestures, or app resume.
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Re-apply after first frame to avoid splash/system transitions
+    WidgetsBinding.instance.addPostFrameCallback((_) => _goImmersive());
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    // Called on keyboard open/close; re-apply immersive.
+    _goImmersive();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed ||
+        state == AppLifecycleState.inactive) {
+      _goImmersive();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +77,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter LMS Adaptive',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFFFFFFF)),
+        useMaterial3: true,
       ),
       initialBinding: StudentHomeBindings(),
       home: const _LaunchGate(),
@@ -48,8 +109,9 @@ class _LaunchGateState extends State<_LaunchGate> {
     final userType = prefs.getInt('usertype_ID');
     final id = prefs.getInt('id');
 
-    if (token != null && uid != null && userType != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Ensure immersive after navigation too
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (token != null && uid != null && userType != null) {
         Get.offAllNamed(
           AppRoutes.getUser,
           arguments: {
@@ -59,12 +121,11 @@ class _LaunchGateState extends State<_LaunchGate> {
             'id': id,
           },
         );
-      });
-    } else {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      } else {
         Get.offAllNamed(AppRoutes.signIn);
-      });
-    }
+      }
+      _goImmersive();
+    });
   }
 
   @override

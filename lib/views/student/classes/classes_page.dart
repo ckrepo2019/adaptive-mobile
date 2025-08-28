@@ -96,121 +96,132 @@ class _StudentClassPageState extends State<StudentClassPage> {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
-    return Scaffold(
-      appBar: GlobalAppBar(
-        // <— set here
+    return StudentGlobalLayout(
+      useScaffold: false,
+      useSafeArea: false,
+      header: GlobalAppBar(
         title: 'Classes',
         onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
         onProfileTap: () {},
       ),
-      backgroundColor: Colors.white,
-      body: StudentGlobalLayout(
-        onRefresh: () => _fetch(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ===== Chips Row + Add Button =====
-            Row(
-              children: [
-                const CustomChip(
-                  backgroundColor: Colors.black,
-                  textColor: Colors.white,
-                  borderColor: Colors.black54,
-                  chipTitle: 'Current',
-                  iconData: Icons.access_time,
-                ),
-                SizedBox(width: w * 0.02),
-                const CustomChip(
-                  backgroundColor: Colors.white,
-                  textColor: Colors.black54,
-                  borderColor: Colors.black54,
-                  chipTitle: 'Archived',
-                  iconData: Icons.archive_outlined,
-                ),
-                const Spacer(),
-                InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRoutes.studentJoinClass);
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: w * 0.03,
-                      vertical: h * 0.008,
-                    ),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      color: const Color(0xFF234EF4),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.add, size: w * 0.04, color: Colors.white),
-                        SizedBox(width: w * 0.015),
-                        Text(
-                          'Add Class',
-                          style: GoogleFonts.poppins(
-                            color: Colors.white,
-                            fontSize: w * 0.035,
-                            fontWeight: FontWeight.w600,
-                          ),
+      onRefresh: () => _fetch(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const CustomChip(
+                backgroundColor: Colors.black,
+                textColor: Colors.white,
+                borderColor: Colors.black54,
+                chipTitle: 'Current',
+                iconData: Icons.access_time,
+              ),
+              SizedBox(width: w * 0.02),
+              const CustomChip(
+                backgroundColor: Colors.white,
+                textColor: Colors.black54,
+                borderColor: Colors.black54,
+                chipTitle: 'Archived',
+                iconData: Icons.archive_outlined,
+              ),
+              const Spacer(),
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  Navigator.pushNamed(context, AppRoutes.studentJoinClass);
+                },
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: w * 0.03,
+                    vertical: h * 0.008,
+                  ),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: const Color(0xFF234EF4),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, size: w * 0.04, color: Colors.white),
+                      SizedBox(width: w * 0.015),
+                      Text(
+                        'Add Class',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: w * 0.035,
+                          fontWeight: FontWeight.w600,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
-            SizedBox(height: h * 0.02),
+              ),
+            ],
+          ),
+          SizedBox(height: h * 0.02),
 
-            // ===== Subject List (merged) =====
-            Expanded(
-              child: _loading
-                  ? const Center(child: CircularProgressIndicator())
-                  : (_error != null)
-                  ? Center(
-                      child: Text(
-                        _error!,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    )
-                  : _mergedSubjects.isEmpty
-                  ? const Center(child: Text('No classes found.'))
-                  : ListView.builder(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: _mergedSubjects.length,
-                      itemBuilder: (context, index) {
-                        final m = _mergedSubjects[index];
+          // ===== Subject List (merged) =====
+          Expanded(
+            child: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : (_error != null)
+                ? Center(
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  )
+                : _mergedSubjects.isEmpty
+                ? const Center(child: Text('No classes found.'))
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: _mergedSubjects.length,
+                    itemBuilder: (context, index) {
+                      final m = _mergedSubjects[index];
 
-                        final subject = (m['subject_name'] ?? '').toString();
-                        final code = (m['subject_code'] ?? 'No code')
-                            .toString();
+                      final subject = (m['subject_name'] ?? '').toString();
+                      final code = (m['subject_code'] ?? 'No code').toString();
 
-                        final sched = (m['schedule'] is List)
-                            ? (m['schedule'] as List)
-                            : const [];
-                        final timeStr = ScheduleUtils.formatSchedule(sched);
+                      final sched = (m['schedule'] is List)
+                          ? (m['schedule'] as List)
+                          : const [];
+                      final timeStr = ScheduleUtils.formatSchedule(sched);
 
-                        final teacher = NameUtils.formatTeacher(m['teacher']);
-                        final img = MediaUtils.pickImageUrl(m);
+                      final teacher = NameUtils.formatTeacher(m['teacher']);
+                      final img = MediaUtils.pickImageUrl(m);
 
-                        // --- fallback if missing/null ---
-                        final safeImg = (img != null && img.trim().isNotEmpty)
-                            ? img
-                            : 'assets/images/default-images/default-classes.jpg';
+                      // --- fallback if missing/null ---
+                      final safeImg = (img != null && img.trim().isNotEmpty)
+                          ? img
+                          : 'assets/images/default-images/default-classes.jpg';
+                      final subjectIdDynamic = m['id'] ?? m['subject_id'];
+                      final subjectId = subjectIdDynamic is int
+                          ? subjectIdDynamic
+                          : int.tryParse(subjectIdDynamic?.toString() ?? '');
 
-                        return GlobalSubjectWidget(
+                      return GestureDetector(
+                        onTap: () {
+                          if (subjectId != null && subjectId > 0) {
+                            Navigator.pushNamed(
+                              context,
+                              AppRoutes
+                                  .subjectClassPage, // or '/class-page' if you use raw string
+                              arguments: {'subject_ID': subjectId},
+                            );
+                          }
+                        },
+                        child: GlobalSubjectWidget(
                           subject: subject.isEmpty ? 'Untitled' : subject,
                           classCode: code,
-                          time:
-                              timeStr, // e.g. "Today, Monday - Friday • 8:00–9:30 AM"
+                          time: timeStr,
                           teacherName: teacher,
                           imageUrl: safeImg,
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
   }
