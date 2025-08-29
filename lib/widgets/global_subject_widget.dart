@@ -6,8 +6,8 @@ import 'package:flutter_lms/utils/palette_utils.dart';
 class GlobalSubjectWidget extends BaseWidget {
   final String classCode;
   final String subject;
-  final String time; // e.g., "Today, M, T, W • 8:00–9:30 AM"
-  final String teacherName; // full name or 'TBA'
+  final String time;
+  final String teacherName;
   final String? imageUrl;
 
   const GlobalSubjectWidget({
@@ -51,10 +51,8 @@ class _SubjectCard extends StatefulWidget {
 }
 
 class _SubjectCardState extends State<_SubjectCard> {
-  Color _sideColor = const Color(0xFFFFD400); // fallback yellow
+  Color _sideColor = const Color(0xFFFFD400);
   bool _paletteComputed = false;
-
-  // palette-utils wants Set<int> of rgbKey for distinctness
   final Set<int> _used = <int>{};
 
   String get _imagePath =>
@@ -81,7 +79,6 @@ class _SubjectCardState extends State<_SubjectCard> {
     if (_paletteComputed) return;
 
     try {
-      // 1) Try fast path: single dominant color
       final dom = await DominantColorUtils.fromPath(_imagePath);
       if (mounted && dom != null) {
         _used.add(PaletteUtils.rgbKey(dom));
@@ -92,7 +89,6 @@ class _SubjectCardState extends State<_SubjectCard> {
         return;
       }
 
-      // 2) Fallback: small palette, then pick a distinct one
       final palette = await PaletteUtils.paletteFromPath(
         _imagePath,
         maxColors: 5,
@@ -144,7 +140,6 @@ class _SubjectCardState extends State<_SubjectCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // image (network or asset)
             ClipRRect(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(screenWidth * 0.025),
@@ -154,11 +149,9 @@ class _SubjectCardState extends State<_SubjectCard> {
                 context,
                 path: _imagePath,
                 height: screenHeight * 0.15,
-                onReady: _computeSideColor, // compute again once loaded
+                onReady: _computeSideColor,
               ),
             ),
-
-            // text content
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.025,
@@ -217,8 +210,6 @@ class _SubjectCardState extends State<_SubjectCard> {
     );
   }
 
-  // --- helpers ---
-
   Widget _infoItem({
     required IconData icon,
     required String text,
@@ -252,11 +243,9 @@ class _SubjectCardState extends State<_SubjectCard> {
     required double height,
     required VoidCallback onReady,
   }) {
-    // quick path test
     final isNet = path.startsWith('http://') || path.startsWith('https://');
 
     if (!isNet) {
-      // asset
       WidgetsBinding.instance.addPostFrameCallback((_) => onReady());
       return Image.asset(
         path,
@@ -266,7 +255,6 @@ class _SubjectCardState extends State<_SubjectCard> {
       );
     }
 
-    // network
     return Image.network(
       path,
       fit: BoxFit.cover,

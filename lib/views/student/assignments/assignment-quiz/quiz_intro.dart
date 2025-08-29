@@ -1,6 +1,3 @@
-// lib/views/student/quiz_intro.dart
-// ignore_for_file: unused_local_variable
-
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,19 +24,16 @@ class QuizIntroPage extends StatelessWidget {
     final w = mq.size.width;
     final h = mq.size.height;
 
-    // NEW: read route args and derive learners_type_name
     final routeArgs = ModalRoute.of(context)?.settings.arguments;
     final Map<String, dynamic>? args = (routeArgs is Map)
         ? Map<String, dynamic>.from(routeArgs)
         : null;
 
-    // Expecting the bulk blob under 'assessment'
     final Map<String, dynamic>? assessment = (args?['assessment'] is Map)
         ? Map<String, dynamic>.from(args!['assessment'])
         : null;
 
-    // Safely dig into studentprofile.learners_profile[0].learners_type_name
-    String derivedLearner = learnerLabel; // default
+    String derivedLearner = learnerLabel;
     try {
       final sp = assessment?['studentprofile'];
       if (sp is Map) {
@@ -51,17 +45,13 @@ class QuizIntroPage extends StatelessWidget {
           }
         }
       }
-    } catch (_) {
-      // keep default learnerLabel if any parsing fails
-    }
+    } catch (_) {}
 
-    // typography & paddings
     final titleSize = _clamp(w * 0.050, 25, 25);
     final pillPaddingH = _clamp(w * 0.06, 18, 26);
     final pillHeight = _clamp(h * 0.055, 38, 46);
     final sidePad = _clamp(w * 0.08, 20, 28);
 
-    // push title lower
     final titleTop = _clamp(h * 0.15, 104, 170);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -80,7 +70,6 @@ class QuizIntroPage extends StatelessWidget {
             bottom: false,
             child: Stack(
               children: [
-                // --- Big illustration ---
                 Positioned(
                   left: -w * (1.7 - 1) / 2,
                   right: -w * (1.7 - 1) / 2,
@@ -104,7 +93,6 @@ class QuizIntroPage extends StatelessWidget {
                   ),
                 ),
 
-                // --- Headline + learner pill ---
                 Positioned(
                   left: sidePad,
                   right: sidePad,
@@ -159,7 +147,6 @@ class QuizIntroPage extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            // NEW: use derivedLearner instead of prop directly
                             Text(
                               derivedLearner,
                               style: GoogleFonts.poppins(
@@ -175,7 +162,6 @@ class QuizIntroPage extends StatelessWidget {
                   ),
                 ),
 
-                // --- Bottom continue button ---
                 Positioned(
                   left: sidePad,
                   right: sidePad,
@@ -190,7 +176,6 @@ class QuizIntroPage extends StatelessWidget {
                           color: Colors.white,
                           child: InkWell(
                             onTap: () {
-                              // ensure we forward a non-null Map of ALL data we received
                               final dynamic routeArgs = ModalRoute.of(
                                 context,
                               )?.settings.arguments;
@@ -199,10 +184,8 @@ class QuizIntroPage extends StatelessWidget {
                                   ? Map<String, dynamic>.from(routeArgs)
                                   : {};
 
-                              // you can also enrich here if needed before forwarding
                               final Map<String, dynamic> nextArgs = {
-                                ...incoming, // bulk pass-through of everything (teacherAssessmentID, assessment, etc.)
-                                // add/override extras if you want:
+                                ...incoming,
                                 'from': 'quiz_intro',
                               };
 

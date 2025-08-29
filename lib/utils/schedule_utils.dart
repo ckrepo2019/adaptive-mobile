@@ -1,13 +1,9 @@
 import 'time_utils.dart';
 
-/// Schedule/day helpers.
 class ScheduleUtils {
-  /// Returns weekday as 1..7 (Mon=1 .. Sun=7), or null if unknown.
-  /// Reads common numeric fields or falls back to day name (Mon/Tue...).
   static int? dayIndexFromRow(dynamic row) {
     if (row is! Map) return null;
 
-    // numeric-style fields
     for (final k in row.keys) {
       final key = k.toString().toLowerCase();
       if (key == 'day_id' ||
@@ -23,13 +19,11 @@ class ScheduleUtils {
       }
     }
 
-    // sometimes "day" itself contains numeric
     final d = row['day'];
     final parsed = _toIntOrNull(d);
     final idx = _normalizeIndex(parsed);
     if (idx != null) return idx;
 
-    // fallback: map day_name/day string to index
     final rawName = (row['day_name'] ?? row['day'] ?? '')
         .toString()
         .trim()
@@ -58,7 +52,6 @@ class ScheduleUtils {
     return null;
   }
 
-  /// Prefer labels observed in your data; fallback to defaults.
   static String labelForDayIndex(int idx1to7, Map<int, String> bestSeen) {
     const fallback = {
       1: 'Monday',
@@ -74,8 +67,6 @@ class ScheduleUtils {
     return fallback[idx1to7]!;
   }
 
-  /// Compress sorted weekday indexes into ranges using labels:
-  /// [1,2,3,4,5] -> "Monday - Friday", [1,3] -> "Monday" + "Wednesday"
   static List<String> compressDayRanges(
     List<int> idxs,
     Map<int, String> bestSeen,
@@ -105,14 +96,11 @@ class ScheduleUtils {
     return parts;
   }
 
-  /// Formats schedule into a compact human string:
-  /// "Monday - Friday • 8:00–9:30 AM" or "Monday & Wednesday • ..."
   static String formatSchedule(List<dynamic>? schedule, {DateTime? now}) {
     if (schedule == null || schedule.isEmpty) return '';
 
-    // Collect unique weekday indexes and best labels from data
     final idxSet = <int>{};
-    final bestLabel = <int, String>{}; // idx -> best display label seen
+    final bestLabel = <int, String>{};
 
     for (final row in schedule) {
       if (row is! Map) continue;
@@ -134,8 +122,7 @@ class ScheduleUtils {
       }
     }
 
-    final idxs = idxSet.toList()..sort(); // 1..7
-    // If no valid days, show time only (if present)
+    final idxs = idxSet.toList()..sort();
     if (idxs.isEmpty) {
       final first = schedule.first as Map;
       final startTime = TimeUtils.fmtTime(
@@ -147,10 +134,8 @@ class ScheduleUtils {
           : '';
     }
 
-    // Build day ranges (e.g., "Monday - Friday", "Monday & Wednesday")
     final rangeParts = compressDayRanges(idxs, bestLabel);
 
-    // Join ranges
     String dayPart;
     if (rangeParts.length == 1) {
       dayPart = rangeParts.first;
@@ -161,7 +146,6 @@ class ScheduleUtils {
           '${rangeParts.sublist(0, rangeParts.length - 1).join(', ')} & ${rangeParts.last}';
     }
 
-    // Time from first row
     final first = schedule.first as Map;
     final startTime = TimeUtils.fmtTime((first['start_time'] ?? '').toString());
     final endTime = TimeUtils.fmtTime((first['end_time'] ?? '').toString());
@@ -172,14 +156,12 @@ class ScheduleUtils {
     return '$dayPart$timePart';
   }
 
-  // ---- private helpers ----
   static int? _toIntOrNull(Object? v) {
     if (v is int) return v;
     if (v is String) return int.tryParse(v);
     return null;
   }
 
-  /// Normalizes 1..7 → 1..7 (Mon..Sun), 0..6 → 1..7 (Mon..Sun) assuming 0=Mon.
   static int? _normalizeIndex(int? n) {
     if (n == null) return null;
     if (n >= 1 && n <= 7) return n;

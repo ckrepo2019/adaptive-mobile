@@ -1,4 +1,3 @@
-// lib/controllers/student_class.dart
 import 'dart:convert';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:http/http.dart' as http;
@@ -18,17 +17,10 @@ class StudentClassController {
     return prefs.getInt('id');
   }
 
-  /// Fetch enrolled classes for a student.
-  /// Backend response:
-  /// {
-  ///   success: true,
-  ///   subjects: [...],
-  ///   subjects_with_units: [...]
-  /// }
   static Future<ApiResponse<Map<String, dynamic>>> fetchClasses({
     String? token,
     String? query,
-    int? studentId, // optional override; otherwise taken from SharedPreferences
+    int? studentId,
   }) async {
     final resolvedToken = await _resolveToken(token);
     if (resolvedToken == null) {
@@ -47,7 +39,6 @@ class StudentClassController {
       );
     }
 
-    // Build: /student-classes/{id}?query=...
     final base = '${AppConstants.baseURL}/student-classes/$resolvedId';
     final uri = Uri.parse(base).replace(
       queryParameters: (query != null && query.trim().isNotEmpty)
@@ -119,7 +110,6 @@ class StudentClassController {
       final body = jsonDecode(raw);
 
       if (res.statusCode == 200 && body is Map && body['success'] == true) {
-        // ---- Simple fields ----
         final subjects = (body['subjects'] is List)
             ? List<dynamic>.from(body['subjects'])
             : const <dynamic>[];
@@ -140,12 +130,10 @@ class StudentClassController {
             ? List<dynamic>.from(body['classmateunits'])
             : const <dynamic>[];
 
-        // ---- Correct shapes for assessments & first_content ----
         final List<Map<String, dynamic>> assessments =
             (body['assessments'] is List)
             ? List<Map<String, dynamic>>.from(
                 (body['assessments'] as List).map((e) {
-                  // force a Map<String,dynamic> for each element
                   return (e is Map)
                       ? Map<String, dynamic>.from(e)
                       : <String, dynamic>{};
@@ -216,7 +204,6 @@ class StudentClassController {
       if (res.statusCode == 200 &&
           body is Map &&
           (body['success'] == true || body['message'] != null)) {
-        // Normalize expected fields
         final enrolledId = (body['enrolled_id'] is num)
             ? (body['enrolled_id'] as num).toInt()
             : null;
@@ -232,7 +219,6 @@ class StudentClassController {
         );
       }
 
-      // Handle known error responses from backend
       final msg = (body is Map && body['message'] != null)
           ? body['message'].toString()
           : (body is Map && body['error'] != null)

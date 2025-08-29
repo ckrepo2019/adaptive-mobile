@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class QuizResultPage extends StatelessWidget {
   const QuizResultPage({super.key});
 
-  // ---------- helpers ----------
   num? _firstNum(Map? map, List<String> keys) {
     if (map == null) return null;
     for (final k in keys) {
@@ -40,7 +39,6 @@ class QuizResultPage extends StatelessWidget {
   double _clamp(num v, num min, num max) =>
       v < min ? min.toDouble() : (v > max ? max.toDouble() : v.toDouble());
 
-  // Count all questions across sections in assessment payload
   int _countItemsFromAssessment(Map a) {
     final sections = (a['assessment_section'] is List)
         ? (a['assessment_section'] as List)
@@ -54,14 +52,12 @@ class QuizResultPage extends StatelessWidget {
     return total;
   }
 
-  // Try to compute #correct from assessment answers + choices
   int? _computeCorrectFromAssessment(Map a) {
     final sections = (a['assessment_section'] is List)
         ? (a['assessment_section'] as List)
         : const [];
     if (sections.isEmpty) return null;
 
-    // Build quick lookup questionID -> question map
     final Map<int, Map> qById = {};
     for (final s in sections) {
       if (s is! Map) continue;
@@ -133,9 +129,7 @@ class QuizResultPage extends StatelessWidget {
             sel.containsAll(correctSet)) {
           correct++;
         }
-      } else {
-        // identification / essay → skip
-      }
+      } else {}
     }
 
     return correct;
@@ -147,7 +141,6 @@ class QuizResultPage extends StatelessWidget {
     final w = mq.size.width;
     final h = mq.size.height;
 
-    // Layout sizes
     final titleTopPad = _clamp(h * 0.04, 18, 28);
     final scoreBlockTopGap = _clamp(h * 0.14, 60, 140);
     final bigNumSize = _clamp(w * 0.45, 120, 220);
@@ -159,12 +152,10 @@ class QuizResultPage extends StatelessWidget {
     final cardHeight = _clamp(h * 0.12, 92, 106);
     final buttonH = _clamp(h * 0.062, 48, 54);
 
-    // ---- Route args ----
     final args = ModalRoute.of(context)?.settings.arguments as Map? ?? {};
     final Map? result = args['result'] as Map?;
     final Map? assessment = args['assessment'] as Map?;
 
-    // -------- Primary numbers from `result` when available --------
     num? scoreNum = _firstNum(result, [
       'score',
       'earned',
@@ -180,7 +171,6 @@ class QuizResultPage extends StatelessWidget {
       'overall_score',
     ]);
 
-    // -------- If result missing/empty, fallback to `assessment` --------
     if ((result == null || result.isEmpty) && assessment != null) {
       final Map? ascore = assessment['assessment_score'] as Map?;
       final num? aScoreNum = _firstNum(ascore, [
@@ -230,8 +220,7 @@ class QuizResultPage extends StatelessWidget {
         ? (scoreNum / overallNum)
         : null;
     String? learnerLabel;
-    // Learner text
-    String? derivedLearner = learnerLabel; // default
+    String? derivedLearner = learnerLabel;
     try {
       final sp = assessment?['studentprofile'];
       if (sp is Map) {
@@ -243,11 +232,8 @@ class QuizResultPage extends StatelessWidget {
           }
         }
       }
-    } catch (_) {
-      // keep default learnerLabel if any parsing fails
-    }
+    } catch (_) {}
 
-    // Achievements (best-effort)
     final num? expNum = _firstNum(result, [
       'exp',
       'total_exp',
@@ -271,7 +257,6 @@ class QuizResultPage extends StatelessWidget {
         ? '${famNum.toString()}%'
         : (pct != null ? '${(pct * 100).toStringAsFixed(0)}%' : '--');
 
-    // ---------- UI ----------
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Container(
@@ -285,7 +270,6 @@ class QuizResultPage extends StatelessWidget {
         child: SafeArea(
           child: Column(
             children: [
-              // Title
               Padding(
                 padding: EdgeInsets.only(top: titleTopPad),
                 child: Text(
@@ -298,10 +282,8 @@ class QuizResultPage extends StatelessWidget {
                 ),
               ),
 
-              // Push score block lower
               SizedBox(height: scoreBlockTopGap),
 
-              // Score + denominator
               Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -328,7 +310,6 @@ class QuizResultPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Learner pill
               Container(
                 height: learnerPillH,
                 padding: EdgeInsets.symmetric(
@@ -376,10 +357,8 @@ class QuizResultPage extends StatelessWidget {
                 ),
               ),
 
-              // Spacer pushes white sheet to the bottom
               const Spacer(),
 
-              // White sheet with achievements + button INSIDE
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -416,7 +395,6 @@ class QuizResultPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
-                      // 3 achievement cards row (unchanged)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -473,10 +451,8 @@ class QuizResultPage extends StatelessWidget {
 
                       const SizedBox(height: 60),
 
-                      // 👇 Two buttons row
                       Row(
                         children: [
-                          // Back to Home button
                           Expanded(
                             child: SizedBox(
                               height: buttonH,
@@ -520,7 +496,6 @@ class QuizResultPage extends StatelessWidget {
                           ),
                           const SizedBox(width: 12),
 
-                          // Take Remedial button (gradient as before)
                           Expanded(
                             child: SizedBox(
                               height: buttonH,
@@ -579,20 +554,13 @@ class QuizResultPage extends StatelessWidget {
   }
 }
 
-/* -------------------- NEW CARD --------------------
-
-Main colored container with:
-- header (two-column text: left title, right optional small text)
-- white inner tile below it, centering optional icon + value
-
----------------------------------------------------*/
 class _AchievementCard extends StatelessWidget {
   const _AchievementCard({
     required this.bg,
     required this.headerLeft,
     required this.headerRight,
     required this.valueText,
-    this.innerIcon, // 👈 now optional
+    this.innerIcon,
     this.innerIconColor,
     required this.height,
   });
@@ -601,7 +569,7 @@ class _AchievementCard extends StatelessWidget {
   final String headerLeft;
   final String headerRight;
   final String valueText;
-  final IconData? innerIcon; // 👈 nullable
+  final IconData? innerIcon;
   final Color? innerIconColor;
   final double height;
 
@@ -677,7 +645,7 @@ class _AchievementCard extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
-                          color: accent, // match outer bg tone
+                          color: accent,
                         ),
                       ),
                     ],

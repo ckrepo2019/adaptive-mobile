@@ -15,7 +15,6 @@ class StudentJoinClassSuccess extends StatefulWidget {
 }
 
 class _StudentJoinClassSuccessState extends State<StudentJoinClassSuccess> {
-  // Initialize here to avoid "Lookup failed" during build/hot reload.
   final ConfettiController _confettiController = ConfettiController(
     duration: const Duration(seconds: 2),
   );
@@ -24,8 +23,6 @@ class _StudentJoinClassSuccessState extends State<StudentJoinClassSuccess> {
   void initState() {
     super.initState();
     _confettiController.play();
-
-    // Auto-redirect after a short delay (adjust as you like)
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
@@ -59,7 +56,7 @@ class _StudentJoinClassSuccessState extends State<StudentJoinClassSuccess> {
       transform: Matrix4.identity()..scale(flip ? -1.0 : 1.0, 1.0, 1.0),
       child: Image.asset(
         'assets/images/student-class/confetti.png',
-        width: size, // dynamic width
+        width: size,
         fit: BoxFit.contain,
       ),
     );
@@ -67,7 +64,6 @@ class _StudentJoinClassSuccessState extends State<StudentJoinClassSuccess> {
 
   @override
   Widget build(BuildContext context) {
-    // Pull values from Get.arguments
     final args = Get.arguments;
     String subjectCode = 'Your Class';
     if (args is Map) {
@@ -86,36 +82,24 @@ class _StudentJoinClassSuccessState extends State<StudentJoinClassSuccess> {
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
               confettiController: _confettiController,
-              blastDirection: 3.14 / 2, // downward
+              blastDirection: 3.14 / 2,
               emissionFrequency: 0.05,
               numberOfParticles: 20,
               gravity: 0.1,
             ),
           ),
-
-          // Static corner confetti
-          Positioned(
-            top: 200,
-            left: -20,
-            child: _confettiImage(size: 140), // smaller
-          ),
+          Positioned(top: 200, left: -20, child: _confettiImage(size: 140)),
           Positioned(
             top: 100,
             right: 0,
-            child: _confettiImage(flip: true, size: 100), // bigger, flipped
+            child: _confettiImage(flip: true, size: 100),
           ),
-          Positioned(
-            bottom: 130,
-            left: 0,
-            child: _confettiImage(size: 120), // medium
-          ),
+          Positioned(bottom: 130, left: 0, child: _confettiImage(size: 120)),
           Positioned(
             bottom: -20,
             right: -20,
-            child: _confettiImage(flip: true, size: 160), // largest
+            child: _confettiImage(flip: true, size: 160),
           ),
-
-          // Main content
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(25.0),
@@ -150,7 +134,7 @@ class _StudentJoinClassSuccessState extends State<StudentJoinClassSuccess> {
                       ),
                       child: Center(
                         child: Text(
-                          subjectCode, // ← dynamic from arguments
+                          subjectCode,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
                             fontSize: 20,

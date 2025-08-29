@@ -38,10 +38,7 @@ class _StudentJoinClassState extends State<StudentJoinClass> {
     if (res.success) {
       Get.toNamed(
         AppRoutes.studentJoinClassSuccess,
-        arguments: {
-          ...?res.data, // { enrolled_id, subject_id, ... }
-          'subject_code': _controller.text.trim(), // add this
-        },
+        arguments: {...?res.data, 'subject_code': _controller.text.trim()},
       );
     } else {
       _showNiceAlert(
@@ -201,7 +198,6 @@ class _StudentJoinClassState extends State<StudentJoinClass> {
 
   @override
   Widget build(BuildContext context) {
-    // For responsive image sizing
     final w = MediaQuery.of(context).size.width;
     final imgWidth = (w * 0.105).clamp(300.0, 350.0);
 
@@ -210,7 +206,6 @@ class _StudentJoinClassState extends State<StudentJoinClass> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // Main content
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -339,8 +334,6 @@ class _StudentJoinClassState extends State<StudentJoinClass> {
               ),
             ),
           ),
-
-          // Illustration (bottom-right), ignore taps so UI behind stays clickable
           Positioned(
             right: -100,
             bottom: -120,

@@ -6,6 +6,7 @@ import 'package:flutter_lms/views/student/home/quick_actions.dart';
 import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/cards_list.dart';
+import 'package:flutter_lms/widgets/skeleton_loader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
@@ -28,18 +29,17 @@ class StudentHomePage extends StatefulWidget {
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
-  bool _loading = true; // network in-flight
-  bool _ready = false; // payload validated & normalized
+  bool _loading = true;
+  bool _ready = false;
   String? _error;
 
-  Map<String, dynamic>? _data; // normalized payload
+  Map<String, dynamic>? _data;
   String? _token;
   String? _uid;
 
-  // Loop/dup guards
-  bool _initialized = false; // run bootstrap exactly once
-  bool _navigated = false; // prevent multiple redirects
-  String? _lastFetchKey; // avoid duplicate fetch for same (token,uid)
+  bool _initialized = false;
+  bool _navigated = false;
+  String? _lastFetchKey;
 
   void _goToClasses() {
     StudentTabs.of(context).setIndex(1);
@@ -58,14 +58,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
     _uid = widget.uid;
 
     _initialized = true;
-    _safeLoad(_token!, _uid!); // <-- fixed stray quote
+    _safeLoad(_token!, _uid!);
   }
 
-  // Public retry or pull-to-refresh can call this safely.
   Future<void> _safeLoad(String token, String uid) async {
     final key = '$token::$uid';
     if (_lastFetchKey == key && (_data != null || _loading)) {
-      // Already loaded or in-flight for these creds; do nothing.
       return;
     }
     _lastFetchKey = key;
@@ -137,7 +135,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
     final raw = resp.data!;
 
-    // Single-fire redirect rule
     final learnersProfile = (raw['learners_profile'] as List?) ?? const [];
     final enrollmentData = raw['enrollment_data'];
     if (!_navigated && learnersProfile.isEmpty && enrollmentData != null) {
@@ -159,7 +156,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
       return;
     }
 
-    // Validate + normalize before displaying
     if (!_isCompletePayload(raw)) {
       setState(() {
         _loading = false;
@@ -188,7 +184,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     return 'Student';
   }
 
-  // ---------- Date & Duration helpers ----------
   DateTime? _parseDateTime(Object? s) {
     if (s == null) return null;
     var raw = s.toString().trim();
@@ -307,7 +302,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     return null;
   }
 
-  // ---------- Build Assignments from backend assessments ----------
   List<AssignmentItem> get assignments {
     final subjects = (_data?['subjects'] as List?) ?? const [];
     final List<_AssessRow> rows = [];
@@ -336,7 +330,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
         if (desc.isNotEmpty) {
           type = desc.length > 24 ? '${desc.substring(0, 24)}…' : desc;
         } else {
-          // Safely cast a['totals'] to Map<String, dynamic>? and read questions
           final Map<String, dynamic>? totals = (a['totals'] is Map)
               ? Map<String, dynamic>.from(a['totals'] as Map)
               : null;
@@ -371,9 +364,9 @@ class _StudentHomePageState extends State<StudentHomePage> {
       final ax = x.when;
       final by = y.when;
       if (ax == null && by == null) return 0;
-      if (ax == null) return 1; // nulls last
-      if (by == null) return -1; // nulls last
-      return by.compareTo(ax); // newest first
+      if (ax == null) return 1;
+      if (by == null) return -1;
+      return by.compareTo(ax);
     });
 
     return rows.map((e) => e.item).toList();
@@ -395,7 +388,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
     return p;
   }
 
-  // Build Class Progress items directly from `_data['subjects']`
   List<ClassProgressItem> get classes {
     final subjects = (_data?['subjects'] as List?) ?? const [];
     final List<ClassProgressItem> result = [];
@@ -447,7 +439,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
           progress: 0.6,
           iconAsset: iconPath,
           accent: Colors.blueAccent,
-          subject: s as Map<String, dynamic>, // attach full subject
+          subject: s as Map<String, dynamic>,
         ),
       );
     }
@@ -456,6 +448,43 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_error != null) {
+      return StudentGlobalLayout(
+        useScaffold: false,
+        useSafeArea: false,
+        header: GlobalAppBar(
+          title: 'Home',
+          onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
+          onProfileTap: () {},
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {
+                  if (_token != null && _uid != null) {
+                    _safeLoad(_token!, _uid!);
+                  }
+                },
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SkeletonLoader(isLoading: _loading, child: _buildContent());
+  }
+
+  Widget _buildContent() {
     final w = MediaQuery.of(context).size.width;
 
     double clampNum(double v, double min, double max) =>
@@ -469,7 +498,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final learnersProfiles = (_data?['learners_profile'] as List?) ?? [];
 
     final viewInset = MediaQuery.of(context).padding.bottom;
-    const navBarHeight = 88.0; // FancyStudentNavBar height
+    const navBarHeight = 88.0;
     final bottomGap = navBarHeight + viewInset + 24.0;
 
     return StudentGlobalLayout(
@@ -493,400 +522,334 @@ class _StudentHomePageState extends State<StudentHomePage> {
       onRefresh: (_token != null && _uid != null)
           ? () => _safeLoad(_token!, _uid!)
           : null,
-      child: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : (_error != null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          _error!,
-                          style: const TextStyle(color: Colors.red),
-                          textAlign: TextAlign.center,
+      child: _ready
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    bodyPadH,
+                    bodyPadV,
+                    bodyPadH,
+                    12,
+                  ),
+                  child: Row(
+                    children: [
+                      const CircleAvatar(
+                        radius: 26,
+                        backgroundColor: Color(0xFFF1F3F6),
+                        backgroundImage: AssetImage(
+                          'assets/images/student-home/default-avatar-female.png',
                         ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (_token != null && _uid != null) {
-                              _safeLoad(_token!, _uid!);
-                            }
-                          },
-                          child: const Text('Retry'),
-                        ),
-                      ],
-                    ),
-                  )
-                : (_ready
-                      ? Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // === Welcome Row (NON-SCROLLABLE) ===
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(
-                                bodyPadH,
-                                bodyPadV,
-                                bodyPadH,
-                                12,
-                              ),
-                              child: Row(
-                                children: [
-                                  const CircleAvatar(
-                                    radius: 26,
-                                    backgroundColor: Color(0xFFF1F3F6),
-                                    backgroundImage: AssetImage(
-                                      'assets/images/student-home/default-avatar-female.png',
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Welcome $_welcomeFirstName.',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.black,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      Wrap(
-                                        spacing: 6,
-                                        runSpacing: 4,
-                                        children: learnersProfiles.isNotEmpty
-                                            ? learnersProfiles.map<Widget>((
-                                                lp,
-                                              ) {
-                                                if (lp is Map &&
-                                                    lp['learners_types']
-                                                        is Map) {
-                                                  final typeName =
-                                                      (lp['learners_types']['name'] ??
-                                                              '')
-                                                          .toString();
-                                                  return Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 10,
-                                                          vertical: 6,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.blue
-                                                          .withOpacity(0.1),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            999,
-                                                          ),
-                                                      border: Border.all(
-                                                        color: Colors.blue
-                                                            .withOpacity(0.25),
-                                                      ),
-                                                    ),
-                                                    child: Text(
-                                                      "$typeName Learner",
-                                                      style:
-                                                          GoogleFonts.poppins(
-                                                            fontSize: 12,
-                                                            color: Colors
-                                                                .blue[800],
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                    ),
-                                                  );
-                                                }
-                                                return const SizedBox.shrink();
-                                              }).toList()
-                                            : [
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 6,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.grey
-                                                        .withOpacity(0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          999,
-                                                        ),
-                                                    border: Border.all(
-                                                      color: Colors.grey
-                                                          .withOpacity(0.25),
-                                                    ),
-                                                  ),
-                                                  child: Text(
-                                                    'No Learner Type',
-                                                    style: GoogleFonts.poppins(
-                                                      fontSize: 12,
-                                                      color: Colors.grey[700],
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                      ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Welcome $_welcomeFirstName.',
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black,
                             ),
-
-                            // === Badges Row (NON-SCROLLABLE) ===
-                            Padding(
-                              padding: EdgeInsets.fromLTRB(
-                                bodyPadH,
-                                0,
-                                bodyPadH,
-                                20,
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.orange.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: Colors.orange.withOpacity(0.25),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.local_fire_department_outlined,
-                                          size: 14,
-                                          color: Colors.orange,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: learnersProfiles.isNotEmpty
+                                ? learnersProfiles.map<Widget>((lp) {
+                                    if (lp is Map &&
+                                        lp['learners_types'] is Map) {
+                                      final typeName =
+                                          (lp['learners_types']['name'] ?? '')
+                                              .toString();
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 6,
                                         ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          '7 day streak',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: Colors.orange,
-                                            fontWeight: FontWeight.w500,
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue.withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(
+                                            999,
                                           ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFB3E5FC),
-                                      borderRadius: BorderRadius.circular(999),
-                                      border: Border.all(
-                                        color: const Color(0xFF81D4FA),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.water_drop_outlined,
-                                          size: 14,
-                                          color: Color(0xFF0288D1),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'Level 5',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: Color(0xFF0288D1),
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            // === Scrollable content ===
-                            Expanded(
-                              child: ListView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                padding: EdgeInsets.fromLTRB(
-                                  bodyPadH,
-                                  0,
-                                  bodyPadH,
-                                  bodyPadV,
-                                ),
-                                children: [
-                                  // === Assignments (from assessments) ===
-                                  CardsList<AssignmentItem>(
-                                    headerTitle: 'My Assignments',
-                                    headerIcon:
-                                        'assets/images/student-home/my-assignments-vector.png',
-                                    items: assignments,
-                                    variant: CardVariant.assignment,
-                                    ctaLabel: 'View All Assignments',
-                                    onCta: _goToAssignments,
-                                    onAssignmentTap: (a) {
-                                      Navigator.pushNamed(
-                                        context,
-                                        AppRoutes.quizInfo,
-                                        arguments: a
-                                            .assessment, // <- pass the specific assessment
-                                      );
-                                    },
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  // === Class Progress ===
-                                  CardsList<ClassProgressItem>(
-                                    headerTitle: 'Class Progress',
-                                    headerIcon:
-                                        'assets/images/student-home/class-progress-vector.png',
-                                    items: classes,
-                                    variant: CardVariant.progress,
-                                    ctaLabel: 'View All Classes',
-                                    onCta: _goToClasses,
-                                    onProgressTap: (c) {
-                                      int? subjectIdFrom(
-                                        Map<String, dynamic>? m,
-                                      ) {
-                                        if (m == null) return null;
-                                        final candidates = [
-                                          'subject_ID',
-                                          'subjectId',
-                                          'subject_id',
-                                          'subjectID',
-                                          'id',
-                                        ];
-                                        for (final k in candidates) {
-                                          final v = m[k];
-                                          if (v == null) continue;
-                                          if (v is int) return v;
-                                          if (v is num) return v.toInt();
-                                          final parsed = int.tryParse(
-                                            v.toString(),
-                                          );
-                                          if (parsed != null) return parsed;
-                                        }
-                                        return null;
-                                      }
-
-                                      final int? subjectId = subjectIdFrom(
-                                        c.subject,
-                                      );
-                                      if (subjectId == null) {
-                                        // Optional: show a toast/snackbar if the payload is missing an id
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              'Subject ID not found',
+                                          border: Border.all(
+                                            color: Colors.blue.withOpacity(
+                                              0.25,
                                             ),
                                           ),
-                                        );
-                                        return;
-                                      }
-
-                                      Navigator.pushNamed(
-                                        context,
-                                        AppRoutes.subjectClassPage,
-                                        arguments: {
-                                          'subject_ID': subjectId,
-                                        }, // pass just the ID
+                                        ),
+                                        child: Text(
+                                          "$typeName Learner",
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            color: Colors.blue[800],
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                       );
-                                    },
-                                  ),
-
-                                  const SizedBox(height: 20),
-
-                                  Row(
-                                    children: [
-                                      const Icon(
-                                        Icons.access_time_outlined,
-                                        color: Colors.black87,
+                                    }
+                                    return const SizedBox.shrink();
+                                  }).toList()
+                                : [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6,
                                       ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Quick Actions',
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                        border: Border.all(
+                                          color: Colors.grey.withOpacity(0.25),
+                                        ),
+                                      ),
+                                      child: Text(
+                                        'No Learner Type',
                                         style: GoogleFonts.poppins(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                          color: Colors.black87,
+                                          fontSize: 12,
+                                          color: Colors.grey[700],
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
+                                    ),
+                                  ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
 
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: QuickActionTile(
-                                          iconAsset:
-                                              'assets/images/student-home/lessons-vector.png',
-                                          label: 'Lessons',
-                                          onTap: () {},
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: QuickActionTile(
-                                          iconAsset:
-                                              'assets/images/student-home/assignments.png',
-                                          label: 'Assignments',
-                                          onTap: () {},
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: QuickActionTile(
-                                          iconAsset:
-                                              'assets/images/student-home/classes-quickactions.png',
-                                          label: 'Classes',
-                                          onTap: () {},
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: QuickActionTile(
-                                          iconAsset:
-                                              'assets/images/student-home/leaderboards-quickactions.png',
-                                          label: 'Assignments',
-                                          onTap: () {},
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-
-                                  const SizedBox(height: 12),
-                                  // leave room above bottom navbar
-                                  SizedBox(height: bottomGap - 100),
-                                ],
+                Padding(
+                  padding: EdgeInsets.fromLTRB(bodyPadH, 0, bodyPadH, 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.orange.withOpacity(0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.local_fire_department_outlined,
+                              size: 14,
+                              color: Colors.orange,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              '7 day streak',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.orange,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ],
-                        )
-                      : const Center(child: CircularProgressIndicator()))),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFB3E5FC),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(color: const Color(0xFF81D4FA)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.water_drop_outlined,
+                              size: 14,
+                              color: Color(0xFF0288D1),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Level 5',
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Color(0xFF0288D1),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Expanded(
+                  child: ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: EdgeInsets.fromLTRB(
+                      bodyPadH,
+                      0,
+                      bodyPadH,
+                      bodyPadV,
+                    ),
+                    children: [
+                      CardsList<AssignmentItem>(
+                        headerTitle: 'My Assignments',
+                        headerIcon:
+                            'assets/images/student-home/my-assignments-vector.png',
+                        items: assignments,
+                        variant: CardVariant.assignment,
+                        ctaLabel: 'View All Assignments',
+                        onCta: _goToAssignments,
+                        onAssignmentTap: (a) {
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.quizInfo,
+                            arguments: a.assessment,
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      CardsList<ClassProgressItem>(
+                        headerTitle: 'Class Progress',
+                        headerIcon:
+                            'assets/images/student-home/class-progress-vector.png',
+                        items: classes,
+                        variant: CardVariant.progress,
+                        ctaLabel: 'View All Classes',
+                        onCta: _goToClasses,
+                        onProgressTap: (c) {
+                          int? subjectIdFrom(Map<String, dynamic>? m) {
+                            if (m == null) return null;
+                            final candidates = [
+                              'subject_ID',
+                              'subjectId',
+                              'subject_id',
+                              'subjectID',
+                              'id',
+                            ];
+                            for (final k in candidates) {
+                              final v = m[k];
+                              if (v == null) continue;
+                              if (v is int) return v;
+                              if (v is num) return v.toInt();
+                              final parsed = int.tryParse(v.toString());
+                              if (parsed != null) return parsed;
+                            }
+                            return null;
+                          }
+
+                          final int? subjectId = subjectIdFrom(c.subject);
+                          if (subjectId == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Subject ID not found'),
+                              ),
+                            );
+                            return;
+                          }
+
+                          Navigator.pushNamed(
+                            context,
+                            AppRoutes.subjectClassPage,
+                            arguments: {'subject_ID': subjectId},
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time_outlined,
+                            color: Colors.black87,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Quick Actions',
+                            style: GoogleFonts.poppins(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: QuickActionTile(
+                              iconAsset:
+                                  'assets/images/student-home/lessons-vector.png',
+                              label: 'Lessons',
+                              onTap: () {},
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: QuickActionTile(
+                              iconAsset:
+                                  'assets/images/student-home/assignments.png',
+                              label: 'Assignments',
+                              onTap: () {},
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: QuickActionTile(
+                              iconAsset:
+                                  'assets/images/student-home/classes-quickactions.png',
+                              label: 'Classes',
+                              onTap: () {},
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: QuickActionTile(
+                              iconAsset:
+                                  'assets/images/student-home/leaderboards-quickactions.png',
+                              label: 'Assignments',
+                              onTap: () {},
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+                      SizedBox(height: bottomGap - 100),
+                    ],
+                  ),
+                ),
+              ],
+            )
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }
 
-// ---- helper row (top-level; Dart does NOT support nested classes) ----
 class _AssessRow {
   final AssignmentItem item;
   final DateTime? when;

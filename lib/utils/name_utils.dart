@@ -1,7 +1,5 @@
 /// Person/name helpers.
 class NameUtils {
-  /// Builds a full display name from a teacher/person map.
-  /// Supports keys: firstname/first_name, middlename/middle_name, lastname/last_name, name.
   static String formatTeacher(dynamic teacher) {
     if (teacher is Map) {
       final f = (teacher['firstname'] ?? teacher['first_name'] ?? '')

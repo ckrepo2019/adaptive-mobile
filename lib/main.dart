@@ -10,13 +10,11 @@ import 'package:flutter_lms/state/bindings/student/student_home_bindings.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Optional: lock portrait
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  // App-wide immersive (hide status + nav bars)
   _goImmersive();
 
   runApp(const MyApp());
@@ -41,13 +39,11 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-/// Keep immersive mode even after keyboard, gestures, or app resume.
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // Re-apply after first frame to avoid splash/system transitions
     WidgetsBinding.instance.addPostFrameCallback((_) => _goImmersive());
   }
 
@@ -59,7 +55,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   @override
   void didChangeMetrics() {
-    // Called on keyboard open/close; re-apply immersive.
     _goImmersive();
   }
 
@@ -109,7 +104,6 @@ class _LaunchGateState extends State<_LaunchGate> {
     final userType = prefs.getInt('usertype_ID');
     final id = prefs.getInt('id');
 
-    // Ensure immersive after navigation too
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (token != null && uid != null && userType != null) {
         Get.offAllNamed(

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/widgets/app_bar.dart'; // your GlobalAppBar path
+import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/controllers/student/student_subject.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
@@ -11,7 +11,7 @@ class QuizInfoItem {
   final String date;
   final String duration;
   final String? description;
-  final String type; // e.g., 'Quiz', 'Assignment', 'Essay'
+  final String type;
   const QuizInfoItem({
     required this.title,
     required this.subject,
@@ -30,7 +30,6 @@ class QuizInfoPage extends StatefulWidget {
 }
 
 class _QuizInfoPageState extends State<QuizInfoPage> {
-  // route-provided fallbacks
   late String _title;
   late String _subject;
   late String _date;
@@ -38,13 +37,11 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
   late String _description;
   late String _type;
 
-  int? _assessmentId; // teacherAssessmentID
+  int? _assessmentId;
   bool _fetchStarted = false;
 
-  // fetched/passed backend JSON blob
   Map<String, dynamic>? _assessmentData;
 
-  // ensure we only redirect once
   bool _redirected = false;
 
   double _clamp(double v, double min, double max) =>
@@ -74,7 +71,6 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
           ? args['description'] as String
           : _defaultDescription();
 
-      // teacherAssessmentID
       final dynamic rawId = args['teacherAssessmentID'] ?? args['id'];
       if (rawId != null) {
         final parsed = int.tryParse(rawId.toString());
@@ -84,7 +80,6 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
         }
       }
 
-      // Optional: full assessment already passed in
       final dynamic incomingAssessment = args['assessment'];
       if (incomingAssessment is Map) {
         _assignmentSetAndMaybeRedirect(
@@ -100,7 +95,6 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
       _description = _defaultDescription();
     }
 
-    // If we didn't get full data but have an id, fetch
     if (!_fetchStarted &&
         _assessmentData == null &&
         _assessmentId != null &&
@@ -109,8 +103,6 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
       _fetchAssessment(_assessmentId!);
     }
   }
-
-  // ---------------- Helpers: score detection + redirect ----------------
 
   bool _hasComputedScore(Map<String, dynamic>? assessment) {
     if (assessment == null) return false;
@@ -130,9 +122,7 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.quizResult,
         (route) => false,
-        arguments: {
-          'assessment': assessment, // pass whole blob
-        },
+        arguments: {'assessment': assessment},
       );
     });
   }
@@ -142,11 +132,9 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
     if (_hasComputedScore(_assessmentData)) {
       _goToResult(_assessmentData!);
     } else {
-      setState(() {}); // just to refresh UI with fetched data
+      setState(() {});
     }
   }
-
-  // ---------------- Backend fetch ----------------
 
   Future<void> _fetchAssessment(int teacherAssessmentId) async {
     try {
@@ -168,7 +156,6 @@ class _QuizInfoPageState extends State<QuizInfoPage> {
     }
   }
 
-  // --------- Derivers from backend JSON ---------
   String get _assessmentName {
     final n = _assessmentData?['assessment_details']?['assessment_name'];
     return (n is String && n.trim().isNotEmpty) ? n : _title;
@@ -216,7 +203,7 @@ ax² + bx + c = 0
 
 Then, you'll explore four ways to solve them:
 • Factoring (when numbers split easily)
-• Using square roots (when there’s no bx term)
+• Using square roots (when there's no bx term)
 • Completing the square (to form a perfect square)
 • The quadratic formula (a method that works every time)
 
@@ -237,10 +224,9 @@ By the end of this quiz, you'll understand how to match the approach to the deta
 
     final textTheme = GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme);
 
-    // derived / fallback values for display
-    final bannerTitle = _assessmentName; // from backend
-    final aboutText = _assessmentDescription; // from backend
-    final shownDuration = _durationFromBackend; // from backend settings
+    final bannerTitle = _assessmentName;
+    final aboutText = _assessmentDescription;
+    final shownDuration = _durationFromBackend;
 
     final bool alreadyGraded = _hasComputedScore(_assessmentData);
 
@@ -258,7 +244,6 @@ By the end of this quiz, you'll understand how to match the approach to the deta
         child: ListView(
           padding: EdgeInsets.fromLTRB(padX, 12, padX, 24),
           children: [
-            // Banner showing subject + assessment_name
             _BannerCard(
               subject: _subject.isEmpty ? 'Subject' : _subject,
               title: bannerTitle.isEmpty ? _title : bannerTitle,
@@ -267,13 +252,11 @@ By the end of this quiz, you'll understand how to match the approach to the deta
 
             const SizedBox(height: 14),
 
-            // Passing Rate pill (stylish)
             if (_passingRate != null)
               _PassingRatePill(passingRate: _passingRate!),
 
             const SizedBox(height: 18),
 
-            // About Heading
             Text(
               'About this Quiz',
               style: textTheme.titleMedium?.copyWith(
@@ -284,7 +267,6 @@ By the end of this quiz, you'll understand how to match the approach to the deta
             ),
             const SizedBox(height: 8),
 
-            // Body Copy (assessment_description)
             Text(
               aboutText.trim(),
               style: textTheme.bodyMedium?.copyWith(
@@ -296,7 +278,6 @@ By the end of this quiz, you'll understand how to match the approach to the deta
 
             const SizedBox(height: 20),
 
-            // Meta (Date • Duration)
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -352,7 +333,6 @@ By the end of this quiz, you'll understand how to match the approach to the deta
         ),
       ),
 
-      // Sticky CTA — if graded, "View Result" → results; else "Take Quiz" → intro
       bottomNavigationBar: SafeArea(
         minimum: EdgeInsets.fromLTRB(padX, 8, padX, 12),
         child: SizedBox(
@@ -378,14 +358,12 @@ By the end of this quiz, you'll understand how to match the approach to the deta
                   );
                   return;
                 }
-                // Bulk pass-through for taking the quiz
                 Navigator.pushNamed(
                   context,
                   AppRoutes.quizIntro,
                   arguments: {
                     'teacherAssessmentID': _assessmentId,
-                    'assessment':
-                        _assessmentData, // entire JSON blob (may be null)
+                    'assessment': _assessmentData,
                   },
                 );
               },
@@ -413,7 +391,6 @@ By the end of this quiz, you'll understand how to match the approach to the deta
   }
 }
 
-/// Stylish Passing Rate pill
 class _PassingRatePill extends StatelessWidget {
   final int passingRate;
   const _PassingRatePill({required this.passingRate});
@@ -427,7 +404,7 @@ class _PassingRatePill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF34D399), Color(0xFF059669)], // green gradient
+            colors: [Color(0xFF34D399), Color(0xFF059669)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -459,8 +436,6 @@ class _PassingRatePill extends StatelessWidget {
   }
 }
 
-/// Banner that always uses the built-in asset:
-/// assets/images/assignments/assignment-icon.png
 class _BannerCard extends StatelessWidget {
   final String subject;
   final String title;
@@ -506,7 +481,6 @@ class _BannerCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // LEFT: subject + title
           Expanded(
             child: Padding(
               padding: EdgeInsets.only(left: leftPad),
@@ -540,7 +514,6 @@ class _BannerCard extends StatelessWidget {
             ),
           ),
 
-          // RIGHT: image
           Expanded(
             flex: 1,
             child: Padding(

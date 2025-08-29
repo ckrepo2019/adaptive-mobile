@@ -4,16 +4,12 @@ import 'package:google_fonts/google_fonts.dart';
 class StudentsCountCard extends StatelessWidget {
   final int count;
 
-  /// Visual size of the icon/image
   final double iconSize;
 
-  /// Inner padding of the card
   final double padding;
 
-  /// Asset path for the student icon
   final String assetPath;
 
-  /// Optional tint; keep null to use the original asset colors
   final Color? tint;
 
   const StudentsCountCard({
@@ -46,9 +42,8 @@ class StudentsCountCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Asset icon
           SizedBox(
-            height: iconSize + 8, // slight breathing room like the mock
+            height: iconSize + 8,
             width: iconSize + 8,
             child: Center(
               child: Image.asset(
@@ -56,10 +51,9 @@ class StudentsCountCard extends StatelessWidget {
                 width: iconSize,
                 height: iconSize,
                 fit: BoxFit.contain,
-                color: tint, // leave null for original colors
+                color: tint,
                 filterQuality: FilterQuality.high,
                 errorBuilder: (_, __, ___) {
-                  // Fallback if asset missing/mis-registered
                   return Icon(
                     Icons.groups_2_outlined,
                     size: iconSize,
