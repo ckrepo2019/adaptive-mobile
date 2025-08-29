@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -7,12 +5,11 @@ import 'package:flutter_lms/config/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api_response.dart';
 
-/// Result object for safe JSON parse
 class _JsonParseResult {
   final int statusCode;
-  final dynamic json; // Can be Map/List/etc. when ok
-  final String cleanedText; // JSON substring after cleanup
-  final String? error; // Non-null when parse failed
+  final dynamic json;
+  final String cleanedText;
+  final String? error;
 
   bool get ok => error == null;
 
@@ -25,21 +22,13 @@ class _JsonParseResult {
 }
 
 class StudentSubjectController {
-  // -------------------- Shared helpers --------------------
-
   static Future<String?> _resolveToken(String? token) async {
     if (token != null && token.isNotEmpty) return token;
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
 
-  /// Public: sanitize + parse the HTTP response body into JSON.
-  /// - Handles 204 as empty list
-  /// - Decodes bytes, strips BOM
-  /// - Extracts likely JSON slice from noisy body
-  /// - Attempts jsonDecode
   static _JsonParseResult parseServerJson(http.Response res) {
-    // 204 or empty body -> treat as empty list
     if (res.statusCode == 204 || res.bodyBytes.isEmpty) {
       return _JsonParseResult(
         statusCode: res.statusCode,
@@ -48,13 +37,11 @@ class StudentSubjectController {
       );
     }
 
-    // Decode safely + strip BOM
     String text = utf8.decode(res.bodyBytes, allowMalformed: true).trim();
     if (text.isNotEmpty && text.codeUnitAt(0) == 0xFEFF) {
       text = text.substring(1);
     }
 
-    // Extract likely JSON slice if there’s noise
     final cleaned = _extractLikelyJson(text);
 
     dynamic decoded;
@@ -78,11 +65,9 @@ class StudentSubjectController {
     }
   }
 
-  /// Private: pulls out the most likely JSON substring from a messy body
   static String _extractLikelyJson(String raw) {
     String s = raw.trim();
 
-    // Already looks like JSON
     if ((s.startsWith('{') && s.endsWith('}')) ||
         (s.startsWith('[') && s.endsWith(']'))) {
       return s;
@@ -110,8 +95,6 @@ class StudentSubjectController {
 
     return s.substring(start, end + 1).trim();
   }
-
-  // -------------------- API Calls --------------------
 
   static Future<ApiResponse<List<Map<String, dynamic>>>>
   fetchAllFirstLevelContents({required int subjectId, String? token}) async {
@@ -142,7 +125,6 @@ class StudentSubjectController {
 
       final parsed = parseServerJson(res);
 
-      // Non-200: bubble up message if present (best-effort)
       if (res.statusCode != 200) {
         if (parsed.ok &&
             parsed.json is Map &&
@@ -158,12 +140,10 @@ class StudentSubjectController {
         );
       }
 
-      // 200 OK but parsing failed
       if (!parsed.ok) {
         return ApiResponse(success: false, message: parsed.error!);
       }
 
-      // Support either a bare array OR { data: [...] }
       final decoded = parsed.json;
       if (decoded is List) {
         final items = decoded
@@ -189,8 +169,6 @@ class StudentSubjectController {
     }
   }
 
-  /// Returns a *readable* cleaned JSON string, even if the server wrapped it with noise.
-  /// You still get proper error messages when status != 200 or JSON is invalid.
   static Future<ApiResponse<String>> fetchBookUnitContentRaw({
     required int bookId,
     required int parentId,
@@ -225,7 +203,6 @@ class StudentSubjectController {
       final parsed = parseServerJson(res);
 
       if (res.statusCode != 200) {
-        // Try to surface backend message if JSON object with 'message'
         if (parsed.ok && parsed.json is Map && parsed.json['message'] != null) {
           return ApiResponse(
             success: false,
@@ -241,12 +218,10 @@ class StudentSubjectController {
         );
       }
 
-      // 200 OK but parse failed -> still return the cleaned text to inspect
       if (!parsed.ok) {
         return ApiResponse(success: false, message: parsed.error!);
       }
 
-      // Success: return the readable/clean JSON text
       return ApiResponse(success: true, data: parsed.cleanedText);
     } catch (e) {
       return ApiResponse(success: false, message: 'Network error: $e');
@@ -258,9 +233,7 @@ class StudentSubjectController {
     required int subjectId,
     required int bookcontentId,
     String? token,
-
-    // optional tuning knobs
-    int attempts = 4, // total tries (1 + 3 retries)
+    int attempts = 4,
     Duration pause = const Duration(milliseconds: 600),
   }) async {
     if (bookId <= 0 || subjectId <= 0 || bookcontentId <= 0) {
@@ -275,17 +248,13 @@ class StudentSubjectController {
       );
     }
 
-    // small helper to decide if we should retry despite 200 OK
-    // ignore: no_leading_underscores_for_local_identifiers
     bool _looksIncomplete(dynamic json, String cleaned) {
-      // empty/very small response
       if (cleaned.trim().isEmpty ||
           cleaned.trim() == '[]' ||
           cleaned.length < 8) {
         return true;
       }
 
-      // list root
       if (json is List) {
         if (json.isEmpty) return true;
         final first = json.first;
@@ -298,7 +267,6 @@ class StudentSubjectController {
                 ? l2.toInt()
                 : int.tryParse('${l2 ?? ''}') ?? 0;
             if (children is List) {
-              // Backend says there are children but list came empty → transient
               if (children.isEmpty && l2Count > 0) return true;
             }
           }
@@ -306,7 +274,6 @@ class StudentSubjectController {
         return false;
       }
 
-      // object root (some backends do this)
       if (json is Map) {
         final children = json['children'];
         if (children is List && children.isEmpty) return true;
@@ -316,7 +283,6 @@ class StudentSubjectController {
       return false;
     }
 
-    // attempt loop with cache-buster & no-cache headers
     for (int attempt = 0; attempt < attempts; attempt++) {
       final cacheBuster = attempt == 0
           ? null
@@ -331,7 +297,6 @@ class StudentSubjectController {
           'Accept': 'application/json',
           'X-Requested-With': 'XMLHttpRequest',
           'Authorization': 'Bearer $resolvedToken',
-          // help defeat intermediate caches that may serve stale/partial bodies
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
           'Expires': '0',
@@ -343,7 +308,6 @@ class StudentSubjectController {
         final parsed = parseServerJson(res);
 
         if (res.statusCode != 200) {
-          // bubble up backend message if present
           if (parsed.ok &&
               parsed.json is Map &&
               parsed.json['message'] != null) {
@@ -361,7 +325,6 @@ class StudentSubjectController {
           );
         }
 
-        // 200 but JSON invalid → let your outer retry handle invalid JSON cases
         if (!parsed.ok) {
           if (attempt < attempts - 1) {
             await Future.delayed(pause);
@@ -370,13 +333,11 @@ class StudentSubjectController {
           return ApiResponse(success: false, message: parsed.error!);
         }
 
-        // 200 + JSON OK — verify completeness; retry if suspicious
         if (_looksIncomplete(parsed.json, parsed.cleanedText)) {
           if (attempt < attempts - 1) {
             await Future.delayed(pause);
             continue;
           }
-          // last try still incomplete → surface an explicit message
           return ApiResponse(
             success: false,
             message:
@@ -384,7 +345,6 @@ class StudentSubjectController {
           );
         }
 
-        // Success and looks complete
         return ApiResponse(success: true, data: parsed.cleanedText);
       } on TimeoutException {
         if (attempt < attempts - 1) {
@@ -401,7 +361,6 @@ class StudentSubjectController {
       }
     }
 
-    // should never get here
     return ApiResponse(success: false, message: 'Unexpected error.');
   }
 
@@ -440,7 +399,6 @@ class StudentSubjectController {
       final parsed = parseServerJson(res);
 
       if (res.statusCode != 200) {
-        // bubble up backend error message if available
         if (parsed.ok && parsed.json is Map && parsed.json['message'] != null) {
           return ApiResponse(
             success: false,
@@ -491,10 +449,9 @@ class StudentSubjectController {
 
     final uri = Uri.parse('${AppConstants.baseURL}/student/assessment/submit');
 
-    // Build payload as expected by backend
     final payload = <String, dynamic>{
       'assessmentID': assessmentId,
-      'answers': answers, // pass through; backend accepts all three shapes
+      'answers': answers,
     };
 
     try {
@@ -510,7 +467,6 @@ class StudentSubjectController {
 
       final parsed = parseServerJson(res);
 
-      // Non-200 → try to bubble up backend message if present
       if (res.statusCode != 200) {
         if (parsed.ok &&
             parsed.json is Map &&
@@ -612,7 +568,6 @@ class StudentSubjectController {
     }
   }
 
-  /// Get all saved answers for an assessment (for the current student).
   static Future<ApiResponse<List<Map<String, dynamic>>>> getUserAnswers({
     required int assessmentId,
     String? token,
@@ -673,7 +628,6 @@ class StudentSubjectController {
     }
   }
 
-  /// Start (or upsert) timer for an assessment.
   static Future<ApiResponse<Map<String, dynamic>>> startAssessmentTimer({
     required int assessmentId,
     required int timeLimitSeconds,
@@ -733,8 +687,6 @@ class StudentSubjectController {
     }
   }
 
-  /// Get remaining time for the current student on an assessment.
-  /// Returns {'time_left': int}
   static Future<ApiResponse<Map<String, dynamic>>> getRemainingTime({
     required int assessmentId,
     String? token,
@@ -789,7 +741,6 @@ class StudentSubjectController {
     }
   }
 
-  /// Update remaining time (seconds) during the attempt (autosave).
   static Future<ApiResponse<Map<String, dynamic>>> updateTimeLeft({
     required int assessmentId,
     required int timeLeftSeconds,
@@ -849,7 +800,6 @@ class StudentSubjectController {
     }
   }
 
-  /// Fetch rubric with details (ratings, criteria, criteria_rubric_ratings).
   static Future<ApiResponse<List<Map<String, dynamic>>>> fetchStudentRubric({
     required int rubricId,
     String? token,

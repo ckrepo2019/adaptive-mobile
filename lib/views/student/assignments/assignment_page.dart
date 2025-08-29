@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/widgets/cards_list.dart';
+import 'package:flutter_lms/widgets/skeleton_loader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -81,7 +82,6 @@ class _StudentAssignmentPageState extends State<StudentAssignmentPage> {
     final raw = resp.data!;
     final subjects = (raw['subjects'] as List?) ?? const [];
 
-    // Build flat list of AssignmentItem from all subjects' assessments
     final List<_AssessRow> rows = [];
     for (final s in subjects) {
       if (s is! Map) continue;
@@ -102,7 +102,6 @@ class _StudentAssignmentPageState extends State<StudentAssignmentPage> {
         final dateLabel = _assessmentStartLabel(a);
         final durLabel = _assessmentDuration(a);
 
-        // Decide "type" label similar to StudentHomePage
         String type = 'Assessment';
         final desc = (a['description'] ?? '').toString().trim();
         if (desc.isNotEmpty) {
@@ -137,7 +136,6 @@ class _StudentAssignmentPageState extends State<StudentAssignmentPage> {
       }
     }
 
-    // Newest first
     rows.sort((x, y) {
       final ax = x.when;
       final by = y.when;
@@ -153,8 +151,6 @@ class _StudentAssignmentPageState extends State<StudentAssignmentPage> {
       _items = rows.map((e) => e.item).toList();
     });
   }
-
-  // ---------------- Helpers (mirrors StudentHomePage) ----------------
 
   DateTime? _parseDateTime(Object? s) {
     if (s == null) return null;
@@ -272,10 +268,48 @@ class _StudentAssignmentPageState extends State<StudentAssignmentPage> {
     return p;
   }
 
-  // ---------------------------------------------------------------
-
   @override
   Widget build(BuildContext context) {
+    if (_error != null) {
+      return StudentGlobalLayout(
+        useScaffold: false,
+        useSafeArea: false,
+        header: GlobalAppBar(
+          title: 'Assignments',
+          onNotificationsTap: () {},
+          onProfileTap: () {},
+        ),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  _error!,
+                  style: GoogleFonts.poppins(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_token != null && _uid != null) {
+                      _fetchAllAssessments(_token!, _uid!);
+                    }
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    return SkeletonLoader(isLoading: _loading, child: _buildContent());
+  }
+
+  Widget _buildContent() {
     return StudentGlobalLayout(
       useScaffold: false,
       useSafeArea: false,
@@ -287,56 +321,28 @@ class _StudentAssignmentPageState extends State<StudentAssignmentPage> {
       onRefresh: (_token != null && _uid != null)
           ? () => _fetchAllAssessments(_token!, _uid!)
           : null,
-      child: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : (_error != null
-                ? Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            _error!,
-                            style: GoogleFonts.poppins(color: Colors.red),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: () {
-                              if (_token != null && _uid != null) {
-                                _fetchAllAssessments(_token!, _uid!);
-                              }
-                            },
-                            child: const Text('Retry'),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                : SingleChildScrollView(
-                    // ✅ makes body scrollable
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.only(top: 12, bottom: 12),
-                    child: SafeArea(
-                      top: false,
-                      child: Column(
-                        children: [
-                          CardsList<AssignmentItem>(
-                            items: _items,
-                            variant: CardVariant.assignment,
-                            onAssignmentTap: (a) {
-                              Navigator.pushNamed(
-                                context,
-                                AppRoutes.quizInfo,
-                                arguments: a.assessment,
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  )),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.only(top: 12, bottom: 12),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              CardsList<AssignmentItem>(
+                items: _items,
+                variant: CardVariant.assignment,
+                onAssignmentTap: (a) {
+                  Navigator.pushNamed(
+                    context,
+                    AppRoutes.quizInfo,
+                    arguments: a.assessment,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

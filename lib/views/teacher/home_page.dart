@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/controllers/get_user.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:flutter_lms/widgets/skeleton_loader.dart';
 
 class TeacherHomePage extends StatefulWidget {
   const TeacherHomePage({super.key});
@@ -27,7 +28,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
     final token = args['token'] as String?;
     final uid = args['uid'] as String?;
-    final userType = (args['userType'] as int?) ?? 4; // student=4
+    final userType = (args['userType'] as int?) ?? 4;
     if (token == null || uid == null) {
       setState(() {
         _loading = false;
@@ -87,9 +88,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
     if (_error != null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Teacher Home')),
@@ -99,7 +97,10 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
       );
     }
 
-    // Keys from `teacherprofile` screenshot
+    return SkeletonLoader(isLoading: _loading, child: _buildContent());
+  }
+
+  Widget _buildContent() {
     final t = _user!;
     return Scaffold(
       appBar: AppBar(title: const Text('Teacher Home')),

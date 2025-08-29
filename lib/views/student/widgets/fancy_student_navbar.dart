@@ -10,11 +10,7 @@ class FancyStudentNavBar extends StatefulWidget {
   final List<NavItem> items;
   final int currentIndex;
   final ValueChanged<int> onChanged;
-
-  /// Compact bar height
   final double height;
-
-  /// Theme
   final Color barColor;
   final Color activeColor;
   final Color iconColor;
@@ -24,7 +20,7 @@ class FancyStudentNavBar extends StatefulWidget {
     required this.items,
     required this.currentIndex,
     required this.onChanged,
-    this.height = 64, // slimmer bar
+    this.height = 64,
     this.barColor = const Color(0xFF161616),
     this.activeColor = const Color(0xFF2B50FF),
     this.iconColor = Colors.white,
@@ -36,23 +32,17 @@ class FancyStudentNavBar extends StatefulWidget {
 
 class _FancyStudentNavBarState extends State<FancyStudentNavBar>
     with SingleTickerProviderStateMixin {
-  // ------- Layout tokens -------
   static const double _outerPad = 16.0;
   static const double _barRadius = 22.0;
-
-  // Bubble + icon (bigger)
   static const double _haloSize = 66.0;
   static const double _bubbleSize = 56.0;
   static const double _iconActiveSize = 26.0;
   static const double _iconBaseSize = 24.0;
-
-  // How far the bubble rises above the bar top
-  static const double _bubbleOverlap = 40.0; // was 30.0
-
-  // Scoop geometry (deeper dip)
+  static const double _bubbleOverlap = 40.0;
   static const double _scoopWidth = 86.0;
-  static const double _scoopDepth = 34.0; // was 22.0
+  static const double _scoopDepth = 34.0;
   static const double _kArc = 0.55;
+
   late final AnimationController _ctrl;
   late final Animation<double> _t;
   int _from = 0;
@@ -122,7 +112,6 @@ class _FancyStudentNavBarState extends State<FancyStudentNavBar>
                         alignment: Alignment.bottomCenter,
                         clipBehavior: Clip.none,
                         children: [
-                          // ---- Bar ----
                           Container(
                             height: h,
                             decoration: BoxDecoration(
@@ -147,9 +136,7 @@ class _FancyStudentNavBarState extends State<FancyStudentNavBar>
                                       radius: 28,
                                       highlightShape: BoxShape.circle,
                                       child: AnimatedOpacity(
-                                        opacity: active
-                                            ? 0.0
-                                            : 1.0, // hide under bubble
+                                        opacity: active ? 0.0 : 1.0,
                                         duration: const Duration(
                                           milliseconds: 150,
                                         ),
@@ -172,8 +159,6 @@ class _FancyStudentNavBarState extends State<FancyStudentNavBar>
                               ),
                             ),
                           ),
-
-                          // ---- Bubble ----
                           Positioned(
                             bottom: h - _bubbleOverlap,
                             left: cx - (_haloSize / 2),
@@ -243,15 +228,13 @@ class _Bubble extends StatelessWidget {
   }
 }
 
-/// White scoop rendered as a near-perfect circular arc (smooth shoulders).
 class _ScoopPainter extends CustomPainter {
-  final double scoopCenterX; // inner coords
+  final double scoopCenterX;
   final double height;
   final double radius;
-
-  final double width; // opening width
-  final double depth; // sagitta
-  final double kArc; // 0.55 ≈ circular
+  final double width;
+  final double depth;
+  final double kArc;
 
   const _ScoopPainter({
     required this.scoopCenterX,
@@ -264,7 +247,6 @@ class _ScoopPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Clip to the rounded bar
     final clip = RRect.fromRectAndRadius(
       Rect.fromLTWH(0, 0, size.width, height),
       Radius.circular(radius),
@@ -275,33 +257,13 @@ class _ScoopPainter extends CustomPainter {
     final cx = scoopCenterX.clamp(0.0, size.width);
     final left = cx - width / 2;
     final right = cx + width / 2;
-
-    // Control points chosen to approximate a perfect circular arc:
-    // P0 = (left, 0)  -> P2 = (cx, depth)
-    // C1 = P0 + (k*w, 0)
-    // C2 = P2 - (k*w, 0)
-    // Then mirror to the right.
-    final k = kArc; // 0.55 ~ circle
+    final k = kArc;
     final dx = width * k;
 
     final p = Path()
       ..moveTo(left, 0)
-      ..cubicTo(
-        left + dx,
-        0, // C1
-        cx - dx,
-        depth, // C2
-        cx,
-        depth, // P2
-      )
-      ..cubicTo(
-        cx + dx,
-        depth, // C3
-        right - dx,
-        0, // C4
-        right,
-        0, // P3
-      )
+      ..cubicTo(left + dx, 0, cx - dx, depth, cx, depth)
+      ..cubicTo(cx + dx, depth, right - dx, 0, right, 0)
       ..lineTo(right, -40)
       ..lineTo(left, -40)
       ..close();

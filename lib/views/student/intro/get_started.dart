@@ -132,7 +132,7 @@ class _GetStartedPageState extends State<GetStartedPage> {
                       'token': _token,
                       'uid': _uid,
                       'userType': _userType,
-                      'studentHomeData': _studentHomeData, // <-- pass it
+                      'studentHomeData': _studentHomeData,
                     },
                   );
                 },

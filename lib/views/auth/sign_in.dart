@@ -21,7 +21,6 @@ class _SignInPageState extends State<SignInPage> {
 
   final _formKey = GlobalKey<FormState>();
 
-  // clamp helper
   double _clamp(double v, double minV, double maxV) =>
       math.max(minV, math.min(maxV, v));
 
@@ -38,14 +37,12 @@ class _SignInPageState extends State<SignInPage> {
     setState(() => _loading = false);
 
     if (resp.success) {
-      // Save to SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('token', resp.data!['token']);
       await prefs.setInt('id', resp.data!['id']);
       await prefs.setString('uid', resp.data!['uid'].toString());
       await prefs.setInt('usertype_ID', resp.data!['user_type']);
 
-      // Navigate to GetUser page
       Navigator.pushReplacementNamed(
         context,
         AppRoutes.getUser,
@@ -154,8 +151,6 @@ class _SignInPageState extends State<SignInPage> {
                                   ),
                                 ),
                                 SizedBox(height: gapMd),
-
-                                // Username
                                 SizedBox(
                                   height: fieldHeight,
                                   child: TextFormField(
@@ -182,8 +177,6 @@ class _SignInPageState extends State<SignInPage> {
                                   ),
                                 ),
                                 SizedBox(height: gapSm),
-
-                                // Password
                                 SizedBox(
                                   height: fieldHeight,
                                   child: TextFormField(
@@ -227,8 +220,6 @@ class _SignInPageState extends State<SignInPage> {
                                   ),
                                 ),
                                 SizedBox(height: gapMd),
-
-                                // Sign In button
                                 SizedBox(
                                   width: double.infinity,
                                   height: btnHeight,

@@ -1,4 +1,3 @@
-// lib/views/student/student_shell.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/views/student/assignments/assignment_page.dart';
 import 'package:flutter_lms/views/student/classes/classes_page.dart';
@@ -11,8 +10,6 @@ class StudentShell extends StatefulWidget {
   final String token;
   final String uid;
   final int userType;
-
-  /// NEW: which tab to open first (0 = Home, 1 = Classes, 2 = Schedule, 3 = Notifications)
   final int initialIndex;
 
   const StudentShell({
@@ -20,25 +17,69 @@ class StudentShell extends StatefulWidget {
     required this.token,
     required this.uid,
     required this.userType,
-    this.initialIndex = 0, // default to Home
+    this.initialIndex = 0,
   });
 
   @override
   State<StudentShell> createState() => _StudentShellState();
 }
 
-class _StudentShellState extends State<StudentShell> {
+class _StudentShellState extends State<StudentShell>
+    with TickerProviderStateMixin {
   late int _index;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    _index = widget.initialIndex; // ← start on requested tab
+    _index = widget.initialIndex;
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 0.05), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _setIndex(int i) {
     if (i == _index) return;
+
+    _animationController.reset();
     setState(() => _index = i);
+    _animationController.forward();
+  }
+
+  Widget _buildAnimatedPage(Widget child) {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, _) {
+        return FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(position: _slideAnimation, child: child),
+        );
+      },
+    );
   }
 
   @override
@@ -60,7 +101,14 @@ class _StudentShellState extends State<StudentShell> {
       child: Scaffold(
         backgroundColor: Colors.white,
         extendBody: true,
-        body: IndexedStack(index: _index, children: pages),
+        body: _buildAnimatedPage(
+          IndexedStack(
+            index: _index,
+            children: pages
+                .map((page) => KeyedSubtree(key: ValueKey(_index), child: page))
+                .toList(),
+          ),
+        ),
         bottomNavigationBar: FancyStudentNavBar(
           currentIndex: _index,
           onChanged: (i) {

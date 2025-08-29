@@ -1,8 +1,6 @@
-// lib/parsers/node_parsers.dart
 import 'dart:convert';
 import 'package:flutter_lms/models/node.dart';
 
-/// -------- Sorting helper --------
 void _sortNodes(List<Node> nodes) {
   nodes.sort((a, b) {
     final sa = a.sort ?? 1 << 30;
@@ -12,7 +10,6 @@ void _sortNodes(List<Node> nodes) {
   });
 }
 
-/// -------- Safe int cast --------
 int? _asInt(dynamic v) {
   if (v == null) return null;
   if (v is int) return v;
@@ -20,7 +17,6 @@ int? _asInt(dynamic v) {
   return int.tryParse(v.toString());
 }
 
-/// -------- Normalize dynamic->Map<String,dynamic> --------
 Map<String, dynamic>? _asStringMap(dynamic v) {
   if (v == null) return null;
   if (v is Map<String, dynamic>) return v;
@@ -30,10 +26,6 @@ Map<String, dynamic>? _asStringMap(dynamic v) {
   return null;
 }
 
-/// Parse a JSON text that encodes either:
-/// - a root object with { type: 'content' | 'assessment', ... }
-/// - or a list of such roots
-/// Returns the normalized immediate *children* for rendering.
 List<Node> parseRootChildren(String jsonText) {
   dynamic decoded;
   try {
@@ -57,7 +49,6 @@ List<Node> parseRootChildren(String jsonText) {
           ? content['children'] as List
           : const [];
 
-      // Some payloads put children on the root itself; others inside content.children
       final List merged = rawChildren.isNotEmpty
           ? rawChildren
           : contentChildren;
@@ -80,7 +71,7 @@ List<Node> parseRootChildren(String jsonText) {
           description: desc,
           sort: sort,
           children: const [],
-          content: content, // typed
+          content: content,
         ),
       ];
     }
@@ -104,7 +95,6 @@ List<Node> parseRootChildren(String jsonText) {
   return const [];
 }
 
-/// Recursively parse a list of raw nodes that can be mixed content/assessment.
 List<Node> _parseNodesRecursively(List<dynamic> rawList) {
   final out = <Node>[];
   for (final item in rawList) {
@@ -120,7 +110,6 @@ List<Node> _parseNodesRecursively(List<dynamic> rawList) {
       final desc = (content['description'] ?? '').toString();
       final sort = _asInt(content['sort']);
 
-      // IDs for navigation (handle common key variants)
       final bookId = _asInt(content['bookID'] ?? content['bookId']);
       final subjectId = _asInt(content['subjectID'] ?? content['subjectId']);
       final hierarchyId = _asInt(
@@ -138,11 +127,9 @@ List<Node> _parseNodesRecursively(List<dynamic> rawList) {
               .trim();
       final hierarchyName = hierarchyNameRaw.isEmpty ? null : hierarchyNameRaw;
 
-      // Rich HTML (kept as-is)
       final rawHtml = (content['content'] ?? '').toString();
       final html = rawHtml.trim().isEmpty ? null : rawHtml;
 
-      // PDF / file path
       final rawFile = (content['file'] ?? '').toString().trim();
       final file = rawFile.isEmpty ? null : rawFile;
 
@@ -166,7 +153,7 @@ List<Node> _parseNodesRecursively(List<dynamic> rawList) {
           hierarchyName: hierarchyName,
           html: html,
           file: file,
-          content: content, // typed
+          content: content,
         ),
       );
     } else if (type == 'assessment') {
@@ -184,7 +171,7 @@ List<Node> _parseNodesRecursively(List<dynamic> rawList) {
           description: desc,
           sort: sort,
           children: const [],
-          content: content, // typed (contains "id")
+          content: content,
         ),
       );
     }
@@ -192,9 +179,6 @@ List<Node> _parseNodesRecursively(List<dynamic> rawList) {
   return out;
 }
 
-/// Parse the API payload and return the **parent node** (root)
-/// with its children attached. Use this when you want the top card to
-/// display the true parent (not the first child).
 Node? parseRootWithParent(String jsonText) {
   dynamic decoded;
   try {
@@ -223,7 +207,6 @@ Node? parseRootWithParent(String jsonText) {
     final desc = (content['description'] ?? '').toString();
     final sort = _asInt(content['sort']);
 
-    // IDs for navigation (handle common key variants)
     final bookId = _asInt(content['bookID'] ?? content['bookId']);
     final subjectId = _asInt(content['subjectID'] ?? content['subjectId']);
     final hierarchyId = _asInt(
@@ -241,7 +224,6 @@ Node? parseRootWithParent(String jsonText) {
             .trim();
     final hierarchyName = hierarchyNameRaw.isEmpty ? null : hierarchyNameRaw;
 
-    // Rich HTML + file on parent too
     final rawHtml = (content['content'] ?? '').toString();
     final html = rawHtml.trim().isEmpty ? null : rawHtml;
 
@@ -267,7 +249,7 @@ Node? parseRootWithParent(String jsonText) {
       hierarchyName: hierarchyName,
       html: html,
       file: file,
-      content: content, // typed
+      content: content,
     );
   }
 
@@ -283,7 +265,7 @@ Node? parseRootWithParent(String jsonText) {
       description: desc,
       sort: sort,
       children: const [],
-      content: content, // typed
+      content: content,
     );
   }
 

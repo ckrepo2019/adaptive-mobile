@@ -4,7 +4,6 @@ import 'intro_theme.dart';
 import 'typography.dart';
 import 'thumb_button.dart';
 
-/// Slide for thumbs up/down questions
 class ThumbsStep extends StatelessWidget {
   const ThumbsStep({
     super.key,

@@ -1,4 +1,3 @@
-// lib/widgets/node_tree.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/models/node.dart';
@@ -11,10 +10,6 @@ typedef NodeIsAssessment = bool Function(Node node);
 typedef NodeActionsBuilder =
     List<Widget> Function(BuildContext context, Node node);
 
-/// Generic recursive node tree renderer.
-///
-/// Provide builders to customize icons, titles, subtitles, and actions.
-/// - onTapLeaf: called for leaf content nodes (children.isEmpty).
 class NodeTree extends StatelessWidget {
   final List<Node> nodes;
   final NodeLeadingBuilder? leadingBuilder;
@@ -51,26 +46,20 @@ class _NodeView extends StatelessWidget {
   const _NodeView({required this.node, required this.tree});
 
   bool _isAssessment(Node n) {
-    // If caller supplied the rule, use it.
     if (tree.isAssessment != null) return tree.isAssessment!(n);
-
-    // Fallback heuristic: infer from name/description ONLY (no missing fields).
     final name = (n.name).toLowerCase();
     final desc = (n.description).toLowerCase();
-
     bool hasKeyword(String s) =>
         s.contains('assessment') ||
         s.contains('quiz') ||
         s.contains('exam') ||
         s.contains('test');
-
     return hasKeyword(name) || hasKeyword(desc);
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isAssessment(node)) {
-      // Assessment nodes: expandable with default AssessmentButtons
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
         child: Material(
@@ -144,8 +133,6 @@ class _NodeView extends StatelessWidget {
         ),
       );
     }
-
-    // Content node
     return _ContentNodeTile(node: node, tree: tree);
   }
 }

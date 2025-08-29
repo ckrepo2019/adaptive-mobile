@@ -53,10 +53,8 @@ class _MyClassmatesPageState extends State<MyClassmatesPage> {
   }
 
   String _subtitle(Map m) {
-    final level = (m['level_name'] ?? '').toString().trim(); // e.g. GRADE 7
-    final section = (m['section_name'] ?? '')
-        .toString()
-        .trim(); // e.g. SECTION A
+    final level = (m['level_name'] ?? '').toString().trim();
+    final section = (m['section_name'] ?? '').toString().trim();
     if (level.isEmpty && section.isEmpty) return '—';
     if (level.isEmpty) return section;
     if (section.isEmpty) return level;
@@ -73,7 +71,6 @@ class _MyClassmatesPageState extends State<MyClassmatesPage> {
       appBar: GlobalAppBar(title: 'My Classmates', showBack: true),
       body: Column(
         children: [
-          // Filter chip row
           Padding(
             padding: const EdgeInsets.fromLTRB(30, 6, 16, 6),
             child: Align(
@@ -98,8 +95,6 @@ class _MyClassmatesPageState extends State<MyClassmatesPage> {
               ),
             ),
           ),
-
-          // List
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.fromLTRB(30, 6, 16, 16),
@@ -113,7 +108,6 @@ class _MyClassmatesPageState extends State<MyClassmatesPage> {
                   subtitle: _subtitle(m),
                   imageUrl: (m['profilepic'] ?? '').toString(),
                   onMessageTap: () {
-                    // TODO: navigate to your chat screen, pass IDs you need
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Message ${_fullName(m)}')),
                     );
@@ -166,7 +160,6 @@ class _ClassmateTile extends StatelessWidget {
       child: Row(
         children: [
           const SizedBox(width: 12),
-          // avatar
           ClipRRect(
             borderRadius: BorderRadius.circular(10),
             child: Container(
@@ -187,8 +180,6 @@ class _ClassmateTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-
-          // name + green dot + subtitle
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(right: 12),
@@ -196,7 +187,6 @@ class _ClassmateTile extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // name row with green dot beside it
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -236,8 +226,6 @@ class _ClassmateTile extends StatelessWidget {
               ),
             ),
           ),
-
-          // trailing: outlined green “message” icon (clickable)
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: InkWell(

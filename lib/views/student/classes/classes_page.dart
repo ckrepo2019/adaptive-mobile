@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/controllers/student/student_class.dart';
-import 'package:flutter_lms/utils/utils.dart'; // ScheduleUtils, NameUtils, MediaUtils (barrel)
+import 'package:flutter_lms/utils/utils.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:flutter_lms/widgets/skeleton_loader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/widgets/global_subject_widget.dart';
 import 'package:flutter_lms/config/routes.dart';
@@ -21,10 +22,8 @@ class _StudentClassPageState extends State<StudentClassPage> {
   bool _loading = true;
   String? _error;
 
-  // raw from backend
   List<dynamic> _subjects = const [];
   List<dynamic> _subjectsWithUnits = const [];
-  // merged (de-duplicated) subjects, preferring entries with units
   List<Map<String, dynamic>> _mergedSubjects = const [];
 
   void _goHome() => StudentTabs.of(context).setIndex(0);
@@ -66,7 +65,7 @@ class _StudentClassPageState extends State<StudentClassPage> {
       }
       for (final e in subjectsWithUnits) {
         final m = Map<String, dynamic>.from(e as Map);
-        merged[keyOf(m)] = m; // prefer richer entry
+        merged[keyOf(m)] = m;
       }
 
       final result = merged.values.toList()
@@ -93,6 +92,39 @@ class _StudentClassPageState extends State<StudentClassPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_error != null) {
+      return StudentGlobalLayout(
+        useScaffold: false,
+        useSafeArea: false,
+        header: GlobalAppBar(
+          title: 'Classes',
+          onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
+          onProfileTap: () {},
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => _fetch(),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return SkeletonLoader(isLoading: _loading, child: _buildContent());
+  }
+
+  Widget _buildContent() {
     final w = MediaQuery.of(context).size.width;
     final h = MediaQuery.of(context).size.height;
 
@@ -160,18 +192,8 @@ class _StudentClassPageState extends State<StudentClassPage> {
           ),
           SizedBox(height: h * 0.02),
 
-          // ===== Subject List (merged) =====
           Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : (_error != null)
-                ? Center(
-                    child: Text(
-                      _error!,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  )
-                : _mergedSubjects.isEmpty
+            child: _mergedSubjects.isEmpty
                 ? const Center(child: Text('No classes found.'))
                 : ListView.builder(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -190,7 +212,6 @@ class _StudentClassPageState extends State<StudentClassPage> {
                       final teacher = NameUtils.formatTeacher(m['teacher']);
                       final img = MediaUtils.pickImageUrl(m);
 
-                      // --- fallback if missing/null ---
                       final safeImg = (img != null && img.trim().isNotEmpty)
                           ? img
                           : 'assets/images/default-images/default-classes.jpg';
@@ -204,8 +225,7 @@ class _StudentClassPageState extends State<StudentClassPage> {
                           if (subjectId != null && subjectId > 0) {
                             Navigator.pushNamed(
                               context,
-                              AppRoutes
-                                  .subjectClassPage, // or '/class-page' if you use raw string
+                              AppRoutes.subjectClassPage,
                               arguments: {'subject_ID': subjectId},
                             );
                           }

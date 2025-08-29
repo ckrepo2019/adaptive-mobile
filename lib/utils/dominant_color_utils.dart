@@ -2,17 +2,11 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
-import 'image_utils.dart'; // uses: imageProviderFor, loadUiImage
+import 'image_utils.dart';
 
-/// Lightweight dominant/average color extractor with memoization.
-/// - Uses a tiny downsample (48x48 by default) for speed.
-/// - Skips near-transparent pixels (A < 16).
-/// - In-memory cache to avoid recomputation across the app.
 class DominantColorUtils {
-  // Simple memo cache. You can swap to an LRU if you expect many unique images.
   static final Map<String, Color?> _cache = {};
 
-  /// Compute or fetch the cached dominant color for an image path/URL.
   static Future<Color?> fromPath(
     String path, {
     int sampleW = 48,
@@ -39,7 +33,7 @@ class DominantColorUtils {
         final gg = bytes[i + 1];
         final bb = bytes[i + 2];
         final aa = bytes[i + 3];
-        if (aa < 16) continue; // ignore near-transparent pixels
+        if (aa < 16) continue;
         r += rr;
         g += gg;
         b += bb;
@@ -62,7 +56,6 @@ class DominantColorUtils {
     }
   }
 
-  /// Optional: prime the cache for multiple images in parallel.
   static Future<void> warmup(
     Iterable<String> paths, {
     int sampleW = 48,
@@ -73,6 +66,5 @@ class DominantColorUtils {
     );
   }
 
-  /// Clear all cached entries (e.g., on logout).
   static void clear() => _cache.clear();
 }

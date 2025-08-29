@@ -1,4 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/controllers/student/student_subject.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,12 +13,9 @@ class QuizSummaryPage extends StatefulWidget {
 
 class _QuizSummaryPageState extends State<QuizSummaryPage> {
   late final int assessmentId;
-  late final List<Map<String, dynamic>>
-  questions; // [{id, text, type, choices:[{id,text,image}]}]
-  late final List<Map<String, dynamic>>
-  answers; // [{questionID, choicesID, answer_text}]
-  Map<String, dynamic>?
-  _assessment; // 🔹 whole assessment payload (to pass forward)
+  late final List<Map<String, dynamic>> questions;
+  late final List<Map<String, dynamic>> answers;
+  Map<String, dynamic>? _assessment;
 
   bool _submitting = false;
 
@@ -39,7 +35,6 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
           ? List<Map<String, dynamic>>.from(raw['answers'])
           : <Map<String, dynamic>>[];
 
-      // 🔹 capture full assessment from incoming args (if present)
       _assessment = (raw['assessment'] is Map)
           ? Map<String, dynamic>.from(raw['assessment'])
           : null;
@@ -72,9 +67,6 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
     return isHttp && hasExt;
   }
 
-  /// Builds a widget for the user's answer:
-  /// - MCQ/TF: use selected choice's image if available; fallback to text
-  /// - Identification/Essay/Short: if answer_text looks like an image URL, show image; else show text
   Widget _buildAnswerWidget(Map<String, dynamic> ans) {
     final int qid = int.tryParse('${ans['questionID'] ?? 0}') ?? 0;
     final q = _findQuestion(qid);
@@ -90,7 +82,6 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
 
     final String type = '${q['type'] ?? ''}';
 
-    // Text-like answers
     if (type == 'identification' || type == 'essay' || type == 'short_answer') {
       final t = (ans['answer_text'] ?? '').toString().trim();
       if (t.isEmpty) {
@@ -112,7 +103,6 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
       );
     }
 
-    // MCQ / True-False
     final int selectedChoiceId = int.tryParse('${ans['choicesID'] ?? 0}') ?? 0;
     final List choices = (q['choices'] is List)
         ? List.from(q['choices'])
@@ -155,7 +145,6 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
       return;
     }
 
-    // Build API payload: convert identification to {text}, others keep choicesID
     final payloadAnswers = answers.map((a) {
       final int qid = int.tryParse('${a['questionID'] ?? 0}') ?? 0;
       final q = _findQuestion(qid);
@@ -200,13 +189,12 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Are you sure you want to submit your answers now?\nYou won’t be able to change them after submitting.',
+              "Are you sure you want to submit your answers now?\nYou won't be able to change them after submitting.",
               textAlign: TextAlign.center,
               style: GoogleFonts.poppins(),
             ),
             const SizedBox(height: 16),
 
-            // Actions: Cancel (red) + Submit (gradient blue)
             Row(
               children: [
                 TextButton(
@@ -278,19 +266,17 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
       return;
     }
 
-    // 🔹 Build arguments and include the FULL assessment payload
     final Map<String, dynamic> resultArg = (resp.data is Map)
         ? Map<String, dynamic>.from(resp.data!)
         : {};
 
     Navigator.pushReplacementNamed(
       context,
-      AppRoutes.quizResult, // ← navigate to the new result screen
+      AppRoutes.quizResult,
       arguments: {
         'result': resultArg,
         'assessmentId': assessmentId,
-        if (_assessment != null)
-          'assessment': _assessment, // 🔹 pass whole thing
+        if (_assessment != null) 'assessment': _assessment,
       },
     );
   }
@@ -402,7 +388,6 @@ class _SummaryTile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // question
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -419,7 +404,6 @@ class _SummaryTile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            // answer (image or text)
             _AnswerBubble(child: answerWidget),
           ],
         ),
@@ -428,13 +412,11 @@ class _SummaryTile extends StatelessWidget {
   }
 }
 
-/// Pretty container for the answer
 class _AnswerBubble extends StatelessWidget {
   const _AnswerBubble({required this.child});
 
   final Widget child;
 
-  /// Helper for image answer variant with graceful fallback to altText
   factory _AnswerBubble.image(String url, {String? altText}) {
     return _AnswerBubble(
       child: ClipRRect(

@@ -1,6 +1,5 @@
-// lib/views/student/subject_book_content.dart
 import 'dart:io';
-import 'dart:convert'; // Utf8Decoder
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
@@ -8,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'dart:typed_data';
 
-// API + helpers
 import 'package:flutter_lms/controllers/student/student_subject.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/utils/retry.dart';
@@ -16,73 +14,62 @@ import 'package:flutter_lms/utils/casting.dart';
 import 'package:flutter_lms/parsers/node_parsers.dart';
 import 'package:flutter_lms/models/node.dart';
 
-// Render HTML
 import 'package:flutter_html/flutter_html.dart';
 
-// PDF rasterization (pdfx)
 import 'package:pdfx/pdfx.dart';
 
 import 'package:flutter_lms/config/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/* -------------------- PANEL CONTROLLER (arbitrary depth) -------------------- */
-
 class PanelController extends ChangeNotifier {
   bool expanded = false;
 
-  /// Path of selected content indices at each depth, relative to *content* children.
   final List<int> path = [];
 
-  /// The node that the OUTSIDE content area should render (null => root overview).
   Node? selectedNode;
 
-  /// Collapsed-bar label
   String selectedLabel = 'Overview';
 
-  /// Notifies the outside content ONLY when display node changes.
   final ValueNotifier<int> contentTick = ValueNotifier<int>(0);
   void _bumpContent() => contentTick.value = contentTick.value + 1;
 
   void setExpanded(bool v) {
     if (expanded == v) return;
     expanded = v;
-    notifyListeners(); // panel only
+    notifyListeners();
   }
 
   void openRoot() {
     expanded = true;
-    notifyListeners(); // panel only
+    notifyListeners();
   }
 
   void upOneLevel() {
     if (path.isNotEmpty) {
       path.removeLast();
-      notifyListeners(); // panel only
+      notifyListeners();
     }
   }
 
-  /// Navigate inside panel only
   void pushContentIndex(int idx) {
     path.add(idx);
-    notifyListeners(); // panel only
+    notifyListeners();
   }
 
-  /// Select a node to show outside
   void selectNode(Node n) {
     selectedNode = n;
     selectedLabel = n.name;
     expanded = false;
-    _bumpContent(); // outside refresh
-    notifyListeners(); // panel UI update
+    _bumpContent();
+    notifyListeners();
   }
 
-  /// Select overview of given node to show outside
   void selectOverview(Node currentNode) {
     selectedNode = currentNode;
     selectedLabel = '${currentNode.name ?? 'Overview'} Overview';
     expanded = false;
-    _bumpContent(); // outside refresh
-    notifyListeners(); // panel UI update
+    _bumpContent();
+    notifyListeners();
   }
 
   void resetToRoot() {
@@ -90,12 +77,10 @@ class PanelController extends ChangeNotifier {
     selectedNode = null;
     selectedLabel = 'Overview';
     expanded = false;
-    _bumpContent(); // outside refresh
-    notifyListeners(); // panel UI update
+    _bumpContent();
+    notifyListeners();
   }
 }
-
-/* ------------------------------- PAGE WIDGET -------------------------------- */
 
 class SubjectBookContent extends StatefulWidget {
   const SubjectBookContent({super.key});
@@ -113,27 +98,24 @@ class _SubjectBookContentState extends State<SubjectBookContent>
   bool _loading = true;
   String? _error;
 
-  Node? _root; // parent node (level 0)
+  Node? _root;
   String _hierarchyTitle = 'Unit';
 
-  Map<String, String>? _pdfHeaders; // Authorization for PDF if needed
+  Map<String, String>? _pdfHeaders;
 
-  // Panel controller
   late final PanelController _panel = PanelController();
 
-  // ---------- helpers ----------
   List<Node> _children(Node? n) => n?.children ?? const <Node>[];
   List<Node> _contentChildren(Node? n) =>
       _children(n).where((c) => c.type == 'content').toList();
   List<Node> _assessmentChildren(Node? n) =>
       _children(n).where((c) => c.type == 'assessment').toList();
 
-  /// Node shown inside the BLUE panel header/list (depends on path)
   Node? _currentNodeForPanel() {
     Node? node = _root;
     for (final idx in _panel.path) {
       final contents = _contentChildren(node);
-      if (idx < 0 || idx >= contents.length) return node; // safety
+      if (idx < 0 || idx >= contents.length) return node;
       node = contents[idx];
     }
     return node;
@@ -141,7 +123,6 @@ class _SubjectBookContentState extends State<SubjectBookContent>
 
   int? _assessmentIdFromNode(Node? n) => asInt(n?.content?['id']);
 
-  /// Node shown in the OUTSIDE content area
   Node? _outsideDisplayNode() => _panel.selectedNode ?? _root;
 
   String _niceCase(String? s, {String fallback = 'Unit'}) {
@@ -235,7 +216,6 @@ class _SubjectBookContentState extends State<SubjectBookContent>
     final f = filePath.trim();
     if (f.isEmpty) return null;
 
-    // Already absolute URL
     if (f.startsWith('http://') || f.startsWith('https://')) return f;
 
     final api = Uri.parse(AppConstants.baseURL);
@@ -305,8 +285,7 @@ class _SubjectBookContentState extends State<SubjectBookContent>
                         hierarchyTitle: _hierarchyTitle,
                         isAssessment: (baseNode?.type == 'assessment'),
                         onStartAssessment: () {
-                          final id = baseNode
-                              ?.content?['id']; // <-- pulls the id directly
+                          final id = baseNode?.content?['id'];
                           if (id == null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
@@ -335,7 +314,6 @@ class _SubjectBookContentState extends State<SubjectBookContent>
               },
             ),
 
-          // Blue panel
           AnimatedBuilder(
             animation: _panel,
             builder: (context, _) {
@@ -419,7 +397,6 @@ class _SubjectBookContentState extends State<SubjectBookContent>
     );
   }
 
-  /// Body for any depth inside the blue panel.
   Widget _buildDynamicLevelList({
     required Node? currentNode,
     required List<Node> contents,
@@ -483,18 +460,14 @@ class _SubjectBookContentState extends State<SubjectBookContent>
   }
 }
 
-/* ---------------------------- helpers & widgets ---------------------------- */
-
 class _OverviewCard extends StatelessWidget {
   final String title;
   final String description;
   final String? html;
   final String hierarchyTitle;
 
-  /// NEW: When true, show "Start Assessment" CTA if no rich HTML
   final bool isAssessment;
 
-  /// NEW: Action to start assessment
   final VoidCallback? onStartAssessment;
 
   const _OverviewCard({
@@ -546,7 +519,6 @@ class _OverviewCard extends StatelessWidget {
         ),
       );
     } else {
-      // If it's an assessment and there is no HTML, show Start Assessment CTA
       if (isAssessment) {
         children.add(const SizedBox(height: 8));
         children.add(_AssessmentCTA(onPressed: onStartAssessment));
@@ -580,7 +552,7 @@ class _AssessmentCTA extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const borderColor = Color(0xFFFFA000); // amber-ish
+    const borderColor = Color(0xFFFFA000);
     const textColor = Color(0xFFFFA000);
 
     return SizedBox(
@@ -614,8 +586,6 @@ class _AssessmentCTA extends StatelessWidget {
     );
   }
 }
-
-/* -------------------- PDF pages rendered as separate cards ------------------- */
 
 class _PdfPagesList extends StatefulWidget {
   final String pdfUrl;
@@ -748,7 +718,7 @@ class _PdfErrorCard extends StatelessWidget {
 
 class _PdfPageCard extends StatefulWidget {
   final PdfDocument document;
-  final int pageNumber; // 1-based
+  final int pageNumber;
   const _PdfPageCard({required this.document, required this.pageNumber});
 
   @override
@@ -761,24 +731,20 @@ class _PdfPageCardState extends State<_PdfPageCard> {
   Future<_RenderedPage> _render() async {
     final page = await widget.document.getPage(widget.pageNumber);
     try {
-      // logical screen width
       final double screenWidth = MediaQuery.of(context).size.width - 32;
 
-      // bump quality: render at 3x device pixel ratio
       final double dpr = MediaQuery.of(context).devicePixelRatio;
       final double quality = (dpr * 3.0).clamp(2.0, 4.0);
 
-      // preserve aspect ratio
       final double aspect = page.height / page.width;
       final int targetWidthPx = (screenWidth * quality).round();
       final int targetHeightPx = (targetWidthPx * aspect).round();
 
-      // render as PNG for sharp text
       final PdfPageImage? img = await page.render(
         width: targetWidthPx.toDouble(),
         height: targetHeightPx.toDouble(),
         format: PdfPageImageFormat.png,
-        backgroundColor: '#FFFFFF', // force white bg (no transparency blur)
+        backgroundColor: '#FFFFFF',
       );
 
       if (img == null) {
@@ -928,8 +894,6 @@ class _ChildTile extends StatelessWidget {
     );
   }
 }
-
-/* ----------------------------- Blue panel pieces ---------------------------- */
 
 class _BottomPanel extends StatelessWidget {
   final Color color;
@@ -1152,10 +1116,8 @@ class _NoContent extends StatelessWidget {
   }
 }
 
-/* --------------------- List + typed items for a level ---------------------- */
-
 class _LevelItem {
-  final String type; // 'overview' | 'content' | 'assessment'
+  final String type;
   final String label;
   final VoidCallback onTap;
   _LevelItem(this.type, this.label, this.onTap);
@@ -1239,8 +1201,6 @@ class _LevelList extends StatelessWidget {
     );
   }
 }
-
-/* --------------------------- Collapsed bar (bottom) -------------------------- */
 
 class _CollapsedBar extends StatelessWidget {
   final Color color;

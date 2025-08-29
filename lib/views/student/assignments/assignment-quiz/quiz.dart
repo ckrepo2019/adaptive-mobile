@@ -1,13 +1,9 @@
-// ignore_for_file: unused_local_variable, deprecated_member_use
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ⬇️ add this import
 import 'package:flutter_lms/controllers/student/student_subject.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -17,43 +13,34 @@ class QuizPage extends StatefulWidget {
 }
 
 class _QuizPageState extends State<QuizPage> {
-  // ===== Route args / data =====
   Map<String, dynamic>? _args;
-  Map<String, dynamic>? _assessment; // full payload
-  Map<String, dynamic>? _details; // assessment_details
+  Map<String, dynamic>? _assessment;
+  Map<String, dynamic>? _details;
   List<dynamic> _sections = [];
 
-  // Flattened questions
   late final List<_Q> _allQs = [];
 
-  // Collected (for final summary screen)
   final List<_AnswerRecord> _answers = [];
 
-  // Per-question local state (persist across navigation):
-  final Map<int, int?> _selectedByQ = {}; // qId -> selected index (MCQ/TF)
-  final Map<int, String> _textByQ = {}; // qId -> identification text
+  final Map<int, int?> _selectedByQ = {};
+  final Map<int, String> _textByQ = {};
 
-  // Current view index
   int _index = 0;
 
-  // Identification controller
   final TextEditingController _idController = TextEditingController();
 
-  // To avoid re-parsing
   bool _parsedOnce = false;
 
-  // ===== Timer state =====
   int? _assessmentId;
-  int _remaining = 0; // seconds
+  int _remaining = 0;
   Timer? _ticker;
-  bool _initializing = true; // gate to prevent UI actions during init
-  bool _startingTimer = false; // prevent dup calls
+  bool _initializing = true;
+  bool _startingTimer = false;
 
   @override
   void initState() {
     super.initState();
     _idController.addListener(() {
-      // Update cache for identification text of current q
       final qid = (_allQs.isEmpty) ? null : _allQs[_index].id;
       if (qid != null) {
         _textByQ[qid] = _idController.text;
@@ -91,14 +78,12 @@ class _QuizPageState extends State<QuizPage> {
 
       _buildQuestionsFromAssessment();
 
-      // figure out assessmentId from payload/args
       _assessmentId =
           int.tryParse(
             '${_details?['assessmentID'] ?? _assessment?['assessmentID'] ?? _args?['assessmentId'] ?? 0}',
           ) ??
           0;
 
-      // kick off init flow (start/resume timer + restore answers)
       _initAssessmentSession();
     }
 
@@ -112,21 +97,17 @@ class _QuizPageState extends State<QuizPage> {
       return;
     }
 
-    // 1) Try to resume (remaining time)
     final remainingRes = await StudentSubjectController.getRemainingTime(
       assessmentId: _assessmentId!,
     );
 
     if (remainingRes.success && remainingRes.data != null) {
-      // Resume countdown
       final v = remainingRes.data!['time_left'];
       _remaining = (v is num) ? v.toInt() : int.tryParse('$v') ?? 0;
     } else {
-      // 2) No timer yet → start one
       if (_startingTimer) return;
       _startingTimer = true;
 
-      // Prefer args timeLimitSeconds if provided, else 1800
       final fromArgs = int.tryParse('${_args?['timeLimitSeconds'] ?? ''}');
       final timeLimit = fromArgs ?? 1800;
 
@@ -141,7 +122,6 @@ class _QuizPageState extends State<QuizPage> {
       _startingTimer = false;
     }
 
-    // 3) Restore saved answers (if any)
     final ansRes = await StudentSubjectController.getUserAnswers(
       assessmentId: _assessmentId!,
     );
@@ -149,10 +129,8 @@ class _QuizPageState extends State<QuizPage> {
       _populateSavedAnswers(ansRes.data!);
     }
 
-    // 4) Prepare UI for current question’s identification field
     _syncControllersForCurrent();
 
-    // 5) Start ticking
     _startTicker();
 
     setState(() => _initializing = false);
@@ -165,39 +143,33 @@ class _QuizPageState extends State<QuizPage> {
       if (_remaining <= 0) {
         setState(() => _remaining = 0);
         t.cancel();
-        // (Optional) auto-  here if you want. For now we only stop.
       } else {
         setState(() => _remaining--);
       }
     });
   }
 
-  /// Populate selections/text from backend answers.
   void _populateSavedAnswers(List<Map<String, dynamic>> rows) {
-    // rows are raw DB rows of 'answers' table (latest OR all). We’ll just use the last for each question.
     final byQ = <int, Map<String, dynamic>>{};
     for (final r in rows) {
       final qid = (r['questionID'] is num)
           ? (r['questionID'] as num).toInt()
           : int.tryParse('${r['questionID']}');
       if (qid == null) continue;
-      byQ[qid] = r; // last row wins
+      byQ[qid] = r;
     }
 
     for (final q in _allQs) {
       final row = byQ[q.id];
       if (row == null) continue;
 
-      // identification text
       final aText = (row['answer_text'] ?? row['student_answer']);
       if (aText != null && q.type == 'identification') {
         _textByQ[q.id] = aText.toString();
       }
 
-      // choice types
       final rawChoices = row['choicesID'];
       if (rawChoices != null && q.choices.isNotEmpty) {
-        // choicesID can be "5" (string) or 5 (int)
         final selectedChoiceId = (rawChoices is num)
             ? rawChoices.toInt()
             : int.tryParse('$rawChoices');
@@ -211,7 +183,6 @@ class _QuizPageState extends State<QuizPage> {
 
   void _syncControllersForCurrent() {
     final q = _allQs[_index];
-    // identification field
     _idController.text = _textByQ[q.id] ?? '';
   }
 
@@ -260,7 +231,7 @@ class _QuizPageState extends State<QuizPage> {
             sectionName: sectionName,
             sectionDesc: sectionDesc,
             questionText: qText,
-            type: qType, // 'true_false' | 'multiple_choice' | 'identification'
+            type: qType,
             choices: normalized,
           ),
         );
@@ -271,7 +242,6 @@ class _QuizPageState extends State<QuizPage> {
   _Q get q => _allQs[_index];
   int get _total => _allQs.length;
 
-  // ====== UI helpers ======
   void _toast(String msg) {
     if (!mounted) return;
     ScaffoldMessenger.of(
@@ -279,7 +249,6 @@ class _QuizPageState extends State<QuizPage> {
     ).showSnackBar(SnackBar(content: Text(msg, style: GoogleFonts.poppins())));
   }
 
-  // ====== Actions ======
   void _pick(int i) {
     setState(() {
       _selectedByQ[q.id] = i;
@@ -346,7 +315,6 @@ class _QuizPageState extends State<QuizPage> {
       });
       _syncControllersForCurrent();
     } else {
-      // Finished → go to summary
       final summaryQuestions = _allQs
           .map(
             (qq) => {
@@ -395,14 +363,13 @@ class _QuizPageState extends State<QuizPage> {
   }
 
   Future<bool> _onWillPop() async {
-    // Update time left before exiting the page
     if (_assessmentId != null) {
       await StudentSubjectController.updateTimeLeft(
         assessmentId: _assessmentId!,
         timeLeftSeconds: _remaining,
       );
     }
-    return true; // allow pop
+    return true;
   }
 
   String _formatClock(int seconds) {
@@ -417,7 +384,6 @@ class _QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Fallbacks when data missing
     final name =
         (_details?['assessment_name'] ??
                 _assessment?['assessment_name'] ??
@@ -443,7 +409,6 @@ class _QuizPageState extends State<QuizPage> {
       );
     }
 
-    // Colors (kept constant now; no correctness feedback)
     const cardBlue = Color(0xFF234FF5);
     const blue = Color(0xFF234FF5);
 
@@ -468,13 +433,11 @@ class _QuizPageState extends State<QuizPage> {
                   child: IntrinsicHeight(
                     child: Column(
                       children: [
-                        // ===== Header =====
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Title + subtitle
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -498,7 +461,6 @@ class _QuizPageState extends State<QuizPage> {
                                         ),
                                       ),
                                     const SizedBox(height: 10),
-                                    // ⏱️ Timer pill
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 12,
@@ -535,7 +497,6 @@ class _QuizPageState extends State<QuizPage> {
                                   ],
                                 ),
                               ),
-                              // Global question counter (current / total)
                               Text(
                                 '${_index + 1}/$_total',
                                 style: GoogleFonts.poppins(
@@ -549,7 +510,6 @@ class _QuizPageState extends State<QuizPage> {
                           ),
                         ),
 
-                        // ===== Section title/desc above progress =====
                         Padding(
                           padding: const EdgeInsets.fromLTRB(20, 8, 20, 4),
                           child: Align(
@@ -580,7 +540,6 @@ class _QuizPageState extends State<QuizPage> {
                             ),
                           ),
 
-                        // Progress bar
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: _ProgressBar(
@@ -591,7 +550,6 @@ class _QuizPageState extends State<QuizPage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // ===== Question card =====
                         Padding(
                           padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                           child: _QuestionCard(
@@ -617,14 +575,12 @@ class _QuizPageState extends State<QuizPage> {
           ),
         ),
 
-        // ===== Bottom CTAs: Go Back + Continue =====
         bottomNavigationBar: SafeArea(
           top: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 8, 18, 14),
             child: Row(
               children: [
-                // Go Back
                 Expanded(
                   child: OutlinedButton(
                     onPressed: (_index > 0 && !_initializing)
@@ -655,7 +611,6 @@ class _QuizPageState extends State<QuizPage> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Continue / Submit
                 Expanded(
                   child: ElevatedButton(
                     onPressed: (_hasAnswerForCurrent && !_initializing)
@@ -700,8 +655,6 @@ class _QuizPageState extends State<QuizPage> {
     );
   }
 }
-
-// ====== Widgets ======
 
 class _ProgressBar extends StatelessWidget {
   const _ProgressBar({
@@ -759,12 +712,11 @@ class _QuestionCard extends StatelessWidget {
   final double radius;
   final Color color;
   final String questionText;
-  final String type; // 'true_false' | 'multiple_choice' | 'identification'
+  final String type;
   final List<_Choice> choices;
   final int? selected;
   final void Function(int index) onPick;
 
-  // identification
   final TextEditingController idController;
 
   @override
@@ -787,7 +739,6 @@ class _QuestionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Question text
           Text(
             questionText,
             style: GoogleFonts.poppins(
@@ -996,13 +947,12 @@ class _ChoiceTile extends StatelessWidget {
   }
 }
 
-// ===== Internal models =====
 class _Q {
   final int id;
   final String sectionName;
   final String sectionDesc;
   final String questionText;
-  final String type; // true_false | multiple_choice | identification
+  final String type;
   final List<_Choice> choices;
 
   _Q({
@@ -1016,7 +966,7 @@ class _Q {
 }
 
 class _Choice {
-  final int? id; // backend choice id
+  final int? id;
   final String text;
   final bool isCorrect;
   final String? imagePath;
@@ -1030,8 +980,8 @@ class _Choice {
 
 class _AnswerRecord {
   final int questionID;
-  final int? choiceID; // null for identification
-  final String? answerText; // only for identification
+  final int? choiceID;
+  final String? answerText;
 
   _AnswerRecord({
     required this.questionID,

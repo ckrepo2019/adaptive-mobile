@@ -1,4 +1,3 @@
-// lib/views/student/home/cards_list.dart
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -10,31 +9,20 @@ import '../../../utils/progress_utils.dart';
 import '../../../widgets/ui_widgets.dart';
 import '../../../utils/palette_utils.dart';
 
-/// Which layout to render (when not using itemBuilder)
 enum CardVariant { assignment, progress }
 
-/// Default subject icon for fallbacks (project-specific path).
 const String kDefaultSubjectIcon =
     'assets/images/student-home/default-class.png';
 
 class CardsList<T> extends StatelessWidget {
-  // ---- Header (all optional; pass none to hide header row) ----
   final String? headerTitle;
   final dynamic headerIcon;
   final String? pillText;
-
-  // ---- CTA (always shown *below* list, not in header row) ----
   final String? ctaLabel;
   final VoidCallback? onCta;
-
-  // ---- Data ----
   final List<T> items;
-
-  // ---- Layout/behavior ----
   final EdgeInsetsGeometry? padding;
   final double itemSpacing;
-
-  // ---- Mode A: Generic builder ----
   final Widget Function(
     BuildContext context,
     T item,
@@ -42,13 +30,9 @@ class CardsList<T> extends StatelessWidget {
     Set<int> usedAccents,
   )?
   itemBuilder;
-
-  // ---- Mode B: Built-in variants ----
   final CardVariant? variant;
   final void Function(AssignmentItem item)? onAssignmentTap;
   final void Function(ClassProgressItem item)? onProgressTap;
-
-  // ---- Empty state ----
   final Widget? emptyPlaceholder;
   final String? emptyText;
 
@@ -74,7 +58,6 @@ class CardsList<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final usedAccents = <int>{};
 
-    // Header icon (optional)
     Widget? iconWidget;
     if (headerIcon is IconData) {
       iconWidget = Icon(
@@ -101,7 +84,6 @@ class CardsList<T> extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ---- HEADER ----
           if (headerVisible) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -125,8 +107,6 @@ class CardsList<T> extends StatelessWidget {
                   )
                 else
                   const Spacer(),
-
-                // non-clickable pill
                 if (pillText != null)
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -150,8 +130,6 @@ class CardsList<T> extends StatelessWidget {
             ),
             SizedBox(height: itemSpacing),
           ],
-
-          // ---- LIST BODY ----
           if (items.isEmpty)
             (emptyPlaceholder ??
                 Text(
@@ -163,8 +141,6 @@ class CardsList<T> extends StatelessWidget {
               _buildRow(context, items[i], i, usedAccents),
               if (i != items.length - 1) SizedBox(height: itemSpacing),
             ],
-
-          // ---- CTA BUTTON (always below list) ----
           if (ctaLabel != null) ...[
             const SizedBox(height: 16),
             SizedBox(
@@ -202,12 +178,10 @@ class CardsList<T> extends StatelessWidget {
     int index,
     Set<int> usedAccents,
   ) {
-    // Mode A: external builder
     if (itemBuilder != null) {
       return itemBuilder!(context, item, index, usedAccents);
     }
 
-    // Mode B: built-in variants
     switch (variant) {
       case CardVariant.assignment:
         return _AssignmentCard(
@@ -225,10 +199,6 @@ class CardsList<T> extends StatelessWidget {
     }
   }
 }
-
-/* ============================================================================
-   Built-in Row Cards (Assignment / Class Progress)
-   ==========================================================================*/
 
 class _AssignmentCard extends StatefulWidget {
   final AssignmentItem item;
@@ -326,7 +296,7 @@ class _AssignmentCardState extends State<_AssignmentCard> {
     final palette = await PaletteUtils.paletteFromPath(path, maxColors: 5);
     if (!mounted || palette.isEmpty) return;
 
-    final chosen = palette.first; // deterministic for assignments
+    final chosen = palette.first;
     setState(() => _accent = chosen);
     SubjectAccentCache.set(_subjectKey, chosen);
   }
@@ -351,7 +321,6 @@ class _AssignmentCardState extends State<_AssignmentCard> {
             maxLines: null,
             overflow: TextOverflow.visible,
           ),
-          // SUBJECT
           Text(
             item.subject,
             style: GoogleFonts.poppins(fontSize: 13, color: Colors.black54),
@@ -359,14 +328,10 @@ class _AssignmentCardState extends State<_AssignmentCard> {
             overflow: TextOverflow.visible,
             maxLines: null,
           ),
-
           const SizedBox(height: 25),
-
-          // DATE + DURATION (replace the entire Row with this)
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Left side can wrap to multiple lines
               Expanded(
                 child: Wrap(
                   alignment: WrapAlignment.start,
@@ -530,7 +495,6 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
       onTap: widget.onTap == null ? null : () => widget.onTap!(item),
       child: Row(
         children: [
-          // Icon tile
           Container(
             width: 48,
             height: 48,
@@ -555,8 +519,6 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
             ),
           ),
           const SizedBox(width: 12),
-
-          // Content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -586,8 +548,6 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
                   ],
                 ),
                 const SizedBox(height: 8),
-
-                // Progress bar
                 SizedBox(
                   height: 12,
                   child: Stack(
@@ -633,8 +593,6 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
                   ),
                 ),
                 const SizedBox(height: 6),
-
-                // Dynamic labels
                 Text(
                   twoLevelLabel(
                     item.firstHierarchy,
@@ -656,10 +614,6 @@ class _ClassProgressCardState extends State<_ClassProgressCard> {
   }
 }
 
-/* ============================================================================
-   Accent Color Cache
-   ==========================================================================*/
-
 class SubjectAccentCache {
   SubjectAccentCache._();
   static final Map<String, Color> _cache = {};
@@ -669,7 +623,6 @@ class SubjectAccentCache {
   static void clear() => _cache.clear();
 }
 
-/// Prefer subject id; else icon; else subject name
 String _makeSubjectKey(
   Map<String, dynamic>? subject,
   String? iconPath,

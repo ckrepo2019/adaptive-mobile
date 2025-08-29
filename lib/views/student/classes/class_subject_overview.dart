@@ -7,7 +7,6 @@ import 'package:flutter_lms/controllers/student/student_subject.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Helper to retry a future if it fails with invalid JSON
 Future<T> retry<T>(
   Future<T> Function() fn, {
   int retries = 3,
@@ -24,7 +23,6 @@ Future<T> retry<T>(
   return result;
 }
 
-/// ---------- Small helpers ----------
 int? _asIntStatic(dynamic v) {
   if (v == null) return null;
   if (v is int) return v;
@@ -32,15 +30,12 @@ int? _asIntStatic(dynamic v) {
   return int.tryParse(v.toString());
 }
 
-/// Normalized node for both content and assessment
 class Node {
-  final String type; // 'content' or 'assessment'
+  final String type;
   final String name;
   final String description;
   final int? sort;
   final List<Node> children;
-
-  // IDs for navigation (available for 'content' nodes)
   final int? bookId;
   final int? subjectId;
   final int? hierarchyId;
@@ -61,7 +56,6 @@ class Node {
   });
 }
 
-/// Per-parent lazy state
 class ParentState {
   bool loading;
   String? error;
@@ -70,7 +64,6 @@ class ParentState {
   ParentState({this.loading = false, this.error, this.children});
 }
 
-/// UNIT -> CHAPTER list: parents load on init; children load on expand
 class ClassSubjectOverviewPage extends StatefulWidget {
   const ClassSubjectOverviewPage({super.key});
 
@@ -83,14 +76,10 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
   int? _subjectId;
   String? _subjectName;
   String? _subjectCode;
-
   bool _didArgs = false;
   bool _loading = true;
   String? _error;
-
   List<Map<String, dynamic>> _parents = const [];
-
-  /// parentId -> state
   final Map<int, ParentState> _parentStates = {};
 
   @override
@@ -98,7 +87,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
     super.didChangeDependencies();
     if (_didArgs) return;
     _didArgs = true;
-
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is Map) {
       final rawId =
@@ -107,7 +95,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       _subjectName = (args['subject_name'] ?? '').toString().trim();
       _subjectCode = (args['subject_code'] ?? 'Unknown Code').toString();
     }
-
     _loadParents();
   }
 
@@ -120,14 +107,12 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       });
       return;
     }
-
     setState(() {
       _loading = true;
       _error = null;
       _parents = const [];
       _parentStates.clear();
     });
-
     final resp = await retry(
       () => StudentSubjectController.fetchAllFirstLevelContents(
         subjectId: _subjectId!,
@@ -137,9 +122,7 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       shouldRetry: (ApiResponse resp) =>
           !resp.success && (resp.message?.contains('Invalid JSON') ?? false),
     );
-
     if (!mounted) return;
-
     if (!resp.success || resp.data == null) {
       setState(() {
         _loading = false;
@@ -148,34 +131,27 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       });
       return;
     }
-    // print(resp.data);
-
     setState(() {
       _parents = resp.data!;
       _loading = false;
     });
   }
 
-  // Instance helper to parse int
   int? _asInt(dynamic v) => _asIntStatic(v);
 
-  /// Load children for a parent lazily and print them.
   Future<void> _loadChildrenAndPrint({
     required int parentId,
     required int bookId,
   }) async {
     final state = _parentStates[parentId] ?? ParentState();
     if (state.loading) return;
-
     if (state.children != null) {
       _debugPrintChildren(parentId, state.children!);
       return;
     }
-
     setState(() {
       _parentStates[parentId] = ParentState(loading: true);
     });
-
     try {
       final resp = await retry(
         () => StudentSubjectController.fetchBookUnitContentRaw(
@@ -188,7 +164,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
         shouldRetry: (ApiResponse resp) =>
             !resp.success && (resp.message?.contains('Invalid JSON') ?? false),
       );
-
       if (!resp.success || resp.data == null || resp.data!.trim().isEmpty) {
         setState(() {
           _parentStates[parentId] = ParentState(
@@ -198,16 +173,13 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
         });
         return;
       }
-
       final children = _parseRootChildren(resp.data!);
-
       setState(() {
         _parentStates[parentId] = ParentState(
           loading: false,
           children: children,
         );
       });
-
       _debugPrintChildren(parentId, children);
     } catch (e) {
       setState(() {
@@ -239,7 +211,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       '=========================================',
     ];
 
-    // Avoid debugPrint truncation
     const size = 1000;
     final s = lines.join('\n');
     for (int i = 0; i < s.length; i += size) {
@@ -247,7 +218,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
     }
   }
 
-  /// Parse the `children` of the root content returned by fetchBookUnitContentRaw
   List<Node> _parseRootChildren(String jsonText) {
     dynamic decoded;
     try {
@@ -316,12 +286,10 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
     return const [];
   }
 
-  /// Recursively parse a list of raw nodes (mixed content/assessment)
   List<Node> _parseNodesRecursively(List<dynamic> rawList) {
     final out = <Node>[];
     for (final item in rawList) {
       if (item is! Map) continue;
-
       final String type = (item['type'] ?? '').toString();
 
       if (type == 'content') {
@@ -332,7 +300,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
         final desc = (content['description'] ?? '').toString();
         final sort = _asInt(content['sort']);
 
-        // IDs for navigation
         final bookId = _asIntStatic(content['bookID'] ?? content['bookId']);
         final subjectId = _asIntStatic(
           content['subjectID'] ?? content['subjectId'],
@@ -471,15 +438,12 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
         final subtitle = (p['description'] ?? p['Description'] ?? '')
             .toString();
 
-        // parentId is actually the top-level bookcontentID
         final parentId = _asInt(
           p['bookcontentID'] ?? p['ParentID'] ?? p['parentId'],
         );
         final bookId = _asInt(p['bookID'] ?? p['BookID'] ?? p['bookId']);
-
         final hierarchyName = (p['hierarchy_name'] ?? p['HierarchyName'] ?? '')
             .toString();
-
         final subjectId =
             _asInt(p['subjectID'] ?? p['SubjectID'] ?? p['subjectId']) ??
             _subjectId;
@@ -505,7 +469,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
               );
               return;
             }
-
             Navigator.pushNamed(
               context,
               AppRoutes.classSubjectBookContent,
@@ -535,7 +498,6 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
   );
 }
 
-/// Body for a parent tile based on its ParentState
 class _ParentBody extends StatelessWidget {
   final ParentState? state;
   const _ParentBody({required this.state});
@@ -576,10 +538,8 @@ class _ParentBody extends StatelessWidget {
   );
 }
 
-/// Renders a list of Node items (recursively)
 class _NodeList extends StatelessWidget {
   final List<Node> children;
-
   const _NodeList({required this.children});
 
   @override
@@ -592,7 +552,6 @@ class _NodeList extends StatelessWidget {
   }
 }
 
-/// One node view: ExpansionTile for content; ListTile (wrapped) for assessment
 class _NodeView extends StatelessWidget {
   final Node node;
   const _NodeView({required this.node});
@@ -600,7 +559,6 @@ class _NodeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (node.type == 'assessment') {
-      // Assessments expandable to show buttons
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
         child: Material(
@@ -667,8 +625,6 @@ class _NodeView extends StatelessWidget {
         ),
       );
     }
-
-    // Content node → stateful tile to show gradient button + recursive children
     return _ContentNodeTile(node: node);
   }
 }
@@ -747,7 +703,6 @@ class _AssessmentButtons extends StatelessWidget {
   }
 }
 
-/// Content node tile with "wrap title + expandable subtitle"
 class _ContentNodeTile extends StatefulWidget {
   final Node node;
   const _ContentNodeTile({required this.node});
@@ -880,7 +835,6 @@ class _ContentNodeTileState extends State<_ContentNodeTile>
   }
 }
 
-/// Top-level Expansion styled like your mock, with onExpanded hook
 class _TopLevelExpansionCard extends StatefulWidget {
   final String title;
   final String subtitle;

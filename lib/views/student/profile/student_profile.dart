@@ -1,4 +1,3 @@
-// lib/views/student/profile_page.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
@@ -14,38 +13,28 @@ class ProfilePage extends StatelessWidget {
     final mq = MediaQuery.of(context);
     final w = mq.size.width;
     final h = mq.size.height;
-
-    // --- get student from route args ---
     final args = ModalRoute.of(context)?.settings.arguments;
     final Map<String, dynamic> student = (args is Map && args['student'] is Map)
         ? Map<String, dynamic>.from(args['student'] as Map)
         : const {};
     final String first = (student['firstname']?.toString().trim() ?? '');
     final String welcomeName = first.isNotEmpty ? first : 'Student';
-
     final double padX = _clamp(w * 0.06, 16, 24);
     final double helloSize = _clamp(w * 0.055, 16, 20);
     final double subSize = _clamp(w * 0.040, 12, 16);
-
-    // Make the header a bit taller so the big illo can bleed nicely
     final double headerHeight = _clamp(h * 0.38, 280, 360);
-
-    // Start the blue sheet a little higher so the art visibly overlaps it
     final double sheetTop = _clamp(h * 0.35, 300, 420);
     final double sheetRadius = 26;
-
-    // Illustration sizing/positioning: large + pushed right and down
-    final double illoW = _clamp(w * 1.210, 380, 600); // larger
+    final double illoW = _clamp(w * 1.210, 380, 600);
     final double illoH = illoW * 0.80;
     final double illoRightBleed = _clamp(w * 0.28, 40, 100);
-    final double illoDrop = _clamp(h * 0.10, 40, 80); // less drop (higher up)
+    final double illoDrop = _clamp(h * 0.10, 40, 80);
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: const GlobalAppBar(title: 'Profile', showBack: true),
       body: Stack(
         children: [
-          // CONTENT UNDER THE SHEET (including the big illustration)
           Positioned.fill(
             child: SingleChildScrollView(
               padding: EdgeInsets.only(bottom: _clamp(h * 0.18, 140, 220)),
@@ -57,7 +46,6 @@ class ProfilePage extends StatelessWidget {
                     child: Stack(
                       clipBehavior: Clip.none,
                       children: [
-                        // Text block
                         Padding(
                           padding: EdgeInsets.only(
                             left: padX * 1.3,
@@ -87,8 +75,6 @@ class ProfilePage extends StatelessWidget {
                             ],
                           ),
                         ),
-
-                        // BIG illustration bleeding to the right and down into the sheet
                         Positioned(
                           right: -illoRightBleed,
                           bottom: -illoDrop,
@@ -108,8 +94,6 @@ class ProfilePage extends StatelessWidget {
               ),
             ),
           ),
-
-          // BLUE SHEET ON TOP (so it overlaps the illustration nicely)
           Positioned(
             left: 0,
             right: 0,
@@ -152,7 +136,6 @@ class _ProfileSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final w = MediaQuery.of(context).size.width;
-
     return Material(
       elevation: 10,
       shadowColor: const Color(0x33000000),

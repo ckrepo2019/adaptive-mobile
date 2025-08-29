@@ -22,12 +22,10 @@ class _CalendarPageState extends State<CalendarPage> {
 
     List<Widget> dayWidgets = [];
 
-    // Empty slots before the first day
     for (int i = 0; i < firstWeekday; i++) {
       dayWidgets.add(SizedBox(width: cellSize, height: cellSize));
     }
 
-    // Actual days
     for (int day = 1; day <= daysInMonth; day++) {
       final isToday =
           DateTime.now().day == day &&
@@ -65,9 +63,8 @@ class _CalendarPageState extends State<CalendarPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Calculate responsive sizes
-    final cellSize = screenWidth / 9; // dynamic day size
-    final calendarHeight = screenHeight * 0.45; // 45% of screen height
+    final cellSize = screenWidth / 9;
+    final calendarHeight = screenHeight * 0.45;
 
     return StudentGlobalLayout(
       useSafeArea: false,
@@ -76,8 +73,6 @@ class _CalendarPageState extends State<CalendarPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 20),
-
-          /// Streak card
           Card(
             elevation: 20,
             shape: RoundedRectangleBorder(
@@ -122,7 +117,6 @@ class _CalendarPageState extends State<CalendarPage> {
                       ],
                     ),
                   ),
-
                   Positioned(
                     bottom: -MediaQuery.of(context).size.height * 0.04,
                     right: -MediaQuery.of(context).size.width * 0.05,
@@ -137,10 +131,7 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
           ),
-
           const SizedBox(height: 15),
-
-          /// Calendar card
           Card(
             elevation: 5,
             child: Container(
@@ -155,7 +146,6 @@ class _CalendarPageState extends State<CalendarPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    /// Month selector row
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -199,8 +189,6 @@ class _CalendarPageState extends State<CalendarPage> {
                       ],
                     ),
                     const SizedBox(height: 20),
-
-                    /// Weekday headers
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children:
@@ -222,8 +210,6 @@ class _CalendarPageState extends State<CalendarPage> {
                               .toList(),
                     ),
                     const SizedBox(height: 10),
-
-                    /// Calendar days
                     Expanded(
                       child: GridView.count(
                         physics: const NeverScrollableScrollPhysics(),

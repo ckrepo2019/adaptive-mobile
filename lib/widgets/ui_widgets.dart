@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Reusable card with left accent, rounded corners, ripple, and soft shadow.
 class InkCardShell extends StatelessWidget {
   final Widget child;
   final Color leftAccent;
