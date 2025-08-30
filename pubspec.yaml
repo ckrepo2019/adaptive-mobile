@@ -43,7 +43,10 @@ dependencies:
   color_palette_generator: ^2.0.1
   confetti: ^0.8.0
   intl: ^0.20.2
-  font_awesome_flutter: ^10.9.1
+  auto_size_text: ^3.0.0
+  flutter_html: ^3.0.0
+  syncfusion_flutter_pdfviewer: ^30.2.6
+  pdfx: ^2.9.2
 
 dev_dependencies:
   flutter_test:
@@ -73,8 +76,10 @@ flutter:
     - assets/images/student-class/
     - assets/images/assignments/
     - assets/images/student-profile/
-    - assets/images/default-images/
-    - assets/images/utilities/
+    - assets/images/default-images/default-classes.jpg
+    - assets/images/default-images/default-female-teacher-class.png
+    - assets/images/default-images/default-subject-unit.png
+ #   - assets/images/default-images/default-male-teacher-class.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

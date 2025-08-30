@@ -1,94 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/student/home/quick_actions.dart';
-import 'package:flutter_lms/views/student/home/student_global_layout.dart';
-import 'package:flutter_lms/views/teacher/widgets/class_timeline.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_lms/controllers/get_user.dart';
+import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:flutter_lms/widgets/skeleton_loader.dart';
 
 class TeacherHomePage extends StatelessWidget {
   const TeacherHomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: const GlobalAppBar(title: 'Home'),
-      body: GlobalLayout(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const WelcomeWidget(),
-            const SizedBox(height: 25),
+  State<TeacherHomePage> createState() => _TeacherHomePageState();
+}
 
-            // Quick Actions header
-            Row(
-              children: [
-                const Icon(Icons.open_in_new),
-                const SizedBox(width: 10),
-                Text(
-                  "Quick Actions",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
+class _TeacherHomePageState extends State<TeacherHomePage> {
+  bool _loading = true;
+  String? _error;
+  Map<String, dynamic>? _user;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is! Map) {
+      setState(() {
+        _loading = false;
+        _error = 'Missing route arguments.';
+      });
+      return;
+    }
+    final token = args['token'] as String?;
+    final uid = args['uid'] as String?;
+    final userType = (args['userType'] as int?) ?? 4;
+    if (token == null || uid == null) {
+      setState(() {
+        _loading = false;
+        _error = 'Invalid route arguments.';
+      });
+      return;
+    }
+    _load(token, uid, userType);
+  }
+
+  Future<void> _load(String token, String uid, int type) async {
+    final ApiResponse<Map<String, dynamic>> resp = await UserController.getUser(
+      token: token,
+      uid: uid,
+      userType: type,
+    );
+
+    if (!mounted) return;
+    if (resp.success) {
+      setState(() {
+        _user = resp.data!;
+        _loading = false;
+      });
+    } else {
+      setState(() {
+        _error = resp.message ?? 'Failed to load user.';
+        _loading = false;
+      });
+    }
+  }
+
+  Widget _row(String label, dynamic value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 160,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              color: Colors.black54,
             ),
-            const SizedBox(height: 10),
-
-            GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2, // 2 columns
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.5, // > 1 makes it rectangular (width > height)
-            children: [
-              QuickActionTile(
-                iconAsset: 'assets/images/student-home/classes-quickactions.png',
-                label: 'Classes',
-                onTap: () {
-                  /* navigate */
-                },
-              ),
-              QuickActionTile(
-                iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
-                label: 'Announcements',
-                onTap: () {
-                  /* navigate */
-                  Get.toNamed(AppRoutes.announcementPage);
-                },
-              ),
-              QuickActionTile(
-                iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
-                label: 'Leaderboards',
-                onTap: () {
-                  /* navigate */
-                },
-              ),
-              QuickActionTile(
-                iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
-                label: 'Profile',
-                onTap: () {
-                  /* navigate */
-                },
-              ),
-            ],
           ),
-
-          SizedBox(height: 25,),
-
-          Row(
-            children: [
-              Icon(Icons.book,),
-              SizedBox(width: 5,),
-              Text("Today's Classes"),
-              Spacer(),
-              CustomChip(backgroundColor: Colors.blue.shade100, textColor: Colors.blue.shade500, borderColor: Colors.transparent, chipTitle: '4 Classes'),
-            ],
+        ),
+        Expanded(
+          child: Text(
+            value?.toString() ?? '—',
+            style: const TextStyle(fontWeight: FontWeight.w500),
+            softWrap: true,
           ),
 
           SizedBox(height: 25,),
@@ -110,11 +101,24 @@ class WelcomeWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(top: 10),
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Teacher Home')),
+        body: Center(
+          child: Text(_error!, style: const TextStyle(color: Colors.red)),
+        ),
+      );
+    }
+
+    return SkeletonLoader(isLoading: _loading, child: _buildContent());
+  }
+
+  Widget _buildContent() {
+    final t = _user!;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Teacher Home')),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
           // Avatar + Name
           Row(

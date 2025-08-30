@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+// not needed, will delete this
 class GlobalBasicInformationWidget extends StatelessWidget {
   final String classTitle;
   final String subject;
@@ -54,7 +55,7 @@ class GlobalBasicInformationWidget extends StatelessWidget {
                         fontSize: screenWidth * 0.045, // responsive title
                       ),
                     ),
-            
+
                     // Subject name
                     Text(
                       subject,
@@ -63,9 +64,9 @@ class GlobalBasicInformationWidget extends StatelessWidget {
                         fontSize: screenWidth * 0.04,
                       ),
                     ),
-            
+
                     SizedBox(height: screenHeight * 0.04),
-            
+
                     // ===== Bottom Row (time & duration) =====
                     Row(
                       children: [
@@ -97,8 +98,12 @@ class GlobalBasicInformationWidget extends StatelessWidget {
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Spacer(flex: 3,),
-                        Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey.shade700,)
+                        Spacer(flex: 3),
+                        Icon(
+                          Icons.arrow_forward_ios,
+                          size: 12,
+                          color: Colors.grey.shade700,
+                        ),
                       ],
                     ),
                   ],

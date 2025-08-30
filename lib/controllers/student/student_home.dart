@@ -102,8 +102,7 @@ class StudentHomeController {
 
   static Future<ApiResponse<List<dynamic>>> fetchLearnerProfiles({
     String? token,
-    int?
-    studentId, // optional: if provided, backend will use this instead of auth user
+    int? studentId,
   }) async {
     final resolvedToken = await _resolveToken(token);
     if (resolvedToken == null) {
@@ -113,16 +112,14 @@ class StudentHomeController {
       );
     }
 
-    // If no studentId passed, try to get from SharedPreferences
     if (studentId == null) {
       final prefs = await SharedPreferences.getInstance();
-      final storedId = prefs.getInt('id'); // assuming you store it as int
+      final storedId = prefs.getInt('id');
       if (storedId != null) {
         studentId = storedId;
       }
     }
 
-    // Build URL with optional ?student_id=
     final base = '${AppConstants.baseURL}/get-learners-profile';
     final uri = Uri.parse(
       studentId == null ? base : '$base?student_id=$studentId',
@@ -139,7 +136,6 @@ class StudentHomeController {
 
       final body = jsonDecode(res.body);
 
-      // Backend: { success: bool, data: [...] }
       if (res.statusCode == 200 && body is Map && body['success'] == true) {
         final data = (body['data'] is List)
             ? List<dynamic>.from(body['data'])

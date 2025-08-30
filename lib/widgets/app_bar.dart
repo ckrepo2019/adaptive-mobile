@@ -1,9 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Global AppBar widget
-/// Allows hiding the default back arrow (via automaticallyImplyLeading: false)
-/// and only shows back if `showBack: true`.
 class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   const GlobalAppBar({
     super.key,
@@ -17,6 +13,9 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.titleSize,
     this.subtitleSize,
     this.iconSize,
+    this.showNotifications = true,
+    this.showProfile = true,
+    this.centerTitle = false,
   });
 
   final String title;
@@ -31,6 +30,10 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double? subtitleSize; // 🔹 control subtitle font size
   final double? iconSize;
 
+  final bool showNotifications;
+  final bool showProfile;
+  final bool centerTitle; // ✅
+
   static const double _overlapPx = 6.0;
 
   double _clampNum(double v, double min, double max) =>
@@ -41,16 +44,15 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
     final mq = MediaQuery.of(context);
     final w = mq.size.width;
 
-    final double sp = sidePadding ?? _clampNum(w * 0.02, 16, 24);
-    final double tSize = titleSize ?? _clampNum(w * 0.055, 20, 28);
-    final double stSize = subtitleSize ?? _clampNum(w * 0.025, 14, 18);
+    final double sp = sidePadding ?? _clampNum(w * 0.05, 16, 24);
+    final double tSize = titleSize ?? _clampNum(w * 0.065, 20, 28);
     final double iSize = iconSize ?? _clampNum(w * 0.060, 20, 26);
     final double iconPad = _clampNum(w * 0.01, 6, 10);
 
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      centerTitle: false,
+      centerTitle: centerTitle,
       titleSpacing: sp,
       automaticallyImplyLeading: false,
       iconTheme: const IconThemeData(color: Colors.black),
@@ -68,94 +70,70 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             )
           : null,
-      title: subtitle == null
-          ? Text(
-              title,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: GoogleFonts.poppins(
-                color: Colors.black,
-                fontWeight: FontWeight.w700,
-                fontSize: tSize,
-                height: 1.1,
-              ),
-            )
-          : Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  title,
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w700,
-                    fontSize: tSize,
-                    height: 1.1,
-                  ),
-                ),
-                Text(
-                  subtitle!,
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[700],
-                    fontWeight: FontWeight.w400,
-                    fontSize: stSize,
-                    height: 1.2,
-                  ),
-                ),
-              ],
-            ),
-      actions: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: sp),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Notifications icon
-              InkWell(
-                onTap: onNotificationsTap,
-                borderRadius: BorderRadius.circular(12),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: 44,
-                    minHeight: 44,
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.all(iconPad),
-                    child: Image.asset(
-                      'assets/images/student-home/ci_bell-notification.png',
-                      width: iSize,
-                      height: iSize,
-                    ),
-                  ),
-                ),
-              ),
-
-              // Profile icon
-              Transform.translate(
-                offset: const Offset(-_overlapPx, 0),
-                child: InkWell(
-                  onTap: onProfileTap,
-                  borderRadius: BorderRadius.circular(12),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: 44,
-                      minHeight: 44,
-                    ),
-                    child: Padding(
-                      padding: EdgeInsets.all(iconPad),
-                      child: Image.asset(
-                        'assets/images/student-home/profile-icon.png',
-                        width: iSize,
-                        height: iSize,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: tSize,
+          fontWeight: FontWeight.w800,
+          color: Colors.black,
         ),
-      ],
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        textAlign: centerTitle ? TextAlign.center : TextAlign.left,
+      ),
+      actions: (showNotifications || showProfile)
+          ? [
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: sp),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (showNotifications)
+                      InkWell(
+                        onTap: onNotificationsTap,
+                        borderRadius: BorderRadius.circular(12),
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: 44,
+                            minHeight: 44,
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(iconPad),
+                            child: Image.asset(
+                              'assets/images/student-home/ci_bell-notification.png',
+                              width: iSize,
+                              height: iSize,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (showProfile)
+                      Transform.translate(
+                        offset: const Offset(-_overlapPx, 0),
+                        child: InkWell(
+                          onTap: onProfileTap,
+                          borderRadius: BorderRadius.circular(12),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minWidth: 44,
+                              minHeight: 44,
+                            ),
+                            child: Padding(
+                              padding: EdgeInsets.all(iconPad),
+                              child: Image.asset(
+                                'assets/images/student-home/profile-icon.png',
+                                width: iSize,
+                                height: iSize,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ]
+          : null,
     );
   }
 

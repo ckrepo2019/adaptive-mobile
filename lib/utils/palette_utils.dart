@@ -1,15 +1,11 @@
+// ignore_for_file: deprecated_member_use, unused_local_variable
+
 import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
-import 'image_utils.dart'; // imageProviderFor, loadUiImage
+import 'image_utils.dart';
 
-/// Tiny palette extractor + distinct color picker.
-/// Strategy:
-/// 1) Downsample to ~48x48
-/// 2) Quantize to 12-bit buckets (4 bits per channel) to build a histogram
-/// 3) Return top-N buckets as Colors (averaged)
 class PaletteUtils {
-  /// Extract up to [maxColors] dominant-ish colors from an image path or URL.
   static Future<List<Color>> paletteFromPath(
     String path, {
     int maxColors = 5,
@@ -25,16 +21,15 @@ class PaletteUtils {
       if (bd == null) return const [];
 
       final bytes = bd.buffer.asUint8List();
-      // 12-bit quantization: 4 bits per channel -> 4096 buckets
       final counts = <int, int>{};
-      final sums = <int, List<int>>{}; // bucket -> [rSum,gSum,bSum,aSum]
+      final sums = <int, List<int>>{};
 
       for (int i = 0; i + 3 < bytes.length; i += 4) {
         final r = bytes[i];
         final g = bytes[i + 1];
         final b = bytes[i + 2];
         final a = bytes[i + 3];
-        if (a < 16) continue; // ignore near-transparent
+        if (a < 16) continue;
 
         final r4 = r >> 4, g4 = g >> 4, b4 = b >> 4;
         final bucket = (r4 << 8) | (g4 << 4) | b4;
@@ -48,7 +43,7 @@ class PaletteUtils {
       }
 
       final entries = counts.entries.toList()
-        ..sort((a, b) => b.value.compareTo(a.value)); // freq desc
+        ..sort((a, b) => b.value.compareTo(a.value));
 
       final colors = <Color>[];
       for (final e in entries.take(maxColors)) {
@@ -67,12 +62,10 @@ class PaletteUtils {
     }
   }
 
-  /// Pick the first color in [palette] whose distance to every color in [used]
-  /// is >= [minDistance]. If none qualifies, return the first palette color.
   static Color? pickDistinct(
     List<Color> palette,
     Set<int> used, {
-    int minDistance = 40, // Euclidean in RGB (0..255)
+    int minDistance = 40,
   }) {
     Color? first;
     for (final c in palette) {
@@ -97,6 +90,5 @@ class PaletteUtils {
     return first;
   }
 
-  /// Encode a color (ignore alpha) as int for set membership
   static int rgbKey(Color c) => (c.red << 16) | (c.green << 8) | c.blue;
 }

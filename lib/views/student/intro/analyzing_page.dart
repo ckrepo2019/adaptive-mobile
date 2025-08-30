@@ -2,7 +2,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:flutter_lms/views/base_view.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/student/student_home.dart';
@@ -34,8 +33,6 @@ class _AnalyzingBodyState extends State<_AnalyzingBody> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
-
-      // ✅ Get studentId from route args first
       final args = ModalRoute.of(context)?.settings.arguments;
       int? id;
       if (args is Map && args['studentId'] != null) {
@@ -43,12 +40,8 @@ class _AnalyzingBodyState extends State<_AnalyzingBody> {
             ? args['studentId']
             : int.tryParse(args['studentId'].toString());
       }
-
-      // fallback to stored id in prefs
       id ??= prefs.getInt('id');
-
       debugPrint('Using studentId: $id');
-
       if (token == null || id == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -60,17 +53,13 @@ class _AnalyzingBodyState extends State<_AnalyzingBody> {
         );
         return;
       }
-
       final ApiResponse<List<dynamic>> resp =
           await StudentHomeController.fetchLearnerProfiles(
             token: token,
             studentId: id,
           );
-
       if (!mounted) return;
-
       if (resp.success && resp.data != null && resp.data!.isNotEmpty) {
-        // Navigate to result_learner_type.dart with API result
         Navigator.of(context).pushNamedAndRemoveUntil(
           AppRoutes.resultLearnerType,
           (route) => false,
@@ -91,27 +80,19 @@ class _AnalyzingBodyState extends State<_AnalyzingBody> {
 
   @override
   Widget build(BuildContext context) {
-    // ===== UI kept exactly as your original layout =====
     final mq = MediaQuery.of(context);
     final w = mq.size.width;
     final h = mq.size.height;
     final topInset = mq.padding.top;
     final bottomInset = mq.padding.bottom;
-
     double clamp(double v, double min, double max) =>
         v < min ? min : (v > max ? max : v);
-
-    // ===== Responsive tokens =====
     final padX = clamp(w * 0.07, 18, 28);
     final overlineSize = clamp(w * 0.038, 12, 16);
     final titleSize = clamp(w * 0.12, 32, 42);
-    final textAnchorY = h * 0.58; // slightly below center like Figma
-
-    // ===== Illustration sizing (large, bleed-style) =====
-    final targetWidth = clamp(w * 1.35, 420, 900); // wider than screen
-    final targetHeight = targetWidth * 0.95; // pleasant aspect
-
-    // ===== Dynamic bottom push =====
+    final textAnchorY = h * 0.58;
+    final targetWidth = clamp(w * 1.35, 420, 900);
+    final targetHeight = targetWidth * 0.95;
     final overlap = clamp(h * 0.02, 8, 24);
     final bottomPush = (bottomInset + overlap + h * 0.18 + 150);
     final leftOverlap = clamp(w * 0.18, 30, 100);
@@ -127,15 +108,14 @@ class _AnalyzingBodyState extends State<_AnalyzingBody> {
             return SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: SizedBox(
-                height: constraints.maxHeight, // ✅ give Stack a concrete height
+                height: constraints.maxHeight,
                 width: constraints.maxWidth,
                 child: SafeArea(
                   bottom: false,
                   child: Stack(
-                    fit: StackFit.expand, // ✅ fill the SizedBox
+                    fit: StackFit.expand,
                     clipBehavior: Clip.none,
                     children: [
-                      // TEXT block
                       Positioned(
                         left: padX,
                         right: padX,
@@ -172,8 +152,6 @@ class _AnalyzingBodyState extends State<_AnalyzingBody> {
                           ),
                         ),
                       ),
-
-                      // ILLUSTRATION (bottom-centered, can overflow)
                       Align(
                         alignment: Alignment.bottomCenter,
                         child: Transform.translate(

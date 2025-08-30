@@ -98,8 +98,6 @@ class _CollaboratorHomePageState extends State<CollaboratorHomePage> {
         ),
       );
     }
-
-    // Keys from `collaboratorprofile` screenshot
     final c = _user!;
     return Scaffold(
       appBar: AppBar(title: const Text('Collaborator Home')),

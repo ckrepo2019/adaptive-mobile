@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Dot row + "Next" CTA used across intro pages
 class IntroFooter extends StatelessWidget {
   const IntroFooter({
     super.key,
@@ -12,9 +11,9 @@ class IntroFooter extends StatelessWidget {
     required this.textColor,
     this.isLast = false,
     this.onDotTap,
-    this.maxVisibleDots = 4, // show up to N dots
-    this.anchorIndex = 2, // keep current at this position (3rd dot)
-    this.anchorActiveFrom = 4, // start anchoring when current >= 4
+    this.maxVisibleDots = 4,
+    this.anchorIndex = 2,
+    this.anchorActiveFrom = 4,
   });
 
   final int total;
@@ -24,14 +23,10 @@ class IntroFooter extends StatelessWidget {
   final Color inactiveColor;
   final Color textColor;
   final bool isLast;
-
-  /// Called with the tapped dot index. Parent can decide what to do.
   final void Function(int index)? onDotTap;
-
-  /// Windowing/anchoring controls
   final int maxVisibleDots;
-  final int anchorIndex; // 0-based position within the window
-  final int anchorActiveFrom; // start anchoring at this current index
+  final int anchorIndex;
+  final int anchorActiveFrom;
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +42,6 @@ class IntroFooter extends StatelessWidget {
       padding: const EdgeInsets.only(left: 24, right: 24),
       child: Stack(
         children: [
-          // Dots (windowed + anchored)
           Positioned(
             left: 0,
             bottom: 30,
@@ -61,7 +55,7 @@ class IntroFooter extends StatelessWidget {
                       duration: const Duration(milliseconds: 250),
                       margin: const EdgeInsets.only(right: 6),
                       height: 8,
-                      width: i == current ? 24 : 8, // pill for active
+                      width: i == current ? 24 : 8,
                       decoration: BoxDecoration(
                         color: i == current ? activeColor : inactiveColor,
                         borderRadius: BorderRadius.circular(20),
@@ -72,8 +66,6 @@ class IntroFooter extends StatelessWidget {
               ],
             ),
           ),
-
-          // Next
           Positioned(
             right: 0,
             bottom: 24,
@@ -102,11 +94,6 @@ class IntroFooter extends StatelessWidget {
     );
   }
 
-  /// Visible indices with anchoring:
-  /// - If total <= maxVisible: show all.
-  /// - If current < anchorActiveFrom: show the first [maxVisible] dots (no shift).
-  /// - Else: keep the current index at [anchorIndex] within the window,
-  ///   clamping at the end so the last page is visible.
   List<int> _visibleIndicesAnchored({
     required int total,
     required int current,
@@ -117,28 +104,19 @@ class IntroFooter extends StatelessWidget {
     if (total <= maxVisible) {
       return List<int>.generate(total, (i) => i);
     }
-
-    // Initial window (no anchoring yet)
     if (current < anchorActiveFrom) {
       return List<int>.generate(maxVisible, (i) => i);
     }
-
-    // Anchor current at anchorIndex (e.g., 2 => the 3rd dot)
     int start = current - anchorIndex;
     int end = start + maxVisible - 1;
-
-    // Clamp to the tail
     if (end > total - 1) {
       end = total - 1;
       start = end - maxVisible + 1;
     }
-
-    // Clamp to the head just in case
     if (start < 0) {
       start = 0;
       end = start + maxVisible - 1;
     }
-
     return List<int>.generate(end - start + 1, (i) => start + i);
   }
 }

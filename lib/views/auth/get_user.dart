@@ -21,7 +21,6 @@ class _GetUserPageState extends State<GetUserPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // Expecting: { token:String, id:int, usertype_ID:int }
     final argsRaw = ModalRoute.of(context)?.settings.arguments;
     if (argsRaw is! Map) {
       setState(() {
@@ -58,40 +57,30 @@ class _GetUserPageState extends State<GetUserPage> {
     if (resp.success && resp.data != null) {
       _user = resp.data;
 
-      // Redirect based on userType
       switch (userType) {
-        case 4: // student
+        case 4:
           Get.toNamed(
             AppRoutes.studentShell,
             arguments: {'token': token, 'uid': uid, 'userType': 4},
           );
           break;
-        case 5: // teacher
+        case 5:
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRoutes.teacherHome, // or teacher/collaborator
-            (route) => false, // remove all previous routes
-            arguments: {
-              'token': token,
-              'uid': uid,
-              'userType': 5,
-            }, // pass your args
+            AppRoutes.teacherHome,
+            (route) => false,
+            arguments: {'token': token, 'uid': uid, 'userType': 5},
           );
           break;
-        case 6: // collaborator (adjust to your mapping)
+        case 6:
           Navigator.pushNamedAndRemoveUntil(
             context,
-            AppRoutes.collaboratorHome, // or teacher/collaborator
-            (route) => false, // remove all previous routes
-            arguments: {
-              'token': token,
-              'uid': uid,
-              'userType': 6,
-            }, // pass your args
+            AppRoutes.collaboratorHome,
+            (route) => false,
+            arguments: {'token': token, 'uid': uid, 'userType': 6},
           );
           break;
         default:
-          // Fallback if unknown type
           setState(() {
             _loading = false;
             _error = 'Unknown user type: $userType';
@@ -119,7 +108,6 @@ class _GetUserPageState extends State<GetUserPage> {
       );
     }
 
-    // Shouldn’t be seen—redirect happens on success.
     return const Scaffold(body: SizedBox.shrink());
   }
 }

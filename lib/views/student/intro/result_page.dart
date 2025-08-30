@@ -22,26 +22,23 @@ class _ResultLeanerBody extends StatefulWidget {
 
 class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
   List<dynamic>? _profiles;
-  int? _studentId; // prefer from arguments, fallback to SharedPreferences
+  int? _studentId;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_profiles != null) return;
     final args = ModalRoute.of(context)?.settings.arguments;
-
     if (args is List) {
       _profiles = List<dynamic>.from(args);
     } else if (args is Map && args['profiles'] is List) {
       _profiles = List<dynamic>.from(args['profiles']);
     }
-
     if (args is Map && args['studentId'] != null) {
       _studentId = args['studentId'] is int
           ? args['studentId'] as int
           : int.tryParse(args['studentId'].toString());
     }
-
     if (_profiles != null) {
       try {
         debugPrint('🔎 ResultLeanerPage initial profiles:');
@@ -58,7 +55,6 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token');
       final id = _studentId ?? prefs.getInt('id');
-
       if (token == null || id == null) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -66,15 +62,12 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
         );
         return;
       }
-
       final ApiResponse<List<dynamic>> resp =
           await StudentHomeController.fetchLearnerProfiles(
             token: token,
             studentId: id,
           );
-
       if (!mounted) return;
-
       if (resp.success && resp.data != null) {
         setState(() => _profiles = resp.data);
         try {
@@ -129,22 +122,16 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
     final mq = MediaQuery.of(context);
     final w = mq.size.width;
     final h = mq.size.height;
-
     double clampNum(double v, double min, double max) =>
         v < min ? min : (v > max ? max : v);
-
     final panelHeight = clampNum(h * 0.38, 280, 420);
-
-    // keep image area clearly visible
     final imgAreaHeight = clampNum(h - panelHeight + 60, 320, h * 0.65);
     final imgMaxWidth = clampNum(w * 1.35, 420, 1100);
-
     final titleSize = clampNum(w * 0.10, 28, 48);
     final bodySize = clampNum(w * 0.035, 12, 16);
     final iconSize = clampNum(titleSize * 0.9, 24, 44);
     final padX = clampNum(w * 0.06, 20, 40);
     final panelRadius = clampNum(w * 0.06, 20, 30);
-
     final typeName = _firstTypeName();
     final icon = _iconForType(typeName);
 
@@ -160,7 +147,6 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
             width: w,
             child: Stack(
               children: [
-                // ===== HERO IMAGE =====
                 Positioned(
                   top: mq.padding.top * 2.5,
                   left: 0,
@@ -180,8 +166,6 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
                     ),
                   ),
                 ),
-
-                // ===== BOTTOM SHEET =====
                 Positioned(
                   bottom: 0,
                   left: 0,
@@ -248,8 +232,6 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
                           ),
                         ),
                         const SizedBox(height: 24.0),
-
-                        // ===== GET STARTED -> Student Home (clear stack) =====
                         SizedBox(
                           height: clampNum(50, 46, 56),
                           width: double.infinity,
@@ -258,10 +240,8 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
                               final prefs =
                                   await SharedPreferences.getInstance();
                               final token = prefs.getString('token');
-                              final uid = prefs.getString(
-                                'uid',
-                              ); // assuming uid is stored as string
-
+                              final uid = prefs.getString('uid');
+                              final userType = prefs.getInt('usertype_ID');
                               if (token == null || uid == null) {
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -271,12 +251,15 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
                                 );
                                 return;
                               }
-
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
-                                AppRoutes.studentHome,
+                                AppRoutes.studentShell,
                                 (route) => false,
-                                arguments: {'token': token, 'uid': uid},
+                                arguments: {
+                                  'token': token,
+                                  'uid': uid,
+                                  'usertype_ID': userType,
+                                },
                               );
                             },
                             borderRadius: BorderRadius.circular(12),
