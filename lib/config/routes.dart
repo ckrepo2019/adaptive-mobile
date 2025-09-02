@@ -12,6 +12,8 @@ import 'package:flutter_lms/views/student/classes/join_class_success.dart';
 import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/student/profile/student_profile.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
+import 'package:flutter_lms/views/teacher/classes/subject_classes.dart';
+import 'package:flutter_lms/views/utilities/announcements.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
 import 'package:flutter_lms/views/auth/sign_in.dart';
@@ -52,6 +54,12 @@ class AppRoutes {
   static const String classSubjectOverview = '/class-subject-overview';
   static const String classSubjectBookContent = '/book-content';
   static const String quizSummary = '/quiz-summary/';
+
+  // teacher routes
+  static const teacherClasses = '/teacher-classes';
+
+  // utilities
+  static const announcement = '/announcement';
 }
 
 /// Use GetX pages so we can attach per-route bindings.
@@ -130,5 +138,13 @@ class AppPages {
       page: () => const SubjectBookContent(),
     ),
     GetPage(name: AppRoutes.quizSummary, page: () => const QuizSummaryPage()),
+    GetPage(
+      name: AppRoutes.announcement,
+      page: () => const AnnouncementsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherClasses,
+      page: () => const SubjectClasses(),
+    ),
   ];
 }

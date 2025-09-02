@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/student/home/student_global_layout.dart';
+import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/global_chat_widget.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
@@ -20,7 +20,7 @@ class TeacherStudentPage extends StatelessWidget {
         subtitle: 'Essential Algebra',
         showBack: true,
       ),
-      body: GlobalLayout(
+      body: StudentGlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -82,7 +82,7 @@ class TeacherStudentPage extends StatelessWidget {
                 ),
               ),
               onPressed: () {
-                Get.toNamed(AppRoutes.addStudentPage);
+                // Get.toNamed(AppRoutes.addStudentPage);
               },
               child: const Text(
                 'Add Student',

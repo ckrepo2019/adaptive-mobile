@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/home/student_global_layout.dart';
+import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
 import 'package:flutter_lms/widgets/global_student_badges_card.dart';
@@ -22,7 +22,7 @@ class GlobalBadgesPage extends StatelessWidget {
         onNotificationsTap: () {},
       ),
       body: SingleChildScrollView(
-        child: GlobalLayout(
+        child: StudentGlobalLayout(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

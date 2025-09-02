@@ -20,27 +20,13 @@ class ProfilePage extends StatelessWidget {
     final String first = (student['firstname']?.toString().trim() ?? '');
     final String welcomeName = first.isNotEmpty ? first : 'Student';
     final double padX = _clamp(w * 0.06, 16, 24);
-<<<<<<< HEAD:lib/views/utilities/profile_page.dart
-    final double helloSize = _clamp(w * 0.06, 16, 32);
-    final double subSize = _clamp(w * 0.040, 12, 24);
-
-    // Make the header a bit taller so the big illo can bleed nicely
-=======
     final double helloSize = _clamp(w * 0.055, 16, 20);
     final double subSize = _clamp(w * 0.040, 12, 16);
->>>>>>> df86e4c2900eedc8e96b3cdd2ab1840a2ba4ee07:lib/views/student/profile/student_profile.dart
     final double headerHeight = _clamp(h * 0.38, 280, 360);
     final double sheetTop = _clamp(h * 0.35, 300, 420);
     final double sheetRadius = 26;
-<<<<<<< HEAD:lib/views/utilities/profile_page.dart
-
-    // Illustration sizing/positioning: large + pushed right and down
-    final double illoW = _clamp(w * 1, 380, 600); // larger
-    final double illoH = illoW * 0.90;
-=======
     final double illoW = _clamp(w * 1.210, 380, 600);
     final double illoH = illoW * 0.80;
->>>>>>> df86e4c2900eedc8e96b3cdd2ab1840a2ba4ee07:lib/views/student/profile/student_profile.dart
     final double illoRightBleed = _clamp(w * 0.28, 40, 100);
     final double illoDrop = _clamp(h * 0.10, 40, 80);
 

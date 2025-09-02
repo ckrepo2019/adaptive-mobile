@@ -76,8 +76,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         useMaterial3: true,
       ),
       initialBinding: StudentHomeBindings(),
-      // home: const _LaunchGate(),
-      home: const AttendancePage(),
+      home: const _LaunchGate(),
+      // home: const AttendancePage(),
       getPages: AppPages.pages,
     );
   }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/home/student_global_layout.dart';
+import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/ui_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -14,7 +14,7 @@ class SubjectClasses extends StatelessWidget {
     
     return Scaffold(
       appBar: GlobalAppBar(title: 'Subject Classes', showBack: true,),
-      body: GlobalLayout(child: Column(
+      body: StudentGlobalLayout(child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Card(

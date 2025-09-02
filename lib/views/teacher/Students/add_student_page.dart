@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/student/home/student_global_layout.dart';
+import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -13,7 +13,7 @@ class AddStudentPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: GlobalAppBar(title: 'Adding students', subtitle: 'Essential Algebra for Beginners', showBack: true,),
-      body: GlobalLayout(
+      body: StudentGlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

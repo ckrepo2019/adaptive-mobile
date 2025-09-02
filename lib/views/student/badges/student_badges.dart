@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/home/student_global_layout.dart';
+import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/assignment_card_widget.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
 import 'package:flutter_lms/widgets/global_student_badges_card.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,7 +16,7 @@ class BadgesPage extends StatelessWidget {
     
     return Scaffold(
       appBar: GlobalAppBar(title: 'My Badges', onProfileTap: (){}, onNotificationsTap: (){},),
-      body: GlobalLayout(
+      body: StudentGlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
         children: [

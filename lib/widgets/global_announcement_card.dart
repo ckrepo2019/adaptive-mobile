@@ -30,7 +30,7 @@ class GlobalAnnouncementCard extends BaseWidget {
     );
 
     return InkWell(
-      onTap: () => Get.toNamed(AppRoutes.informationPage),
+      // onTap: () => Get.toNamed(AppRoutes.),
       child: Card(
         color: Colors.white, // ✅ full white background
         margin: EdgeInsets.only(bottom: screenHeight * 0.015),
