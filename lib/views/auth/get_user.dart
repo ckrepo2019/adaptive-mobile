@@ -65,10 +65,8 @@ class _GetUserPageState extends State<GetUserPage> {
           );
           break;
         case 5:
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            AppRoutes.teacherHome,
-            (route) => false,
+          Get.toNamed(
+            AppRoutes.teacherShell,
             arguments: {'token': token, 'uid': uid, 'userType': 5},
           );
           break;

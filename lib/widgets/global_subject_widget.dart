@@ -80,13 +80,9 @@ class _SubjectCardState extends State<_SubjectCard> {
                 : '$_imageBaseUrl$raw');
       return joined;
     }
-
-    // If someone accidentally sent an app asset path in the API, treat it as no network URL
     return null;
   }
 
-  /// For color extraction we want a single "path" we can hand off to your utils.
-  /// Prefer the network URL if present; otherwise the local asset path.
   String get _colorSourcePath => _networkUrl ?? _kDefaultAsset;
 
   @override

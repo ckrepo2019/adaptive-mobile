@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
+import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -14,7 +14,8 @@ class InformationPage extends StatelessWidget {
     return Scaffold(
       appBar: const GlobalAppBar(title: "Info", showBack: true),
       body: StudentGlobalLayout(
-        child: SingleChildScrollView( // ✅ allows scrolling on small devices
+        child: SingleChildScrollView(
+          // ✅ allows scrolling on small devices
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -27,10 +28,7 @@ class InformationPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(screenWidth * 0.04),
                     gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFF0034F8),
-                        Color(0xFF082BAB),
-                      ],
+                      colors: [Color(0xFF0034F8), Color(0xFF082BAB)],
                       stops: [0.1, 0.8],
                     ),
                   ),

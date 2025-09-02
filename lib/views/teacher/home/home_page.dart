@@ -3,15 +3,24 @@ import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/get_user.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/views/student/home/quick_actions.dart';
+import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
 import 'package:flutter_lms/views/teacher/widgets/class_timeline.dart';
-import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class TeacherHomePage extends StatefulWidget {
-  const TeacherHomePage({super.key});
+  final String token;
+  final String uid;
+  final int userType;
+
+  const TeacherHomePage({
+    super.key,
+    required this.token,
+    required this.uid,
+    required this.userType,
+  });
 
   @override
   State<TeacherHomePage> createState() => _TeacherHomePageState();
@@ -98,7 +107,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
     return Scaffold(
       appBar: const GlobalAppBar(title: 'Home'),
-      body: StudentGlobalLayout(
+      body: TeacherGlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

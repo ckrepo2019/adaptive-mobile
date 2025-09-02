@@ -1,3 +1,5 @@
+import 'package:flutter_lms/views/collab/home_page.dart';
+import 'package:flutter_lms/views/components/announcements.dart';
 import 'package:flutter_lms/views/student/assignments/achievement-top.dart';
 import 'package:flutter_lms/views/student/assignments/achievement_quiz_streak.dart';
 import 'package:flutter_lms/views/student/assignments/achievements.dart';
@@ -20,16 +22,15 @@ import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/student/profile/student_profile.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
 import 'package:flutter_lms/views/teacher/classes/subject_classes.dart';
-import 'package:flutter_lms/views/utilities/announcements.dart';
+import 'package:flutter_lms/views/teacher/teacher_shell.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
 import 'package:flutter_lms/views/auth/sign_in.dart';
-import 'package:flutter_lms/views/collab/home_page.dart';
 import 'package:flutter_lms/views/student/home/home_page.dart';
 import 'package:flutter_lms/views/student/intro/analyzing_page.dart';
 import 'package:flutter_lms/views/student/intro/introduction_page.dart';
 import 'package:flutter_lms/views/student/intro/result_page.dart';
-import 'package:flutter_lms/views/teacher/home_page.dart';
+import 'package:flutter_lms/views/teacher/home/home_page.dart';
 import 'package:flutter_lms/views/student/intro/get_started.dart';
 
 import 'package:flutter_lms/state/bindings/student/student_home_bindings.dart';
@@ -61,6 +62,20 @@ class AppRoutes {
   static const String classSubjectOverview = '/class-subject-overview';
   static const String classSubjectBookContent = '/book-content';
   static const String quizSummary = '/quiz-summary/';
+  static const String remedialIntro = '/remedial-intro';
+  static const String remedialQuiz = '/remedial-quiz';
+  static const String remedialQuizResult = '/remedial-quiz-result';
+  static const String achievements = '/achievements';
+  static const String achievementsTop = '/achievements-top';
+  static const String achievementQuizStreak = '/achievement-quiz-streak';
+  static const String yourAchievements = '/your-achievements';
+
+  // teacher routes
+  static const teacherShell = '/teacher-shell';
+  static const teacherClasses = '/teacher-classes';
+
+  // utilities
+  static const announcement = '/announcement';
 }
 
 /// Use GetX pages so we can attach per-route bindings.
@@ -100,7 +115,17 @@ class AppPages {
         );
       },
     ),
-    GetPage(name: AppRoutes.teacherHome, page: () => const TeacherHomePage()),
+    GetPage(
+      name: AppRoutes.studentHome,
+      page: () {
+        final args = (Get.arguments as Map?) ?? {};
+        return TeacherHomePage(
+          token: (args['token'] ?? '') as String,
+          uid: (args['uid'] ?? '') as String,
+          userType: (args['userType'] ?? 4) as int,
+        );
+      },
+    ),
     GetPage(
       name: AppRoutes.collaboratorHome,
       page: () => const CollaboratorHomePage(),
@@ -139,5 +164,38 @@ class AppPages {
       page: () => const SubjectBookContent(),
     ),
     GetPage(name: AppRoutes.quizSummary, page: () => const QuizSummaryPage()),
+    GetPage(
+      name: AppRoutes.remedialQuizResult,
+      page: () => const RemedialQuizResultPage(),
+    ),
+    GetPage(name: AppRoutes.achievements, page: () => const AchievementsPage()),
+    GetPage(
+      name: AppRoutes.achievementsTop,
+      page: () => const AchievementTopPage(),
+    ),
+    GetPage(
+      name: AppRoutes.achievementQuizStreak,
+      page: () => const AchievementQuizStreakPage(),
+    ),
+    GetPage(
+      name: AppRoutes.yourAchievements,
+      page: () => const YourAchievementsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.announcement,
+      page: () => const AnnouncementsPage(),
+    ),
+    GetPage(name: AppRoutes.teacherClasses, page: () => const SubjectClasses()),
+    GetPage(
+      name: AppRoutes.teacherShell,
+      page: () {
+        final args = (Get.arguments as Map?) ?? {};
+        return TeacherShell(
+          token: (args['token'] ?? '') as String,
+          uid: (args['uid'] ?? '') as String,
+          userType: (args['userType'] ?? 5) as int,
+        );
+      },
+    ),
   ];
 }

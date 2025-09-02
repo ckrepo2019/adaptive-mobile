@@ -3,13 +3,14 @@ import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/controllers/student/student_home.dart';
 import 'package:flutter_lms/views/student/home/quick_actions.dart';
-import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
+import 'package:flutter_lms/views/student/student_global_layout.dart';
+import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/cards_list.dart';
 import 'package:flutter_lms/widgets/skeleton_loader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
+import 'package:flutter_lms/views/teacher/tabs/teacher_tabs.dart';
 import 'package:flutter_lms/models/items.dart';
 
 class StudentHomePage extends StatefulWidget {

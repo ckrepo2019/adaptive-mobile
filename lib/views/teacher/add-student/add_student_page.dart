@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
+import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -12,17 +12,33 @@ class AddStudentPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GlobalAppBar(title: 'Adding students', subtitle: 'Essential Algebra for Beginners', showBack: true,),
-      body: StudentGlobalLayout(
+      appBar: GlobalAppBar(
+        title: 'Adding students',
+        subtitle: 'Essential Algebra for Beginners',
+        showBack: true,
+      ),
+      body: TeacherGlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 25,),
+            SizedBox(height: 25),
 
-            Center(child: Image(image: AssetImage('assets/images/utilities/students.png'), height: 200, width: 200,)),
-            SizedBox(height: 10,),
-            Text("Add a student", style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),),
-            SizedBox(height: 25,),
+            Center(
+              child: Image(
+                image: AssetImage('assets/images/utilities/students.png'),
+                height: 200,
+                width: 200,
+              ),
+            ),
+            SizedBox(height: 10),
+            Text(
+              "Add a student",
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 25),
             Card(
               elevation: 10,
               shape: RoundedRectangleBorder(
