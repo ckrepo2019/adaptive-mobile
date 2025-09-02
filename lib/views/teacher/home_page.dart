@@ -99,94 +99,92 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     return Scaffold(
       appBar: const GlobalAppBar(title: 'Home'),
       body: StudentGlobalLayout(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            WelcomeWidget(
-              firstname: user['firstname'] ?? '',
-              lastname: user['lastname'] ?? '',
-              role: role,
-              studentsCount: "30",
-              section: "Grade 1 : Joy Adviser",
-            ),
-            const SizedBox(height: 25),
+        child: SingleChildScrollView( // 👈 makes it scrollable
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              WelcomeWidget(
+                firstname: user['firstname'] ?? '',
+                lastname: user['lastname'] ?? '',
+                role: role,
+                studentsCount: "30", // TODO: replace with API
+                section: "Grade 1 : Joy Adviser", // TODO: replace with API
+              ),
+              const SizedBox(height: 25),
 
-            // Quick Actions header
-            Row(
-              children: [
-                const Icon(Icons.open_in_new),
-                const SizedBox(width: 10),
-                Text(
-                  "Quick Actions",
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+              // Quick Actions header
+              Row(
+                children: [
+                  const Icon(Icons.open_in_new),
+                  const SizedBox(width: 10),
+                  Text(
+                    "Quick Actions",
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
+                ],
+              ),
+              const SizedBox(height: 10),
 
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.5,
-              children: [
-                QuickActionTile(
-                  iconAsset:
-                      'assets/images/student-home/classes-quickactions.png',
-                  label: 'My Classes',
-                  onTap: () {
-                    Get.toNamed(AppRoutes.subjectClassPage);
-                  },
-                ),
-                QuickActionTile(
-                  iconAsset:
-                      'assets/images/student-home/leaderboards-quickactions.png',
-                  label: 'Announcements',
-                  onTap: () {
-                    Get.toNamed(AppRoutes.announcement);
-                  },
-                ),
-                QuickActionTile(
-                  iconAsset:
-                      'assets/images/student-home/leaderboards-quickactions.png',
-                  label: 'Leaderboards',
-                  onTap: () {},
-                ),
-                QuickActionTile(
-                  iconAsset:
-                      'assets/images/student-home/leaderboards-quickactions.png',
-                  label: 'Profile',
-                  onTap: () {},
-                ),
-              ],
-            ),
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(), // 👈 keep this
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.5,
+                children: [
+                  QuickActionTile(
+                    iconAsset: 'assets/images/student-home/classes-quickactions.png',
+                    label: 'My Classes',
+                    onTap: () {
+                      Get.toNamed(AppRoutes.teacherClasses);
+                    },
+                  ),
+                  QuickActionTile(
+                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                    label: 'Announcements',
+                    onTap: () {
+                      Get.toNamed(AppRoutes.announcement);
+                    },
+                  ),
+                  QuickActionTile(
+                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                    label: 'Leaderboards',
+                    onTap: () {},
+                  ),
+                  QuickActionTile(
+                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                    label: 'Profile',
+                    onTap: () {},
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 25),
+              const SizedBox(height: 25),
 
-            Row(
-              children: [
-                const Icon(Icons.book),
-                const SizedBox(width: 5),
-                const Text("Today's Classes"),
-                const Spacer(),
-                CustomChip(
-                  backgroundColor: Colors.blue.shade100,
-                  textColor: Colors.blue.shade500,
-                  borderColor: Colors.transparent,
-                  chipTitle: '4 Classes', // TODO: replace with API
-                ),
-              ],
-            ),
+              Row(
+                children: [
+                  const Icon(Icons.book),
+                  const SizedBox(width: 5),
+                  const Text("Today's Classes"),
+                  const Spacer(),
+                  CustomChip(
+                    backgroundColor: Colors.blue.shade100,
+                    textColor: Colors.blue.shade500,
+                    borderColor: Colors.transparent,
+                    chipTitle: '4 Classes', // TODO: replace with API
+                  ),
+                ],
+              ),
 
-            const SizedBox(height: 25),
-            const ClassTimeline(),
-            const ClassTimeline(),
-          ],
+              const SizedBox(height: 25),
+              const ClassTimeline(),
+              const ClassTimeline(),
+            ],
+          ),
         ),
       ),
     );
