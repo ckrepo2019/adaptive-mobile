@@ -107,21 +107,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
 
     return Scaffold(
       appBar: const GlobalAppBar(title: 'Home'),
-<<<<<<< HEAD:lib/views/teacher/home_page.dart
-      body: StudentGlobalLayout(
-        child: SingleChildScrollView( // 👈 makes it scrollable
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              WelcomeWidget(
-                firstname: user['firstname'] ?? '',
-                lastname: user['lastname'] ?? '',
-                role: role,
-                studentsCount: "30", // TODO: replace with API
-                section: "Grade 1 : Joy Adviser", // TODO: replace with API
-              ),
-              const SizedBox(height: 25),
-=======
       body: TeacherGlobalLayout(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,7 +119,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
               section: "Grade 1 : Joy Adviser",
             ),
             const SizedBox(height: 25),
->>>>>>> 47fa186a74ad8ef95b2f3323da5acc1cde37a194:lib/views/teacher/home/home_page.dart
 
               // Quick Actions header
               Row(
@@ -210,7 +194,6 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
             ],
           ),
         ),
-      ),
     );
   }
 }

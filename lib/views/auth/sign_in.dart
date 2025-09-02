@@ -34,6 +34,8 @@ class _SignInPageState extends State<SignInPage> {
       password: _passwordCtrl.text,
     );
 
+    print(resp.data);
+
     setState(() => _loading = false);
 
     if (resp.success) {

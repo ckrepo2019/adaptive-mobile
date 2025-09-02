@@ -185,7 +185,7 @@ class AppPages {
       name: AppRoutes.announcement,
       page: () => const AnnouncementsPage(),
     ),
-    GetPage(name: AppRoutes.teacherClasses, page: () => const SubjectClasses()),
+    GetPage(name: AppRoutes.teacherClasses, page: () => const TeacherSubjectClasses()),
     GetPage(
       name: AppRoutes.teacherShell,
       page: () {
