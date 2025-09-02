@@ -501,9 +501,11 @@ class QuizResultPage extends StatelessWidget {
                               height: buttonH,
                               child: ElevatedButton(
                                 onPressed: () {
-                                  Navigator.of(
+                                  Navigator.pushNamed(
                                     context,
-                                  ).popUntil((r) => r.isFirst);
+                                    AppRoutes.remedialIntro,
+                                    arguments: {'assessment': assessment},
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   padding: EdgeInsets.zero,

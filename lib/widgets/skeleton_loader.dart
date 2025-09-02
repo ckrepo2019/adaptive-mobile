@@ -4,8 +4,11 @@ class SkeletonLoader extends StatefulWidget {
   final bool isLoading;
   final Widget child;
 
-  const SkeletonLoader({Key? key, required this.isLoading, required this.child})
-    : super(key: key);
+  const SkeletonLoader({
+    super.key,
+    required this.isLoading,
+    required this.child,
+  });
 
   @override
   State<SkeletonLoader> createState() => _SkeletonLoaderState();

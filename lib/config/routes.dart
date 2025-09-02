@@ -1,8 +1,15 @@
+import 'package:flutter_lms/views/student/assignments/achievement-top.dart';
+import 'package:flutter_lms/views/student/assignments/achievement_quiz_streak.dart';
+import 'package:flutter_lms/views/student/assignments/achievements.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_result.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_info.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_intro.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_summary.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-remedial/remedial-quiz.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-remedial/remedial_intro.dart';
+import 'package:flutter_lms/views/student/assignments/assignment-remedial/remedial_result.dart';
+import 'package:flutter_lms/views/student/assignments/your_achievements.dart';
 import 'package:flutter_lms/views/student/classes/class_page.dart';
 import 'package:flutter_lms/views/student/classes/class_subject_book_content.dart';
 import 'package:flutter_lms/views/student/classes/class_subject_overview.dart';
@@ -52,9 +59,15 @@ class AppRoutes {
   static const String classSubjectOverview = '/class-subject-overview';
   static const String classSubjectBookContent = '/book-content';
   static const String quizSummary = '/quiz-summary/';
+  static const String remedialIntro = '/remedial-intro';
+  static const String remedialQuiz = '/remedial-quiz';
+  static const String remedialQuizResult = '/remedial-quiz-result';
+  static const String achievements = '/achievements';
+  static const String achievementsTop = '/achievements-top';
+  static const String achievementQuizStreak = '/achievement-quiz-streak';
+  static const String yourAchievements = '/your-achievements';
 }
 
-/// Use GetX pages so we can attach per-route bindings.
 class AppPages {
   static final pages = <GetPage>[
     /// auth
@@ -130,5 +143,27 @@ class AppPages {
       page: () => const SubjectBookContent(),
     ),
     GetPage(name: AppRoutes.quizSummary, page: () => const QuizSummaryPage()),
+    GetPage(
+      name: AppRoutes.remedialIntro,
+      page: () => const RemedialIntroPage(),
+    ),
+    GetPage(name: AppRoutes.remedialQuiz, page: () => const RemedialQuizPage()),
+    GetPage(
+      name: AppRoutes.remedialQuizResult,
+      page: () => const RemedialQuizResultPage(),
+    ),
+    GetPage(name: AppRoutes.achievements, page: () => const AchievementsPage()),
+    GetPage(
+      name: AppRoutes.achievementsTop,
+      page: () => const AchievementTopPage(),
+    ),
+    GetPage(
+      name: AppRoutes.achievementQuizStreak,
+      page: () => const AchievementQuizStreakPage(),
+    ),
+    GetPage(
+      name: AppRoutes.yourAchievements,
+      page: () => const YourAchievementsPage(),
+    ),
   ];
 }

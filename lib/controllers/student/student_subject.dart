@@ -248,7 +248,7 @@ class StudentSubjectController {
       );
     }
 
-    bool _looksIncomplete(dynamic json, String cleaned) {
+    bool looksIncomplete(dynamic json, String cleaned) {
       if (cleaned.trim().isEmpty ||
           cleaned.trim() == '[]' ||
           cleaned.length < 8) {
@@ -333,7 +333,7 @@ class StudentSubjectController {
           return ApiResponse(success: false, message: parsed.error!);
         }
 
-        if (_looksIncomplete(parsed.json, parsed.cleanedText)) {
+        if (looksIncomplete(parsed.json, parsed.cleanedText)) {
           if (attempt < attempts - 1) {
             await Future.delayed(pause);
             continue;

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
 import 'dart:math' as math;
@@ -587,6 +588,24 @@ class _AssessmentCTA extends StatelessWidget {
   }
 }
 
+class _PdfRenderQueue {
+  static Future<void> _tail = Future.value();
+
+  static Future<T> enqueue<T>(Future<T> Function() job) {
+    final completer = Completer<T>();
+    _tail = _tail.then((_) async {
+      try {
+        completer.complete(await job());
+      } catch (e, st) {
+        completer.completeError(e, st);
+      }
+    });
+    // Don’t let errors break the chain
+    _tail = _tail.catchError((_) {});
+    return completer.future;
+  }
+}
+
 class _PdfPagesList extends StatefulWidget {
   final String pdfUrl;
   final Map<String, String>? headers;
@@ -728,37 +747,39 @@ class _PdfPageCard extends StatefulWidget {
 class _PdfPageCardState extends State<_PdfPageCard> {
   late final Future<_RenderedPage> _renderFuture = _render();
 
-  Future<_RenderedPage> _render() async {
-    final page = await widget.document.getPage(widget.pageNumber);
-    try {
-      final double screenWidth = MediaQuery.of(context).size.width - 32;
+  Future<_RenderedPage> _render() {
+    return _PdfRenderQueue.enqueue<_RenderedPage>(() async {
+      final page = await widget.document.getPage(widget.pageNumber);
+      try {
+        final double screenWidth = MediaQuery.of(context).size.width - 32.0;
 
-      final double dpr = MediaQuery.of(context).devicePixelRatio;
-      final double quality = (dpr * 3.0).clamp(2.0, 4.0);
+        final double dpr = MediaQuery.of(context).devicePixelRatio;
+        final double quality = (dpr * 1.5).clamp(1.5, 2.5);
 
-      final double aspect = page.height / page.width;
-      final int targetWidthPx = (screenWidth * quality).round();
-      final int targetHeightPx = (targetWidthPx * aspect).round();
+        final double aspect = page.height / page.width;
+        final double targetWidthPx = (screenWidth * quality);
+        final double targetHeightPx = (targetWidthPx * aspect);
 
-      final PdfPageImage? img = await page.render(
-        width: targetWidthPx.toDouble(),
-        height: targetHeightPx.toDouble(),
-        format: PdfPageImageFormat.png,
-        backgroundColor: '#FFFFFF',
-      );
+        final PdfPageImage? img = await page.render(
+          width: targetWidthPx,
+          height: targetHeightPx,
+          format: PdfPageImageFormat.png,
+          backgroundColor: '#FFFFFF',
+        );
 
-      if (img == null) {
-        throw StateError('pdfx: failed to render page ${widget.pageNumber}.');
+        if (img == null) {
+          throw StateError('pdfx: failed to render page ${widget.pageNumber}.');
+        }
+
+        return _RenderedPage(
+          bytes: img.bytes,
+          width: img.width!,
+          height: img.height!,
+        );
+      } finally {
+        await page.close();
       }
-
-      return _RenderedPage(
-        bytes: img.bytes,
-        width: img.width!,
-        height: img.height!,
-      );
-    } finally {
-      await page.close();
-    }
+    });
   }
 
   @override
@@ -801,7 +822,7 @@ class _PdfPageCardState extends State<_PdfPageCard> {
         }
 
         final pageImg = snap.data!;
-        final displayWidth = MediaQuery.of(context).size.width - 32;
+        final displayWidth = MediaQuery.of(context).size.width - 32.0;
         final displayHeight = (pageImg.height / pageImg.width) * displayWidth;
 
         return Container(

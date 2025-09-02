@@ -194,7 +194,7 @@ class _ResultLeanerBodyState extends State<_ResultLeanerBody> {
                           children: [
                             Expanded(
                               child: Text(
-                                typeName,
+                                "$typeName Learner",
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(

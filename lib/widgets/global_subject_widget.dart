@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lms/widgets/base_widgets.dart';
 import 'package:flutter_lms/utils/dominant_color_utils.dart';
 import 'package:flutter_lms/utils/palette_utils.dart';
+import 'package:flutter_lms/config/constants.dart'; // <-- add this
 
 class GlobalSubjectWidget extends BaseWidget {
   final String classCode;
@@ -51,14 +52,42 @@ class _SubjectCard extends StatefulWidget {
 }
 
 class _SubjectCardState extends State<_SubjectCard> {
+  static const String _kDefaultAsset =
+      'assets/images/default-images/default-classes.jpg';
+
+  String get _imageBaseUrl => AppConstants.imageBaseUrl;
+
   Color _sideColor = const Color(0xFFFFD400);
   bool _paletteComputed = false;
   final Set<int> _used = <int>{};
 
-  String get _imagePath =>
-      (widget.imageUrl == null || widget.imageUrl!.trim().isEmpty)
-      ? 'assets/images/default-images/default-classes.jpg'
-      : widget.imageUrl!.trim();
+  String? get _networkUrl {
+    final raw = widget.imageUrl?.trim();
+    if (raw == null || raw.isEmpty) return null;
+
+    final lower = raw.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return raw;
+    }
+
+    if (!lower.startsWith('assets/')) {
+      final hasTrailingSlash = _imageBaseUrl.endsWith('/');
+      final hasLeadingSlash = raw.startsWith('/');
+      final joined = hasTrailingSlash && hasLeadingSlash
+          ? '$_imageBaseUrl${raw.substring(1)}'
+          : (!hasTrailingSlash && !hasLeadingSlash
+                ? '$_imageBaseUrl/$raw'
+                : '$_imageBaseUrl$raw');
+      return joined;
+    }
+
+    // If someone accidentally sent an app asset path in the API, treat it as no network URL
+    return null;
+  }
+
+  /// For color extraction we want a single "path" we can hand off to your utils.
+  /// Prefer the network URL if present; otherwise the local asset path.
+  String get _colorSourcePath => _networkUrl ?? _kDefaultAsset;
 
   @override
   void initState() {
@@ -79,7 +108,7 @@ class _SubjectCardState extends State<_SubjectCard> {
     if (_paletteComputed) return;
 
     try {
-      final dom = await DominantColorUtils.fromPath(_imagePath);
+      final dom = await DominantColorUtils.fromPath(_colorSourcePath);
       if (mounted && dom != null) {
         _used.add(PaletteUtils.rgbKey(dom));
         setState(() {
@@ -90,7 +119,7 @@ class _SubjectCardState extends State<_SubjectCard> {
       }
 
       final palette = await PaletteUtils.paletteFromPath(
-        _imagePath,
+        _colorSourcePath,
         maxColors: 5,
       );
       if (!mounted) return;
@@ -147,7 +176,8 @@ class _SubjectCardState extends State<_SubjectCard> {
               ),
               child: _buildHeaderImage(
                 context,
-                path: _imagePath,
+                networkUrl: _networkUrl,
+                assetFallback: _kDefaultAsset,
                 height: screenHeight * 0.15,
                 onReady: _computeSideColor,
               ),
@@ -239,16 +269,16 @@ class _SubjectCardState extends State<_SubjectCard> {
 
   Widget _buildHeaderImage(
     BuildContext context, {
-    required String path,
+    required String? networkUrl,
+    required String assetFallback,
     required double height,
     required VoidCallback onReady,
   }) {
-    final isNet = path.startsWith('http://') || path.startsWith('https://');
-
-    if (!isNet) {
+    // No network URL (null/empty or an asset path) -> use asset fallback
+    if (networkUrl == null || networkUrl.isEmpty) {
       WidgetsBinding.instance.addPostFrameCallback((_) => onReady());
       return Image.asset(
-        path,
+        assetFallback,
         fit: BoxFit.cover,
         height: height,
         width: double.infinity,
@@ -256,14 +286,14 @@ class _SubjectCardState extends State<_SubjectCard> {
     }
 
     return Image.network(
-      path,
+      networkUrl,
       fit: BoxFit.cover,
       height: height,
       width: double.infinity,
       errorBuilder: (_, __, ___) {
         WidgetsBinding.instance.addPostFrameCallback((_) => onReady());
         return Image.asset(
-          'assets/images/default-images/default-classes.jpg',
+          assetFallback,
           fit: BoxFit.cover,
           height: height,
           width: double.infinity,

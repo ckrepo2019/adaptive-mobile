@@ -14,6 +14,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showNotifications = true,
     this.showProfile = true,
     this.centerTitle = false,
+    this.backgroundColor,
   });
 
   final String title;
@@ -28,7 +29,8 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final bool showNotifications;
   final bool showProfile;
-  final bool centerTitle; // ✅
+  final bool centerTitle;
+  final Color? backgroundColor;
 
   static const double _overlapPx = 6.0;
 
@@ -45,23 +47,25 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
     final double iSize = iconSize ?? _clampNum(w * 0.060, 20, 26);
     final double iconPad = _clampNum(w * 0.01, 6, 10);
 
+    final Color bg = backgroundColor ?? Colors.white;
+    final bool darkBg =
+        ThemeData.estimateBrightnessForColor(bg) == Brightness.dark;
+    final Color onColor = darkBg ? Colors.white : Colors.black;
+
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: bg,
       elevation: 0,
       centerTitle: centerTitle,
       titleSpacing: sp,
       automaticallyImplyLeading: false,
-      iconTheme: const IconThemeData(color: Colors.black),
+      iconTheme: IconThemeData(color: onColor),
       leadingWidth: showBack ? (sp + 44) : 0,
       leading: showBack
           ? Padding(
               padding: EdgeInsets.only(left: sp),
               child: IconButton(
                 splashRadius: 24,
-                icon: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  color: Colors.black,
-                ),
+                icon: Icon(Icons.arrow_back_ios_new_rounded, color: onColor),
                 onPressed: onBack ?? () => Navigator.maybePop(context),
               ),
             )
@@ -71,7 +75,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
         style: TextStyle(
           fontSize: tSize,
           fontWeight: FontWeight.w800,
-          color: Colors.black,
+          color: onColor,
         ),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
