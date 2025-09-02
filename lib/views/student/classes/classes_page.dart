@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/controllers/student/student_class.dart';
 import 'package:flutter_lms/utils/utils.dart';
+import 'package:flutter_lms/views/student/student_global_layout.dart';
+import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
 import 'package:flutter_lms/widgets/skeleton_loader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/widgets/global_subject_widget.dart';
 import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
 
 class StudentClassPage extends StatefulWidget {
   const StudentClassPage({super.key});

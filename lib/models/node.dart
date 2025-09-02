@@ -4,7 +4,6 @@ class Node {
   final String description;
   final int? sort;
   final List<Node> children;
-
   // IDs
   final int? bookId;
   final int? subjectId;
@@ -14,7 +13,7 @@ class Node {
   final String? file;
   final String? html;
   final Map<String, dynamic>? content;
-
+  final int? assessmentOrder;
   Node({
     required this.type,
     required this.name,
@@ -29,5 +28,22 @@ class Node {
     this.html,
     this.file,
     this.content,
+    this.assessmentOrder,
   });
+
+  Node copyWith({List<Node>? children, int? assessmentOrder}) {
+    return Node(
+      type: type,
+      name: name,
+      description: description,
+      sort: sort,
+      children: children ?? this.children,
+      bookId: bookId,
+      subjectId: subjectId,
+      hierarchyId: hierarchyId,
+      bookcontentId: bookcontentId,
+      hierarchyName: hierarchyName,
+      assessmentOrder: assessmentOrder ?? this.assessmentOrder,
+    );
+  }
 }

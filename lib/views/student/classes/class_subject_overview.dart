@@ -1,4 +1,3 @@
-// lib/views/student/class_subject_overview.dart
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
@@ -41,6 +40,7 @@ class Node {
   final int? hierarchyId;
   final int? bookcontentId;
   final String? hierarchyName;
+  final int? assessmentOrder;
 
   Node({
     required this.type,
@@ -53,7 +53,24 @@ class Node {
     this.hierarchyId,
     this.bookcontentId,
     this.hierarchyName,
+    this.assessmentOrder,
   });
+
+  Node copyWith({List<Node>? children, int? assessmentOrder}) {
+    return Node(
+      type: type,
+      name: name,
+      description: description,
+      sort: sort,
+      children: children ?? this.children,
+      bookId: bookId,
+      subjectId: subjectId,
+      hierarchyId: hierarchyId,
+      bookcontentId: bookcontentId,
+      hierarchyName: hierarchyName,
+      assessmentOrder: assessmentOrder ?? this.assessmentOrder,
+    );
+  }
 }
 
 class ParentState {
@@ -145,10 +162,7 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
   }) async {
     final state = _parentStates[parentId] ?? ParentState();
     if (state.loading) return;
-    if (state.children != null) {
-      _debugPrintChildren(parentId, state.children!);
-      return;
-    }
+    if (state.children != null) return;
     setState(() {
       _parentStates[parentId] = ParentState(loading: true);
     });
@@ -174,13 +188,13 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
         return;
       }
       final children = _parseRootChildren(resp.data!);
+      final numbered = _numberAssessments(children);
       setState(() {
         _parentStates[parentId] = ParentState(
           loading: false,
-          children: children,
+          children: numbered,
         );
       });
-      _debugPrintChildren(parentId, children);
     } catch (e) {
       setState(() {
         _parentStates[parentId] = ParentState(
@@ -191,31 +205,19 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
     }
   }
 
-  void _debugPrintChildren(int parentId, List<Node> nodes) {
-    String render(Node n, int depth) {
-      final indent = '  ' * depth;
-      final sortStr = n.sort?.toString() ?? '-';
+  List<Node> _numberAssessments(List<Node> roots) {
+    int counter = 0;
+    Node assign(Node n) {
       if (n.type == 'assessment') {
-        return '$indent• [assessment] $sortStr ${n.name} — ${n.description}'
-            .trim();
+        counter += 1;
+        return n.copyWith(assessmentOrder: counter);
       }
-      return [
-        '$indent• [content] $sortStr ${n.name} — ${n.description}'.trim(),
-        ...n.children.map((c) => render(c, depth + 1)),
-      ].join('\n');
+      if (n.children.isEmpty) return n;
+      final newKids = n.children.map(assign).toList(growable: false);
+      return n.copyWith(children: newKids);
     }
 
-    final lines = <String>[
-      '==== CHILDREN for parentId=$parentId ====',
-      for (final n in nodes) render(n, 0),
-      '=========================================',
-    ];
-
-    const size = 1000;
-    final s = lines.join('\n');
-    for (int i = 0; i < s.length; i += size) {
-      debugPrint(s.substring(i, (i + size > s.length) ? s.length : i + size));
-    }
+    return roots.map(assign).toList(growable: false);
   }
 
   List<Node> _parseRootChildren(String jsonText) {
@@ -226,30 +228,61 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       return const [];
     }
 
+    Node? _buildNodeFromContent(Map contentMap, List<dynamic> childRaw) {
+      final name = (contentMap['name'] ?? 'Untitled').toString();
+      final desc = (contentMap['description'] ?? '').toString();
+      final sort = _asIntStatic(contentMap['sort']);
+      final bookId = _asIntStatic(contentMap['bookID'] ?? contentMap['bookId']);
+      final subjectId = _asIntStatic(
+        contentMap['subjectID'] ?? contentMap['subjectId'],
+      );
+      final hierarchyId = _asIntStatic(
+        contentMap['hierarchyID'] ?? contentMap['hierarchyId'],
+      );
+      final bookcontentId = _asIntStatic(
+        contentMap['bookcontentID'] ??
+            contentMap['bookContentID'] ??
+            contentMap['bookContentId'],
+      );
+      final hierarchyNameRaw = (contentMap['hierarchy_name'] ?? '').toString();
+      final hierarchyName = hierarchyNameRaw.trim().isEmpty
+          ? null
+          : hierarchyNameRaw;
+      final children = _parseNodesRecursively(childRaw);
+      _sortNodes(children);
+      return Node(
+        type: 'content',
+        name: name,
+        description: desc,
+        sort: sort,
+        children: children,
+        bookId: bookId,
+        subjectId: subjectId,
+        hierarchyId: hierarchyId,
+        bookcontentId: bookcontentId,
+        hierarchyName: hierarchyName,
+      );
+    }
+
     List<Node> parseOneRoot(dynamic root) {
       if (root is! Map) return const [];
       final String type = (root['type'] ?? '').toString();
-
       if (type == 'content') {
         final List rawChildren = root['children'] is List
             ? root['children'] as List
             : const [];
-
         final content = root['content'];
         final List contentChildren =
             (content is Map && content['children'] is List)
             ? content['children'] as List
             : const [];
-
         final List merged = rawChildren.isNotEmpty
             ? rawChildren
             : contentChildren;
-
-        final nodes = _parseNodesRecursively(merged);
-        _sortNodes(nodes);
-        return nodes;
+        if (content is! Map) return const [];
+        final node = _buildNodeFromContent(content, merged);
+        return node == null ? const [] : [node];
       }
-
       if (type == 'assessment') {
         final content = root['content'];
         if (content is! Map) return const [];
@@ -263,10 +296,10 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
             description: desc,
             sort: sort,
             children: const [],
+            hierarchyName: 'Assessment',
           ),
         ];
       }
-
       return const [];
     }
 
@@ -278,11 +311,9 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       _sortNodes(out);
       return out;
     }
-
     if (decoded is Map) {
       return parseOneRoot(decoded);
     }
-
     return const [];
   }
 
@@ -291,15 +322,12 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
     for (final item in rawList) {
       if (item is! Map) continue;
       final String type = (item['type'] ?? '').toString();
-
       if (type == 'content') {
         final content = item['content'];
         if (content is! Map) continue;
-
         final name = (content['name'] ?? 'Untitled').toString();
         final desc = (content['description'] ?? '').toString();
         final sort = _asInt(content['sort']);
-
         final bookId = _asIntStatic(content['bookID'] ?? content['bookId']);
         final subjectId = _asIntStatic(
           content['subjectID'] ?? content['subjectId'],
@@ -316,13 +344,11 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
             (content['hierarchy_name'] ?? '').toString().trim().isEmpty
             ? null
             : content['hierarchy_name'].toString();
-
         final childRaw = (item['children'] is List)
             ? item['children'] as List
             : const [];
         final children = _parseNodesRecursively(childRaw);
         _sortNodes(children);
-
         out.add(
           Node(
             type: 'content',
@@ -340,11 +366,9 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       } else if (type == 'assessment') {
         final content = item['content'];
         if (content is! Map) continue;
-
         final name = (content['assessment_name'] ?? 'Assessment').toString();
         final desc = (content['assessment_description'] ?? '').toString();
         final sort = _asInt(content['sort']);
-
         out.add(
           Node(
             type: 'assessment',
@@ -352,6 +376,7 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
             description: desc,
             sort: sort,
             children: const [],
+            hierarchyName: 'Assessment',
           ),
         );
       }
@@ -375,7 +400,7 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
         title: _subjectCode ?? 'Unit Overview',
         showBack: true,
       ),
-      backgroundColor: const Color(0xFFF6F6F8),
+      backgroundColor: Colors.white,
       body: _loading
           ? _buildBlockingLoader()
           : RefreshIndicator(
@@ -434,27 +459,28 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
       separatorBuilder: (_, __) => const SizedBox(height: 6),
       itemBuilder: (context, i) {
         final p = _parents[i];
-        final title = (p['name'] ?? p['Name'] ?? 'Untitled').toString();
-        final subtitle = (p['description'] ?? p['Description'] ?? '')
-            .toString();
-
+        final rawName = (p['name'] ?? p['Name'] ?? 'Untitled').toString();
+        final hierarchyNameRaw =
+            (p['hierarchy_name'] ?? p['HierarchyName'] ?? '').toString();
+        final safeHierarchy = hierarchyNameRaw.trim().isEmpty
+            ? 'Item'
+            : hierarchyNameRaw;
+        final displayTitle = '$safeHierarchy ${i + 1}';
+        final displaySubtitle = rawName;
         final parentId = _asInt(
           p['bookcontentID'] ?? p['ParentID'] ?? p['parentId'],
         );
         final bookId = _asInt(p['bookID'] ?? p['BookID'] ?? p['bookId']);
-        final hierarchyName = (p['hierarchy_name'] ?? p['HierarchyName'] ?? '')
-            .toString();
         final subjectId =
             _asInt(p['subjectID'] ?? p['SubjectID'] ?? p['subjectId']) ??
             _subjectId;
         final hierarchyId = _asInt(
           p['hierarchyID'] ?? p['HierarchyID'] ?? p['hierarchyId'],
         );
-
         return _TopLevelExpansionCard(
-          title: title,
-          subtitle: subtitle,
-          hierarchyName: hierarchyName,
+          title: displayTitle,
+          subtitle: displaySubtitle,
+          hierarchyName: safeHierarchy,
           onExpanded: (expanded) {
             if (expanded && parentId != null && bookId != null) {
               _loadChildrenAndPrint(parentId: parentId, bookId: bookId);
@@ -478,12 +504,16 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
                 'hierarchyID': hierarchyId,
                 'bookcontentID': parentId,
                 'subjectName': _subjectName,
+                'subjectCode': _subjectCode,
               },
             );
           },
           child: parentId == null
               ? _noItems()
-              : _ParentBody(state: _parentStates[parentId]),
+              : _ParentBody(
+                  subjectCode: _subjectCode,
+                  state: _parentStates[parentId],
+                ),
         );
       },
     );
@@ -499,8 +529,9 @@ class _ClassSubjectOverviewPageState extends State<ClassSubjectOverviewPage> {
 }
 
 class _ParentBody extends StatelessWidget {
+  final String? subjectCode;
   final ParentState? state;
-  const _ParentBody({required this.state});
+  const _ParentBody({this.subjectCode, required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -518,7 +549,11 @@ class _ParentBody extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: Text(
           state!.error!,
-          style: GoogleFonts.poppins(fontSize: 13, color: Colors.redAccent),
+          style: GoogleFonts.poppins(
+            fontSize: 13,
+            color: Colors.redAccent,
+            fontWeight: FontWeight.w800,
+          ),
         ),
       );
     }
@@ -526,7 +561,7 @@ class _ParentBody extends StatelessWidget {
     if (children.isEmpty) {
       return _noItems();
     }
-    return _NodeList(children: children);
+    return _NodeList(subjectCode: subjectCode, children: children);
   }
 
   Widget _noItems() => Padding(
@@ -539,26 +574,40 @@ class _ParentBody extends StatelessWidget {
 }
 
 class _NodeList extends StatelessWidget {
+  final String? subjectCode;
   final List<Node> children;
-  const _NodeList({required this.children});
+  const _NodeList({this.subjectCode, required this.children});
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: children
-          .map((node) => _NodeView(node: node))
-          .toList(growable: false),
+      children: List.generate(
+        children.length,
+        (index) => _NodeView(
+          subjectCode: subjectCode,
+          node: children[index],
+          index: index,
+        ),
+        growable: false,
+      ),
     );
   }
 }
 
 class _NodeView extends StatelessWidget {
+  final String? subjectCode;
   final Node node;
-  const _NodeView({required this.node});
+  final int index;
+  const _NodeView({this.subjectCode, required this.node, required this.index});
 
   @override
   Widget build(BuildContext context) {
     if (node.type == 'assessment') {
+      final typeLabel = (node.hierarchyName ?? 'Assessment').toUpperCase();
+      final ord = node.assessmentOrder ?? (index + 1);
+      final displayTitle = '$typeLabel $ord';
+      final displaySubtitle = node.name;
+
       return Padding(
         padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
         child: Material(
@@ -588,25 +637,26 @@ class _NodeView extends StatelessWidget {
                 child: const Icon(Icons.quiz_outlined, color: Colors.white),
               ),
               title: Text(
-                node.name,
+                displayTitle,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.poppins(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
                   color: Colors.black87,
                 ),
               ),
-              subtitle: node.description.trim().isEmpty
+              subtitle: displaySubtitle.trim().isEmpty
                   ? null
                   : Padding(
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
-                        node.description,
+                        displaySubtitle,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.poppins(
-                          fontSize: 12.5,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
                           color: Colors.black54,
                         ),
                       ),
@@ -625,7 +675,7 @@ class _NodeView extends StatelessWidget {
         ),
       );
     }
-    return _ContentNodeTile(node: node);
+    return _ContentNodeTile(subjectCode: subjectCode, node: node, index: index);
   }
 }
 
@@ -704,8 +754,14 @@ class _AssessmentButtons extends StatelessWidget {
 }
 
 class _ContentNodeTile extends StatefulWidget {
+  final String? subjectCode;
   final Node node;
-  const _ContentNodeTile({required this.node});
+  final int index;
+  const _ContentNodeTile({
+    this.subjectCode,
+    required this.node,
+    required this.index,
+  });
 
   @override
   State<_ContentNodeTile> createState() => _ContentNodeTileState();
@@ -718,6 +774,11 @@ class _ContentNodeTileState extends State<_ContentNodeTile>
   @override
   Widget build(BuildContext context) {
     final node = widget.node;
+    final safeHierarchy = (node.hierarchyName ?? '').trim().isEmpty
+        ? 'Item'
+        : node.hierarchyName!;
+    final displayTitle = '$safeHierarchy ${widget.index + 1}';
+    final displaySubtitle = node.name;
     final takeLabel =
         'TAKE ${node.hierarchyName?.trim().isEmpty ?? true ? "Item" : node.hierarchyName}';
 
@@ -751,15 +812,15 @@ class _ContentNodeTileState extends State<_ContentNodeTile>
               child: const Icon(Icons.menu_book_outlined, color: Colors.white),
             ),
             title: Text(
-              node.name,
+              displayTitle,
               style: GoogleFonts.poppins(
                 fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w800,
                 color: Colors.black87,
               ),
               softWrap: true,
             ),
-            subtitle: node.description.trim().isEmpty
+            subtitle: displaySubtitle.trim().isEmpty
                 ? null
                 : Padding(
                     padding: const EdgeInsets.only(top: 2),
@@ -768,10 +829,11 @@ class _ContentNodeTileState extends State<_ContentNodeTile>
                       curve: Curves.easeInOut,
                       alignment: Alignment.topLeft,
                       child: Text(
-                        node.description,
+                        displaySubtitle,
                         style: GoogleFonts.poppins(
                           fontSize: 10,
                           color: Colors.black54,
+                          fontWeight: FontWeight.w600,
                         ),
                         softWrap: true,
                         maxLines: _expanded ? null : 2,
@@ -810,6 +872,7 @@ class _ContentNodeTileState extends State<_ContentNodeTile>
                         'subjectID': n.subjectId,
                         'hierarchyID': n.hierarchyId,
                         'bookcontentID': n.bookcontentId,
+                        'subjectCode': widget.subjectCode,
                       },
                     );
                   },
@@ -826,7 +889,10 @@ class _ContentNodeTileState extends State<_ContentNodeTile>
                   ),
                 )
               else
-                ...node.children.map((child) => _NodeView(node: child)),
+                ...List.generate(
+                  node.children.length,
+                  (i) => _NodeView(node: node.children[i], index: i),
+                ),
             ],
           ),
         ),
@@ -905,7 +971,7 @@ class _TopLevelExpansionCardState extends State<_TopLevelExpansionCard>
             widget.title,
             style: GoogleFonts.poppins(
               fontSize: 12,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w800,
               color: Colors.black87,
             ),
             softWrap: true,
@@ -923,6 +989,7 @@ class _TopLevelExpansionCardState extends State<_TopLevelExpansionCard>
                       style: GoogleFonts.poppins(
                         fontSize: 10,
                         color: Colors.black54,
+                        fontWeight: FontWeight.w600,
                       ),
                       softWrap: true,
                       maxLines: _expanded ? null : 2,

@@ -3,16 +3,17 @@ import 'package:flutter_lms/views/student/assignments/assignment_page.dart';
 import 'package:flutter_lms/views/student/classes/classes_page.dart';
 import 'package:flutter_lms/views/student/home/home_page.dart';
 import 'package:flutter_lms/views/student/notification/student_notification.dart';
-import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
 import 'package:flutter_lms/views/student/widgets/fancy_student_navbar.dart';
+import 'package:flutter_lms/views/teacher/tabs/teacher_tabs.dart';
+import 'package:flutter_lms/views/teacher/home/home_page.dart';
 
-class StudentShell extends StatefulWidget {
+class TeacherShell extends StatefulWidget {
   final String token;
   final String uid;
   final int userType;
   final int initialIndex;
 
-  const StudentShell({
+  const TeacherShell({
     super.key,
     required this.token,
     required this.uid,
@@ -21,10 +22,10 @@ class StudentShell extends StatefulWidget {
   });
 
   @override
-  State<StudentShell> createState() => _StudentShellState();
+  State<TeacherShell> createState() => _TeacherShellState();
 }
 
-class _StudentShellState extends State<StudentShell>
+class _TeacherShellState extends State<TeacherShell>
     with TickerProviderStateMixin {
   late int _index;
   late AnimationController _animationController;
@@ -85,17 +86,14 @@ class _StudentShellState extends State<StudentShell>
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      StudentHomePage(
+      TeacherHomePage(
         token: widget.token,
         uid: widget.uid,
         userType: widget.userType,
       ),
-      StudentClassPage(),
-      StudentAssignmentPage(),
-      StudentNotificationPage(),
     ];
 
-    return StudentTabs(
+    return TeacherTabs(
       index: _index,
       setIndex: _setIndex,
       child: Scaffold(

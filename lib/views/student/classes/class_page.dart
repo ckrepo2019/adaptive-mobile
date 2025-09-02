@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/controllers/student/student_class.dart';
-import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
+import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/class_progress_card.dart';
 import 'package:flutter_lms/widgets/students_count_card.dart';

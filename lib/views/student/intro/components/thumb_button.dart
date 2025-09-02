@@ -26,7 +26,9 @@ class _ThumbButtonState extends State<ThumbButton> {
         height: 50,
         width: 150,
         decoration: BoxDecoration(
-          color: _isSelected ? IntroTheme.blue : Colors.white,
+          color: _isSelected
+              ? const Color.fromARGB(255, 11, 27, 58)
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: IntroTheme.blue, width: 1),
         ),

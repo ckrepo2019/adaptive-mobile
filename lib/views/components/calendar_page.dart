@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
