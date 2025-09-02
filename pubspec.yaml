@@ -47,6 +47,7 @@ dependencies:
   flutter_html: ^3.0.0
   syncfusion_flutter_pdfviewer: ^30.2.6
   pdfx: ^2.9.2
+  font_awesome_flutter: ^10.9.1
 
 dev_dependencies:
   flutter_test:

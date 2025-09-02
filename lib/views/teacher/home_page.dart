@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/controllers/get_user.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
-import 'package:flutter_lms/widgets/skeleton_loader.dart';
+import 'package:flutter_lms/views/student/home/quick_actions.dart';
+import 'package:flutter_lms/views/teacher/widgets/class_timeline.dart';
+import 'package:flutter_lms/views/utilities/layouts/global_layout.dart';
+import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class TeacherHomePage extends StatefulWidget {
   const TeacherHomePage({super.key});
@@ -28,7 +35,7 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
     final token = args['token'] as String?;
     final uid = args['uid'] as String?;
-    final userType = (args['userType'] as int?) ?? 4;
+    final userType = (args['userType'] as int?) ?? 4; // default: student
     if (token == null || uid == null) {
       setState(() {
         _loading = false;
@@ -60,87 +67,204 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
   }
 
-  Widget _row(String label, dynamic value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 6),
-    child: Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 160,
-          child: Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.black54,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value?.toString() ?? '—',
-            style: const TextStyle(fontWeight: FontWeight.w500),
-            softWrap: true,
-          ),
-        ),
-      ],
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
+    if (_loading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     if (_error != null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Teacher Home')),
+        appBar: const GlobalAppBar(title: 'Home'),
         body: Center(
           child: Text(_error!, style: const TextStyle(color: Colors.red)),
         ),
       );
     }
 
-    return SkeletonLoader(isLoading: _loading, child: _buildContent());
-  }
+    final user = _user!;
+    final userType = user['userType'] as int? ?? 4;
 
-  Widget _buildContent() {
-    final t = _user!;
+    String role;
+    switch (userType) {
+      case 4: // Example: 3 = Teacher
+        role = "Teacher";
+        break;
+      case 3: // Example: 4 = Student
+        role = "Student";
+        break;
+      default:
+        role = "User";
+    }
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Teacher Home')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+      appBar: const GlobalAppBar(title: 'Home'),
+      body: StudentGlobalLayout(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            WelcomeWidget(
+              firstname: user['firstname'] ?? '',
+              lastname: user['lastname'] ?? '',
+              role: role,
+              studentsCount: "30",
+              section: "Grade 1 : Joy Adviser",
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+            const SizedBox(height: 25),
+
+            // Quick Actions header
+            Row(
+              children: [
+                const Icon(Icons.open_in_new),
+                const SizedBox(width: 10),
+                Text(
+                  "Quick Actions",
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            GridView.count(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.5,
+              children: [
+                QuickActionTile(
+                  iconAsset:
+                      'assets/images/student-home/classes-quickactions.png',
+                  label: 'My Classes',
+                  onTap: () {
+                    Get.toNamed(AppRoutes.subjectClassPage);
+                  },
+                ),
+                QuickActionTile(
+                  iconAsset:
+                      'assets/images/student-home/leaderboards-quickactions.png',
+                  label: 'Announcements',
+                  onTap: () {
+                    Get.toNamed(AppRoutes.announcement);
+                  },
+                ),
+                QuickActionTile(
+                  iconAsset:
+                      'assets/images/student-home/leaderboards-quickactions.png',
+                  label: 'Leaderboards',
+                  onTap: () {},
+                ),
+                QuickActionTile(
+                  iconAsset:
+                      'assets/images/student-home/leaderboards-quickactions.png',
+                  label: 'Profile',
+                  onTap: () {},
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 25),
+
+            Row(
+              children: [
+                const Icon(Icons.book),
+                const SizedBox(width: 5),
+                const Text("Today's Classes"),
+                const Spacer(),
+                CustomChip(
+                  backgroundColor: Colors.blue.shade100,
+                  textColor: Colors.blue.shade500,
+                  borderColor: Colors.transparent,
+                  chipTitle: '4 Classes', // TODO: replace with API
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 25),
+            const ClassTimeline(),
+            const ClassTimeline(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class WelcomeWidget extends StatelessWidget {
+  final String firstname;
+  final String lastname;
+  final String role;
+  final String studentsCount;
+  final String section;
+
+  const WelcomeWidget({
+    super.key,
+    required this.firstname,
+    required this.lastname,
+    required this.role,
+    required this.studentsCount,
+    required this.section,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(top: 10),
+      width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar + Name
+          Row(
+            children: [
+              const CircleAvatar(
+                radius: 40,
+                backgroundColor: Color(0xFFF1F3F6),
+                backgroundImage: AssetImage(
+                  'assets/images/student-home/default-avatar-female.png',
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _row('SY ID', t['syID']),
-                  _row('Sem ID', t['semID']),
-                  _row('Academic Prog ID', t['academicprogID']),
-                  _row('Firstname', t['firstname']),
-                  _row('Middlename', t['middlename']),
-                  _row('Lastname', t['lastname']),
-                  _row('TID', t['tid']),
-                  _row('Age', t['age']),
-                  _row('Gender', t['gender']),
-                  _row('Contact No.', t['contactnumber']),
-                  _row('Is Active', t['is_active']),
-                  _row('Email', t['emailaddress']),
-                  _row('Date of Birth', t['date_of_birth']),
-                  _row('Street', t['street']),
-                  _row('Barangay', t['barangay']),
-                  _row('City', t['city']),
-                  _row('Province', t['province']),
-                  _row('Zip', t['zipcode']),
-                  _row('Country', t['country']),
-                  _row('Created At', t['created_at']),
-                  _row('Updated At', t['updated_at']),
-                  _row('leanersprofile', t['lea']),
+                  Text(
+                    'Welcome $firstname.',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
+                  ),
+                  Text(role),
                 ],
               ),
-            ),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          // Chips row
+          Row(
+            children: [
+              CustomChip(
+                backgroundColor: Colors.grey,
+                textColor: Colors.white,
+                borderColor: Colors.transparent,
+                chipTitle: '$studentsCount Students',
+                iconData: Icons.person,
+              ),
+              const SizedBox(width: 5),
+              CustomChip(
+                backgroundColor: Colors.lightBlueAccent,
+                textColor: Colors.blue.shade800,
+                borderColor: Colors.transparent,
+                chipTitle: section,
+                iconData: Icons.class_,
+              ),
+            ],
           ),
         ],
       ),

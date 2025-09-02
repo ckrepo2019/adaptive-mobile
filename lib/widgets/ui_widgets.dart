@@ -21,6 +21,7 @@ class InkCardShell extends StatelessWidget {
         onTap: onTap,
         borderRadius: radius,
         child: Container(
+          width: double.infinity,
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(

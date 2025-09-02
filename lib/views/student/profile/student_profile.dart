@@ -159,7 +159,7 @@ class _ProfileSheet extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.end,
               children: const [
                 Padding(
-                  padding: EdgeInsets.only(right: 12),
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                   child: Icon(Icons.edit, color: Colors.white),
                 ),
               ],

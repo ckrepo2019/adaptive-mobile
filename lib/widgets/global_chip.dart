@@ -1,5 +1,6 @@
 import 'package:flutter_lms/widgets/base_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CustomChip extends BaseWidget {
@@ -7,14 +8,17 @@ class CustomChip extends BaseWidget {
   final Color textColor;
   final Color borderColor;
   final String chipTitle;
-  final IconData iconData;
+  final IconData? iconData;       // For Material Icons
+  final IconData? faIconData;     // For FontAwesome Icons
 
   const CustomChip({
     super.key,
     required this.backgroundColor,
     required this.textColor,
     required this.borderColor,
-    required this.chipTitle, required this.iconData,
+    required this.chipTitle,
+    this.iconData,
+    this.faIconData,
   });
 
   @override
@@ -29,12 +33,19 @@ class CustomChip extends BaseWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            iconData,
-            size: 14,
-            color: textColor,
-          ),
-          const SizedBox(width: 6),
+          if (iconData != null)
+            Icon(
+              iconData,
+              size: 14,
+              color: textColor,
+            )
+          else if (faIconData != null)
+            FaIcon(
+              faIconData,
+              size: 14,
+              color: textColor,
+            ),
+          if (iconData != null || faIconData != null) const SizedBox(width: 6),
           Text(
             chipTitle,
             style: GoogleFonts.poppins(

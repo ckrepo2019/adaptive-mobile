@@ -19,6 +19,8 @@ import 'package:flutter_lms/views/student/classes/join_class_success.dart';
 import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/student/profile/student_profile.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
+import 'package:flutter_lms/views/teacher/classes/subject_classes.dart';
+import 'package:flutter_lms/views/utilities/announcements.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
 import 'package:flutter_lms/views/auth/sign_in.dart';
@@ -59,15 +61,9 @@ class AppRoutes {
   static const String classSubjectOverview = '/class-subject-overview';
   static const String classSubjectBookContent = '/book-content';
   static const String quizSummary = '/quiz-summary/';
-  static const String remedialIntro = '/remedial-intro';
-  static const String remedialQuiz = '/remedial-quiz';
-  static const String remedialQuizResult = '/remedial-quiz-result';
-  static const String achievements = '/achievements';
-  static const String achievementsTop = '/achievements-top';
-  static const String achievementQuizStreak = '/achievement-quiz-streak';
-  static const String yourAchievements = '/your-achievements';
 }
 
+/// Use GetX pages so we can attach per-route bindings.
 class AppPages {
   static final pages = <GetPage>[
     /// auth
@@ -120,7 +116,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.studentJoinClass,
       page: () => StudentJoinClass(),
-      transition: Transition.leftToRightWithFade,
+      transition: null,
     ),
     GetPage(
       name: AppRoutes.studentJoinClassSuccess,
@@ -143,27 +139,5 @@ class AppPages {
       page: () => const SubjectBookContent(),
     ),
     GetPage(name: AppRoutes.quizSummary, page: () => const QuizSummaryPage()),
-    GetPage(
-      name: AppRoutes.remedialIntro,
-      page: () => const RemedialIntroPage(),
-    ),
-    GetPage(name: AppRoutes.remedialQuiz, page: () => const RemedialQuizPage()),
-    GetPage(
-      name: AppRoutes.remedialQuizResult,
-      page: () => const RemedialQuizResultPage(),
-    ),
-    GetPage(name: AppRoutes.achievements, page: () => const AchievementsPage()),
-    GetPage(
-      name: AppRoutes.achievementsTop,
-      page: () => const AchievementTopPage(),
-    ),
-    GetPage(
-      name: AppRoutes.achievementQuizStreak,
-      page: () => const AchievementQuizStreakPage(),
-    ),
-    GetPage(
-      name: AppRoutes.yourAchievements,
-      page: () => const YourAchievementsPage(),
-    ),
   ];
 }

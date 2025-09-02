@@ -4,12 +4,14 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   const GlobalAppBar({
     super.key,
     required this.title,
+    this.subtitle,
     this.showBack = false,
     this.onBack,
     this.onNotificationsTap,
     this.onProfileTap,
     this.sidePadding,
     this.titleSize,
+    this.subtitleSize,
     this.iconSize,
     this.showNotifications = true,
     this.showProfile = true,
@@ -18,6 +20,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
   });
 
   final String title;
+  final String? subtitle; // 🔹 New optional subtitle
   final bool showBack;
   final VoidCallback? onBack;
   final VoidCallback? onNotificationsTap;
@@ -25,6 +28,7 @@ class GlobalAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   final double? sidePadding;
   final double? titleSize;
+  final double? subtitleSize; // 🔹 control subtitle font size
   final double? iconSize;
 
   final bool showNotifications;
