@@ -4,8 +4,10 @@ import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/global_subject_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
 
 import 'package:flutter_lms/utils/schedule_utils.dart';
+import 'package:flutter_lms/config/routes.dart';
 
 class TeacherSubjectClasses extends StatefulWidget {
   final String sectionName;
@@ -50,13 +52,12 @@ class _TeacherSubjectClassesState extends State<TeacherSubjectClasses> {
           .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
           .toList();
 
-      // 🔑 Filter by section name if provided
+      // Filter by this section
       final filtered = rawSubjects.where((s) {
         return (s['section_name'] ?? '').toString() == widget.sectionName;
       }).toList();
 
-      print(
-          '✅ Found ${filtered.length} subjects for section ${widget.sectionName}');
+      print('✅ Found ${filtered.length} subjects for section ${widget.sectionName}');
 
       setState(() {
         _subjects = filtered;
@@ -69,6 +70,36 @@ class _TeacherSubjectClassesState extends State<TeacherSubjectClasses> {
         _loading = false;
       });
     }
+  }
+
+  void _openSubjectOverview(Map<String, dynamic> subject) {
+    final subjectId = subject['id'] as int?;
+    final subjectName = (subject['subject_name'] ?? 'Unnamed Subject').toString();
+    final subjectCode = (subject['subject_code'] ?? '—').toString();
+    final sectionName = (subject['section_name'] ?? widget.sectionName).toString();
+    final levelName = (subject['level_name'] ?? '').toString();
+    final teacherFullname = (subject['teacher_fullname'] ?? 'TBA').toString();
+    final imageUrl = subject['image']?.toString();
+
+    final scheduleRaw = subject['subjectsched'] as List<dynamic>?;
+    final scheduleStr = ScheduleUtils.formatSchedule(scheduleRaw);
+
+    print('➡️ Navigating to SubjectOverview | subjectId=$subjectId | subject=$subjectName '
+        '| code=$subjectCode | section=$sectionName | level=$levelName | teacher=$teacherFullname '
+        '| schedule="$scheduleStr"');
+
+    Get.toNamed(
+      AppRoutes.teacherSubjectOverview,
+      arguments: {
+        'subjectId': subjectId,
+        'subjectName': subjectName,   
+        'subjectCode': subjectCode,
+        'sectionName': sectionName,
+        'levelName': levelName,
+        'teacherFullname': teacherFullname,
+        'image': imageUrl,
+      },
+    );
   }
 
   @override
@@ -115,28 +146,25 @@ class _TeacherSubjectClassesState extends State<TeacherSubjectClasses> {
           final subject = _subjects[index];
 
           final subjectCode = subject['subject_code']?.toString() ?? '—';
-          final subjectName =
-              subject['subject_name']?.toString() ?? 'Unnamed Subject';
-
-          final teacherName =
-              subject['teacher_fullname']?.toString() ?? 'TBA';
-
+          final subjectName = subject['subject_name']?.toString() ?? 'Unnamed Subject';
+          final teacherName = subject['teacher_fullname']?.toString() ?? 'TBA';
           final imageUrl = subject['image']?.toString();
 
           final scheduleRaw = subject['subjectsched'] as List<dynamic>?;
           final scheduleStr = ScheduleUtils.formatSchedule(scheduleRaw);
-          final schedule =
-              (scheduleStr.isEmpty) ? 'Schedule TBA' : scheduleStr;
+          final schedule = (scheduleStr.isEmpty) ? 'Schedule TBA' : scheduleStr;
 
-          print(
-              '🎓 Subject [$subjectCode]: $subjectName | Teacher: $teacherName | Schedule: $schedule');
+          print('🎓 Subject [$subjectCode]: $subjectName | Teacher: $teacherName | Schedule: $schedule');
 
-          return GlobalSubjectWidget(
-            classCode: subjectCode,
-            subject: subjectName,
-            time: schedule,
-            teacherName: teacherName,
-            imageUrl: imageUrl,
+          return GestureDetector(
+            onTap: () => _openSubjectOverview(subject),
+            child: GlobalSubjectWidget(
+              classCode: subjectCode,
+              subject: subjectName,
+              time: schedule,
+              teacherName: teacherName,
+              imageUrl: imageUrl,
+            ),
           );
         },
       );

@@ -1,14 +1,6 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_lms/views/components/schedule_page.dart';
-import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
-import 'package:flutter_lms/views/teacher/attendance/attendance_page.dart';
-import 'package:flutter_lms/views/teacher/books-assigned/assigned_books_page.dart';
-import 'package:flutter_lms/views/teacher/books-assigned/book_details.dart';
-import 'package:flutter_lms/views/teacher/classes/subject_overview.dart';
-import 'package:flutter_lms/views/teacher/learning-materials/learning_materials_page.dart';
-import 'package:flutter_lms/views/teacher/my_classes_page.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -84,8 +76,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         useMaterial3: true,
       ),
       initialBinding: StudentHomeBindings(),
-      // home: const _LaunchGate(),
-      home: const SubjectOverview(),
+      home: const _LaunchGate(),
+      // home: const SubjectOverview(),
       getPages: AppPages.pages,
     );
   }
