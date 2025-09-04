@@ -8,8 +8,6 @@ import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_resul
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_info.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_intro.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-quiz/quiz_summary.dart';
-import 'package:flutter_lms/views/student/assignments/assignment-remedial/remedial-quiz.dart';
-import 'package:flutter_lms/views/student/assignments/assignment-remedial/remedial_intro.dart';
 import 'package:flutter_lms/views/student/assignments/assignment-remedial/remedial_result.dart';
 import 'package:flutter_lms/views/student/assignments/your_achievements.dart';
 import 'package:flutter_lms/views/student/classes/class_page.dart';
@@ -22,6 +20,7 @@ import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/student/profile/student_profile.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
 import 'package:flutter_lms/views/teacher/classes/subject_classes.dart';
+import 'package:flutter_lms/views/teacher/classes/teacher_sections.dart';
 import 'package:flutter_lms/views/teacher/teacher_shell.dart';
 import 'package:get/get.dart';
 import 'package:flutter_lms/views/auth/get_user.dart';
@@ -72,7 +71,8 @@ class AppRoutes {
 
   // teacher routes
   static const teacherShell = '/teacher-shell';
-  static const teacherClasses = '/teacher-classes';
+  static const teacherSubjects = '/teacher-classes';
+  static const teacherSections = '/teacher-sections';
 
   // utilities
   static const announcement = '/announcement';
@@ -185,7 +185,8 @@ class AppPages {
       name: AppRoutes.announcement,
       page: () => const AnnouncementsPage(),
     ),
-    GetPage(name: AppRoutes.teacherClasses, page: () => const TeacherSubjectClasses()),
+    GetPage(name: AppRoutes.teacherSubjects, page: () => const TeacherSubjectClasses(sectionName: '',)),
+    GetPage(name: AppRoutes.teacherSections, page: () => const TeacherSectionsPage()),
     GetPage(
       name: AppRoutes.teacherShell,
       page: () {

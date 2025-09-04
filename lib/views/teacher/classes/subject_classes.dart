@@ -5,11 +5,17 @@ import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/global_subject_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ⬇️ Adjust the import path to where you saved the utils file
 import 'package:flutter_lms/utils/schedule_utils.dart';
 
 class TeacherSubjectClasses extends StatefulWidget {
-  const TeacherSubjectClasses({super.key});
+  final String sectionName;
+  final int? sectionId;
+
+  const TeacherSubjectClasses({
+    super.key,
+    required this.sectionName,
+    this.sectionId,
+  });
 
   @override
   State<TeacherSubjectClasses> createState() => _TeacherSubjectClassesState();
@@ -39,35 +45,21 @@ class _TeacherSubjectClassesState extends State<TeacherSubjectClasses> {
     print('📥 Raw API Response: ${resp.data}');
 
     if (resp.success) {
-      final rawSubjects = (resp.data?['subjects'] as List<dynamic>? ?? []);
-      final rawHeaders = (resp.data?['subjectHeaders'] as List<dynamic>? ?? []);
-
-      print('📊 subjects length: ${rawSubjects.length}');
-      print('📊 subjectHeaders length: ${rawHeaders.length}');
-
-      final subjects = rawSubjects
+      final rawSubjects = (resp.data?['subjects'] as List<dynamic>? ?? [])
           .whereType<Map>()
           .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
           .toList();
 
-      final headers = rawHeaders
-          .whereType<Map>()
-          .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
-          .toList();
+      // 🔑 Filter by section name if provided
+      final filtered = rawSubjects.where((s) {
+        return (s['section_name'] ?? '').toString() == widget.sectionName;
+      }).toList();
 
-      // Merge headers for missing subject codes
-      final subjectCodes = subjects.map((s) => s['subject_code']).toSet();
-      for (final header in headers) {
-        if (!subjectCodes.contains(header['subject_code'])) {
-          print('➕ Adding subjectHeader fallback: ${header['subject_code']}');
-          subjects.add(header);
-        }
-      }
-
-      print('✅ Final merged subjects count: ${subjects.length}');
+      print(
+          '✅ Found ${filtered.length} subjects for section ${widget.sectionName}');
 
       setState(() {
-        _subjects = subjects;
+        _subjects = filtered;
         _loading = false;
       });
     } else {
@@ -103,12 +95,12 @@ class _TeacherSubjectClassesState extends State<TeacherSubjectClasses> {
         ),
       );
     } else if (_subjects.isEmpty) {
-      print('⚠️ No subjects to display.');
+      print('⚠️ No subjects to display for ${widget.sectionName}.');
       body = Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Text(
-            'No subjects found.',
+            'No subjects found for ${widget.sectionName}.',
             style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
             textAlign: TextAlign.center,
           ),
@@ -122,31 +114,28 @@ class _TeacherSubjectClassesState extends State<TeacherSubjectClasses> {
         itemBuilder: (context, index) {
           final subject = _subjects[index];
 
-          // Extract values (handle both subjects & headers)
           final subjectCode = subject['subject_code']?.toString() ?? '—';
           final subjectName =
               subject['subject_name']?.toString() ?? 'Unnamed Subject';
 
-          // Compose teacher name more safely (firstname + lastname if available)
-          final first = (subject['firstname'] ?? '').toString().trim();
-          final last = (subject['lastname'] ?? '').toString().trim();
-          final teacherName = [first, last].where((s) => s.isNotEmpty).join(' ');
+          final teacherName =
+              subject['teacher_fullname']?.toString() ?? 'TBA';
 
           final imageUrl = subject['image']?.toString();
 
-          // ✅ Use ScheduleUtils to format schedule nicely
           final scheduleRaw = subject['subjectsched'] as List<dynamic>?;
           final scheduleStr = ScheduleUtils.formatSchedule(scheduleRaw);
-          final schedule = (scheduleStr.isEmpty) ? 'Schedule TBA' : scheduleStr;
+          final schedule =
+              (scheduleStr.isEmpty) ? 'Schedule TBA' : scheduleStr;
 
           print(
-              '🎓 Subject [$subjectCode]: $subjectName | Teacher: ${teacherName.isEmpty ? 'TBA' : teacherName} | Schedule: $schedule');
+              '🎓 Subject [$subjectCode]: $subjectName | Teacher: $teacherName | Schedule: $schedule');
 
           return GlobalSubjectWidget(
             classCode: subjectCode,
             subject: subjectName,
             time: schedule,
-            teacherName: teacherName.isEmpty ? 'TBA' : teacherName,
+            teacherName: teacherName,
             imageUrl: imageUrl,
           );
         },
@@ -154,7 +143,7 @@ class _TeacherSubjectClassesState extends State<TeacherSubjectClasses> {
     }
 
     return Scaffold(
-      appBar: GlobalAppBar(title: 'Subject Classes', showBack: true),
+      appBar: GlobalAppBar(title: widget.sectionName, showBack: true),
       body: TeacherGlobalLayout(
         child: RefreshIndicator(
           onRefresh: _loadSubjects,

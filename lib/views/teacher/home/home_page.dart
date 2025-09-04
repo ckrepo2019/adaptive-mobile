@@ -32,30 +32,17 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   Map<String, dynamic>? _user;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is! Map) {
-      setState(() {
-        _loading = false;
-        _error = 'Missing route arguments.';
-      });
-      return;
-    }
-    final token = args['token'] as String?;
-    final uid = args['uid'] as String?;
-    final userType = (args['userType'] as int?) ?? 4; // default: student
-    if (token == null || uid == null) {
-      setState(() {
-        _loading = false;
-        _error = 'Invalid route arguments.';
-      });
-      return;
-    }
-    _load(token, uid, userType);
+  void initState() {
+    super.initState();
+    _load(widget.token, widget.uid, widget.userType);
   }
 
   Future<void> _load(String token, String uid, int type) async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
     final ApiResponse<Map<String, dynamic>> resp = await UserController.getUser(
       token: token,
       uid: uid,
@@ -79,8 +66,12 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        appBar: GlobalAppBar(title: 'Home'),
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
+
     if (_error != null) {
       return Scaffold(
         appBar: const GlobalAppBar(title: 'Home'),
@@ -91,15 +82,15 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     }
 
     final user = _user!;
-    final userType = user['userType'] as int? ?? 4;
+    final userType = user['userType'] as int? ?? widget.userType;
 
+    // You can map your actual userType values here
     String role;
     switch (userType) {
-      case 4: // Example: 3 = Teacher
+      case 5:
+      case 3:
+      case 4:
         role = "Teacher";
-        break;
-      case 3: // Example: 4 = Student
-        role = "Student";
         break;
       default:
         role = "User";
@@ -108,92 +99,101 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
     return Scaffold(
       appBar: const GlobalAppBar(title: 'Home'),
       body: TeacherGlobalLayout(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            WelcomeWidget(
-              firstname: user['firstname'] ?? '',
-              lastname: user['lastname'] ?? '',
-              role: role,
-              studentsCount: "30",
-              section: "Grade 1 : Joy Adviser",
-            ),
-            const SizedBox(height: 25),
+        child: RefreshIndicator(
+          onRefresh: () => _load(widget.token, widget.uid, widget.userType),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                WelcomeWidget(
+                  firstname: user['firstname'] ?? '',
+                  lastname: user['lastname'] ?? '',
+                  role: role,
+                  studentsCount: "30",                 // TODO: bind actual count
+                  section: "Grade 1 : Joy Adviser",     // TODO: bind actual adviser section
+                ),
 
-              // Quick Actions header
-              Row(
-                children: [
-                  const Icon(Icons.open_in_new),
-                  const SizedBox(width: 10),
-                  Text(
-                    "Quick Actions",
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+                const SizedBox(height: 25),
+
+                // Quick Actions header
+                Row(
+                  children: [
+                    const Icon(Icons.open_in_new),
+                    const SizedBox(width: 10),
+                    Text(
+                      "Quick Actions",
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
+                  ],
+                ),
+                const SizedBox(height: 10),
 
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(), // 👈 keep this
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.5,
-                children: [
-                  QuickActionTile(
-                    iconAsset: 'assets/images/student-home/classes-quickactions.png',
-                    label: 'My Classes',
-                    onTap: () {
-                      Get.toNamed(AppRoutes.teacherClasses);
-                    },
-                  ),
-                  QuickActionTile(
-                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
-                    label: 'Announcements',
-                    onTap: () {
-                      Get.toNamed(AppRoutes.announcement);
-                    },
-                  ),
-                  QuickActionTile(
-                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
-                    label: 'Leaderboards',
-                    onTap: () {},
-                  ),
-                  QuickActionTile(
-                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
-                    label: 'Profile',
-                    onTap: () {},
-                  ),
-                ],
-              ),
+                // Grid is non-scrollable inside the parent scroll view
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.5,
+                  children: [
+                    QuickActionTile(
+                      iconAsset: 'assets/images/student-home/classes-quickactions.png',
+                      label: 'My Classes',
+                      onTap: () {
+                        Get.toNamed(AppRoutes.teacherSections);
+                      },
+                    ),
+                    QuickActionTile(
+                      iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                      label: 'Announcements',
+                      onTap: () {
+                        Get.toNamed(AppRoutes.announcement);
+                      },
+                    ),
+                    QuickActionTile(
+                      iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                      label: 'Leaderboards',
+                      onTap: () {},
+                    ),
+                    QuickActionTile(
+                      iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                      label: 'Profile',
+                      onTap: () {},
+                    ),
+                  ],
+                ),
 
-              const SizedBox(height: 25),
+                const SizedBox(height: 25),
 
-              Row(
-                children: [
-                  const Icon(Icons.book),
-                  const SizedBox(width: 5),
-                  const Text("Today's Classes"),
-                  const Spacer(),
-                  CustomChip(
-                    backgroundColor: Colors.blue.shade100,
-                    textColor: Colors.blue.shade500,
-                    borderColor: Colors.transparent,
-                    chipTitle: '4 Classes', // TODO: replace with API
-                  ),
-                ],
-              ),
+                Row(
+                  children: [
+                    const Icon(Icons.book),
+                    const SizedBox(width: 5),
+                    const Text("Today's Classes"),
+                    const Spacer(),
+                    CustomChip(
+                      backgroundColor: Colors.blue.shade100,
+                      textColor: Colors.blue.shade500,
+                      borderColor: Colors.transparent,
+                      chipTitle: '4 Classes', // TODO: replace with API count
+                    ),
+                  ],
+                ),
 
-              const SizedBox(height: 25),
-              const ClassTimeline(),
-              const ClassTimeline(),
-            ],
+                const SizedBox(height: 25),
+                const ClassTimeline(),
+                const ClassTimeline(),
+              ],
+            ),
           ),
         ),
+      ),
     );
   }
 }

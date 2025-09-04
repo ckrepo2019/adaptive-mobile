@@ -6,6 +6,7 @@ import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/teacher/attendance/attendance_page.dart';
 import 'package:flutter_lms/views/teacher/books-assigned/assigned_books_page.dart';
 import 'package:flutter_lms/views/teacher/books-assigned/book_details.dart';
+import 'package:flutter_lms/views/teacher/classes/subject_overview.dart';
 import 'package:flutter_lms/views/teacher/learning-materials/learning_materials_page.dart';
 import 'package:flutter_lms/views/teacher/my_classes_page.dart';
 import 'package:get/get.dart';
@@ -84,7 +85,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       ),
       initialBinding: StudentHomeBindings(),
       // home: const _LaunchGate(),
-      home: const MyClassroomsPage(),
+      home: const SubjectOverview(),
       getPages: AppPages.pages,
     );
   }
