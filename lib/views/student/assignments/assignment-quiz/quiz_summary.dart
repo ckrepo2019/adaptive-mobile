@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/controllers/student/student_subject.dart';
+import 'package:flutter_lms/controllers/student/student_remedial.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/controllers/api_response.dart';
 import 'package:flutter_lms/config/routes.dart';
@@ -139,6 +140,74 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
     );
   }
 
+  Future<Map<String, dynamic>?> _fetchAiExplanationWithModal() async {
+    // Show the non-dismissible modal immediately
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          contentPadding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Your animated GIF at the top
+              Image.asset(
+                'assets/images/student-class/ai_analysis.gif',
+                height: 120,
+                width: 120,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Answer Submitted',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'AI is working for Analysis, Please Wait',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(height: 16),
+              const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(strokeWidth: 2.4),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    // Fire the API call while the modal is visible
+    final resp = await StudentRemedialController.generateExplanation(
+      assessmentID: assessmentId,
+    );
+
+    if (!mounted) return null;
+
+    // Close the modal
+    Navigator.of(context, rootNavigator: true).pop();
+
+    if (resp.success) {
+      // Expecting { message, output } from the controller
+      return resp.data ?? <String, dynamic>{};
+    } else {
+      _showSnack(resp.message ?? 'AI analysis failed.');
+      return null;
+    }
+  }
+
   Future<void> _confirmAndSubmit() async {
     if (assessmentId <= 0) {
       _showSnack('Missing assessment ID.');
@@ -155,6 +224,7 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
           type == 'short_answer') {
         final text = (a['answer_text'] ?? '').toString();
         return {'questionID': qid, 'text': text};
+        // For essay-type you might also want to include images/attachments if you have them
       } else {
         final int choiceId = int.tryParse('${a['choicesID'] ?? 0}') ?? 0;
         return {'questionID': qid, 'choicesID': choiceId};
@@ -194,7 +264,6 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
               style: GoogleFonts.poppins(),
             ),
             const SizedBox(height: 16),
-
             Row(
               children: [
                 TextButton(
@@ -256,7 +325,7 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
           assessmentId: assessmentId,
           answers: payloadAnswers,
         );
-    print(assessmentId);
+
     setState(() => _submitting = false);
 
     if (!mounted) return;
@@ -270,6 +339,11 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
         ? Map<String, dynamic>.from(resp.data!)
         : {};
 
+    // Show the AI modal and fetch explanation
+    final aiData = await _fetchAiExplanationWithModal();
+    if (!mounted) return;
+
+    // Proceed to next page, carrying AI data if available
     Navigator.pushReplacementNamed(
       context,
       AppRoutes.quizResult,
@@ -277,6 +351,7 @@ class _QuizSummaryPageState extends State<QuizSummaryPage> {
         'result': resultArg,
         'assessmentId': assessmentId,
         if (_assessment != null) 'assessment': _assessment,
+        if (aiData != null) 'ai_explanation': aiData,
       },
     );
   }

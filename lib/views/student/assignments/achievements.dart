@@ -188,7 +188,7 @@ class AchievementsPage extends StatelessWidget {
                           bg: kFamCard,
                           accent: kFamAccent,
                           labelTop: 'Familiarity',
-                          value: '${familiarity}%',
+                          value: '$familiarity%',
                         ),
                       ),
                     ],

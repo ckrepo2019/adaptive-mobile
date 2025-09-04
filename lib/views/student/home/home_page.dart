@@ -7,10 +7,11 @@ import 'package:flutter_lms/views/student/student_global_layout.dart';
 import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/cards_list.dart';
+import 'package:flutter_lms/widgets/global_chip.dart';
 import 'package:flutter_lms/widgets/skeleton_loader.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/views/teacher/tabs/teacher_tabs.dart';
 import 'package:flutter_lms/models/items.dart';
 
 class StudentHomePage extends StatefulWidget {
@@ -307,6 +308,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
     final subjects = (_data?['subjects'] as List?) ?? const [];
     final List<_AssessRow> rows = [];
 
+    bool _isUnscored(Map a) {
+      final st = a['student'];
+      if (st is Map) return st['score'] == null; // only show when score is null
+      return true; // if student block missing, keep it
+    }
+
     for (final s in subjects) {
       if (s is! Map) continue;
 
@@ -318,10 +325,14 @@ class _StudentHomePageState extends State<StudentHomePage> {
                   'Subject')
               .toString();
 
-      final assessments = (s['assessments'] as List?) ?? const [];
-      for (final a in assessments) {
-        if (a is! Map<String, dynamic>) continue;
+      // ⬇️ Filter here
+      final Iterable<Map<String, dynamic>> assessments =
+          ((s['assessments'] as List?) ?? const [])
+              .whereType<Map>() // keep only maps
+              .map((e) => Map<String, dynamic>.from(e))
+              .where(_isUnscored);
 
+      for (final a in assessments) {
         final title = (a['title'] ?? 'Assessment').toString();
         final dateLabel = _assessmentStartLabel(a);
         final durLabel = _assessmentDuration(a);
@@ -334,7 +345,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
           final Map<String, dynamic>? totals = (a['totals'] is Map)
               ? Map<String, dynamic>.from(a['totals'] as Map)
               : null;
-
           final int q = _asMapGet<num>(totals, 'questions')?.toInt() ?? 0;
           type = q > 0 ? 'Quiz' : 'Assessment';
         }
@@ -544,83 +554,143 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Welcome $_welcomeFirstName.',
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w500,
-                              color: Colors.black,
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Welcome $_welcomeFirstName.',
+                              style: GoogleFonts.poppins(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: learnersProfiles.isNotEmpty
-                                ? learnersProfiles.map<Widget>((lp) {
-                                    if (lp is Map &&
-                                        lp['learners_types'] is Map) {
-                                      final typeName =
-                                          (lp['learners_types']['name'] ?? '')
-                                              .toString();
-                                      return Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.blue.withOpacity(0.1),
-                                          borderRadius: BorderRadius.circular(
-                                            999,
+
+                            const SizedBox(height: 6),
+                            SizedBox(
+                              height: 40,
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                physics: const BouncingScrollPhysics(),
+                                child: Row(
+                                  children: (learnersProfiles.isNotEmpty
+                                      ? learnersProfiles.map<Widget>((lp) {
+                                          if (lp is Map &&
+                                              lp['learners_types'] is Map) {
+                                            final typeName =
+                                                (lp['learners_types']['name'] ??
+                                                        '')
+                                                    .toString();
+
+                                            switch (typeName.toLowerCase()) {
+                                              case "auditory":
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 6,
+                                                      ),
+                                                  child: CustomChip(
+                                                    chipTitle:
+                                                        "$typeName Learner",
+                                                    backgroundColor:
+                                                        const Color(0xFFE8F5E9),
+                                                    textColor: Colors.green,
+                                                    borderColor: Colors.green,
+                                                    faIconData: FontAwesomeIcons
+                                                        .earListen,
+                                                  ),
+                                                );
+                                              case "kinesthetic":
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 6,
+                                                      ),
+                                                  child: CustomChip(
+                                                    chipTitle:
+                                                        "$typeName Learner",
+                                                    backgroundColor:
+                                                        const Color(0xFFFFF3E0),
+                                                    textColor: Colors.orange,
+                                                    borderColor: Colors.orange,
+                                                    faIconData: FontAwesomeIcons
+                                                        .personWalking,
+                                                  ),
+                                                );
+                                              case "visual":
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 6,
+                                                      ),
+                                                  child: CustomChip(
+                                                    chipTitle:
+                                                        "$typeName Learner",
+                                                    backgroundColor:
+                                                        const Color(0xFFE3F2FD),
+                                                    textColor: Colors.blue,
+                                                    borderColor: Colors.blue,
+                                                    faIconData:
+                                                        FontAwesomeIcons.eye,
+                                                  ),
+                                                );
+                                              case "reading/writing":
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 6,
+                                                      ),
+                                                  child: CustomChip(
+                                                    chipTitle:
+                                                        "$typeName Learner",
+                                                    backgroundColor:
+                                                        const Color(0xFFF3E5F5),
+                                                    textColor: Colors.purple,
+                                                    borderColor: Colors.purple,
+                                                    faIconData: FontAwesomeIcons
+                                                        .bookOpen,
+                                                  ),
+                                                );
+                                              default:
+                                                return Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                        right: 6,
+                                                      ),
+                                                  child: CustomChip(
+                                                    chipTitle:
+                                                        "$typeName Learner",
+                                                    backgroundColor: Colors.blue
+                                                        .withOpacity(0.1),
+                                                    textColor: Colors.blue,
+                                                    borderColor: Colors.blue
+                                                        .withOpacity(0.25),
+                                                    iconData:
+                                                        Icons.person_outline,
+                                                  ),
+                                                );
+                                            }
+                                          }
+                                          return const SizedBox.shrink();
+                                        }).toList()
+                                      : [
+                                          const CustomChip(
+                                            chipTitle: "No Learner Type",
+                                            backgroundColor: Color(0xFFF5F5F5),
+                                            textColor: Colors.grey,
+                                            borderColor: Colors.grey,
+                                            iconData: Icons.help_outline,
                                           ),
-                                          border: Border.all(
-                                            color: Colors.blue.withOpacity(
-                                              0.25,
-                                            ),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          "$typeName Learner",
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 12,
-                                            color: Colors.blue[800],
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  }).toList()
-                                : [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(
-                                          999,
-                                        ),
-                                        border: Border.all(
-                                          color: Colors.grey.withOpacity(0.25),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'No Learner Type',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 12,
-                                          color: Colors.grey[700],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                          ),
-                        ],
+                                        ]),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

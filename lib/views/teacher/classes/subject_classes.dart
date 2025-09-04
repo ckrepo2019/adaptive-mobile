@@ -110,6 +110,7 @@ class Sections_Card extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkCardShell(
+      leftAccent: Colors.black,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -135,7 +136,6 @@ class Sections_Card extends StatelessWidget {
           ),
         ],
       ),
-      leftAccent: Colors.black,
     );
   }
 }

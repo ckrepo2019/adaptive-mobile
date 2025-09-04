@@ -140,7 +140,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
         );
       }
 
-      _syID ??= _coerceInt(args['sy']);
       _syID ??= _coerceInt(args['syID']);
 
       _learnerAssessmentID ??= _coerceInt(args['learner_assessment']);
