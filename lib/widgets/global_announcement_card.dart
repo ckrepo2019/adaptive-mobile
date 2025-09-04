@@ -1,8 +1,5 @@
-import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/widgets/base_widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class GlobalAnnouncementCard extends BaseWidget {
@@ -40,7 +37,10 @@ class GlobalAnnouncementCard extends BaseWidget {
             color: Colors.white, // ✅ enforce white inside too
             borderRadius: BorderRadius.circular(screenWidth * 0.02),
             border: Border(
-              left: BorderSide(color: Colors.yellow, width: screenWidth * 0.005),
+              left: BorderSide(
+                color: Colors.yellow,
+                width: screenWidth * 0.005,
+              ),
             ),
           ),
           child: Column(
@@ -50,8 +50,11 @@ class GlobalAnnouncementCard extends BaseWidget {
               Container(
                 height: 100,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-                  color: Colors.blue
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                  ),
+                  color: Colors.blue,
                 ),
                 width: double.infinity,
                 child: ClipRRect(
@@ -62,7 +65,7 @@ class GlobalAnnouncementCard extends BaseWidget {
                   child: Icon(Icons.announcement),
                 ),
               ),
-      
+
               // ===== Text Section =====
               Padding(
                 padding: EdgeInsets.symmetric(
@@ -79,7 +82,7 @@ class GlobalAnnouncementCard extends BaseWidget {
                         fontSize: screenWidth * 0.045,
                       ),
                     ),
-      
+
                     Text(
                       subtitle,
                       style: TextStyle(
@@ -87,16 +90,21 @@ class GlobalAnnouncementCard extends BaseWidget {
                         fontSize: screenWidth * 0.04,
                       ),
                     ),
-      
+
                     SizedBox(height: screenHeight * 0.02),
-      
+
                     // ===== Bottom (time & teacher) — wraps if needed =====
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Icon(Icons.person, color: Colors.grey.shade500,),
-                        SizedBox(width: 5,),
-                        Text('To all Students', style: GoogleFonts.poppins(color: Colors.grey.shade500),),
+                        Icon(Icons.person, color: Colors.grey.shade500),
+                        SizedBox(width: 5),
+                        Text(
+                          'To all Students',
+                          style: GoogleFonts.poppins(
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
                       ],
                     ),
                   ],

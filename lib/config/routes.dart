@@ -152,6 +152,15 @@ class AppPages {
     GetPage(name: AppRoutes.quiz, page: () => const QuizPage()),
     GetPage(name: AppRoutes.quizResult, page: () => const QuizResultPage()),
     GetPage(
+      name: AppRoutes.remedialIntro,
+      page: () => const RemedialIntroPage(),
+    ),
+    GetPage(name: AppRoutes.remedialQuiz, page: () => const RemedialQuizPage()),
+    GetPage(
+      name: AppRoutes.remedialQuizResult,
+      page: () => const RemedialQuizResultPage(),
+    ),
+    GetPage(
       name: AppRoutes.subjectClassPage,
       page: () => const SubjectClassPage(),
     ),
@@ -164,10 +173,6 @@ class AppPages {
       page: () => const SubjectBookContent(),
     ),
     GetPage(name: AppRoutes.quizSummary, page: () => const QuizSummaryPage()),
-    GetPage(
-      name: AppRoutes.remedialQuizResult,
-      page: () => const RemedialQuizResultPage(),
-    ),
     GetPage(name: AppRoutes.achievements, page: () => const AchievementsPage()),
     GetPage(
       name: AppRoutes.achievementsTop,

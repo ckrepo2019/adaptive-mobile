@@ -19,6 +19,18 @@ class QuizResultPage extends StatelessWidget {
     return null;
   }
 
+  int? _firstInt(Map? map, List<String> keys) {
+    if (map == null) return null;
+    for (final k in keys) {
+      final v = map[k];
+      if (v is int) return v;
+      if (v is num) return v.toInt();
+      final parsed = int.tryParse('${v ?? ''}');
+      if (parsed != null) return parsed;
+    }
+    return null;
+  }
+
   String _firstString(Map? map, List<String> keys, {String fallback = ''}) {
     if (map == null) return fallback;
     for (final k in keys) {
@@ -129,7 +141,7 @@ class QuizResultPage extends StatelessWidget {
             sel.containsAll(correctSet)) {
           correct++;
         }
-      } else {}
+      }
     }
 
     return correct;
@@ -155,6 +167,18 @@ class QuizResultPage extends StatelessWidget {
     final args = ModalRoute.of(context)?.settings.arguments as Map? ?? {};
     final Map? result = args['result'] as Map?;
     final Map? assessment = args['assessment'] as Map?;
+
+    final int? teacherAssessmentID = _firstInt(assessment, [
+      'id',
+      'teacherAssessmentID',
+      'teacherAssessmentId',
+      'teacher_assessment_id',
+    ]);
+
+    final int? assessmentId = _firstInt(assessment, [
+      'assessmentID',
+      'assessmentId',
+    ]);
 
     num? scoreNum = _firstNum(result, [
       'score',
@@ -219,8 +243,8 @@ class QuizResultPage extends StatelessWidget {
         (scoreNum != null && overallNum != null && overallNum > 0)
         ? (scoreNum / overallNum)
         : null;
-    String? learnerLabel;
-    String? derivedLearner = learnerLabel;
+
+    String derivedLearner = 'Auditory Learner';
     try {
       final sp = assessment?['studentprofile'];
       if (sp is Map) {
@@ -281,9 +305,7 @@ class QuizResultPage extends StatelessWidget {
                   ),
                 ),
               ),
-
               SizedBox(height: scoreBlockTopGap),
-
               Row(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -309,7 +331,6 @@ class QuizResultPage extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-
               Container(
                 height: learnerPillH,
                 padding: EdgeInsets.symmetric(
@@ -345,7 +366,7 @@ class QuizResultPage extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      derivedLearner!,
+                      derivedLearner,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.poppins(
@@ -356,9 +377,7 @@ class QuizResultPage extends StatelessWidget {
                   ],
                 ),
               ),
-
               const Spacer(),
-
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -394,7 +413,6 @@ class QuizResultPage extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 14),
-
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -448,9 +466,7 @@ class QuizResultPage extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 60),
-
                       Row(
                         children: [
                           Expanded(
@@ -462,7 +478,6 @@ class QuizResultPage extends StatelessWidget {
                                       await SharedPreferences.getInstance();
                                   final token = prefs.getString('token');
                                   final uid = prefs.getString('uid');
-
                                   Navigator.pushNamedAndRemoveUntil(
                                     context,
                                     AppRoutes.studentShell,
@@ -495,12 +510,12 @@ class QuizResultPage extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 12),
-
                           Expanded(
                             child: SizedBox(
                               height: buttonH,
                               child: ElevatedButton(
                                 onPressed: () {
+                                  print(assessment);
                                   Navigator.pushNamed(
                                     context,
                                     AppRoutes.remedialIntro,
@@ -611,9 +626,7 @@ class _AchievementCard extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-
           const SizedBox(height: 8),
-
           Expanded(
             child: Container(
               decoration: BoxDecoration(

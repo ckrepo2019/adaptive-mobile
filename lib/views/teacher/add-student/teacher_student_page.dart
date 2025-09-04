@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/config/routes.dart';
 import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/global_chat_widget.dart';
 import 'package:flutter_lms/widgets/global_chip.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 class TeacherStudentPage extends StatelessWidget {
   const TeacherStudentPage({super.key});
