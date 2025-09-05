@@ -7,33 +7,35 @@ class AssignmentItem {
   final String date;
   final String duration;
   final String type;
-  final String? description;
+  final Map<String, dynamic> assessment;
 
-  const AssignmentItem({
+  final Map<String, dynamic>? subjectData;
+  final String? subjectIcon;
+
+  AssignmentItem({
     required this.title,
     required this.subject,
     required this.date,
     required this.duration,
     required this.type,
-    this.description,
+    required this.assessment,
+    this.subjectData,
+    this.subjectIcon,
   });
 }
 
-/// Class progress item model
 class ClassProgressItem {
   final String title;
   final int firstHierarchy;
   final int secondHierarchy;
-
-  final String firstHierarchyLabel; // e.g., "Chapters"
-  final String secondHierarchyLabel; // e.g., "Units"
-
-  /// 0..1
+  final String firstHierarchyLabel;
+  final String secondHierarchyLabel;
   final double progress;
-  final String iconAsset; // can be asset path OR http(s) URL
+  final String iconAsset;
   final Color accent;
+  final Map<String, dynamic>? subject;
 
-  const ClassProgressItem({
+  ClassProgressItem({
     required this.title,
     required this.firstHierarchy,
     required this.secondHierarchy,
@@ -41,6 +43,7 @@ class ClassProgressItem {
     required this.secondHierarchyLabel,
     required this.progress,
     required this.iconAsset,
-    this.accent = Colors.redAccent,
+    required this.accent,
+    this.subject,
   });
 }

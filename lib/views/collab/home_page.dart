@@ -27,7 +27,7 @@ class _CollaboratorHomePageState extends State<CollaboratorHomePage> {
     }
     final token = args['token'] as String?;
     final uid = args['uid'] as String?;
-    final userType = (args['userType'] as int?) ?? 4; // student=4
+    final userType = (args['userType'] as int?) ?? 4;
     if (token == null || uid == null) {
       setState(() {
         _loading = false;
@@ -98,8 +98,6 @@ class _CollaboratorHomePageState extends State<CollaboratorHomePage> {
         ),
       );
     }
-
-    // Keys from `collaboratorprofile` screenshot
     final c = _user!;
     return Scaffold(
       appBar: AppBar(title: const Text('Collaborator Home')),

@@ -1,34 +1,22 @@
-// lib/views/student/home/student_global_layout.dart
 import 'package:flutter/material.dart';
 
 class StudentGlobalLayout extends StatelessWidget {
   final bool showBack;
   final Widget child;
-
-  /// Default padding for the page. Pass EdgeInsets.zero to disable.
   final EdgeInsetsGeometry? padding;
-
   final bool useSafeArea;
-
-  /// Pull-to-refresh handler.
   final Future<void> Function()? onRefresh;
-
-  /// Wrap non-scrollable child in a scroll view when refreshing.
   final bool forceScrollable;
-
-  /// Optional app bar for Scaffold mode.
   final PreferredSizeWidget? appBar;
-
-  /// NEW: When false, do NOT create a Scaffold. Useful inside tab shells.
   final bool useScaffold;
-
-  /// NEW: Optional header rendered above content in non-Scaffold mode.
   final Widget? header;
-
-  /// NEW: Optional bottom widget in non-Scaffold mode (rarely needed).
   final Widget? bottom;
   final bool safeAreaTop;
   final bool safeAreaBottom;
+  final Duration transitionDuration;
+  final Curve transitionCurve;
+  final bool enableTransitions;
+
   const StudentGlobalLayout({
     super.key,
     required this.child,
@@ -43,10 +31,37 @@ class StudentGlobalLayout extends StatelessWidget {
     this.useScaffold = true,
     this.header,
     this.bottom,
+    this.transitionDuration = const Duration(milliseconds: 300),
+    this.transitionCurve = Curves.easeInOut,
+    this.enableTransitions = true,
   });
+
   @override
   Widget build(BuildContext context) {
     Widget content = child;
+
+    if (enableTransitions) {
+      content = AnimatedSwitcher(
+        duration: transitionDuration,
+        switchInCurve: transitionCurve,
+        switchOutCurve: transitionCurve,
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: animation.drive(
+                Tween<Offset>(
+                  begin: const Offset(0.0, 0.03),
+                  end: Offset.zero,
+                ).chain(CurveTween(curve: transitionCurve)),
+              ),
+              child: child,
+            ),
+          );
+        },
+        child: content,
+      );
+    }
 
     if (padding != null) {
       content = Padding(padding: padding!, child: content);
@@ -68,7 +83,6 @@ class StudentGlobalLayout extends StatelessWidget {
       );
     }
 
-    // If we're embedding with a header, avoid double top SafeArea by default.
     final bool effectiveTop = useScaffold
         ? safeAreaTop
         : (header != null ? false : safeAreaTop);
@@ -77,23 +91,153 @@ class StudentGlobalLayout extends StatelessWidget {
         ? SafeArea(top: effectiveTop, bottom: safeAreaBottom, child: content)
         : content;
 
+    Widget finalWidget;
+
     if (useScaffold) {
-      return Scaffold(
+      finalWidget = Scaffold(
         appBar: appBar,
         backgroundColor: Colors.white,
         body: body,
       );
+    } else {
+      finalWidget = Material(
+        color: Colors.white,
+        child: Column(
+          children: [
+            if (header != null)
+              AnimatedContainer(
+                duration: transitionDuration,
+                curve: transitionCurve,
+                child: header!,
+              ),
+            Expanded(child: body),
+            if (bottom != null)
+              AnimatedContainer(
+                duration: transitionDuration,
+                curve: transitionCurve,
+                child: bottom!,
+              ),
+          ],
+        ),
+      );
     }
 
-    return Material(
-      color: Colors.white,
-      child: Column(
-        children: [
-          if (header != null) header!,
-          Expanded(child: body),
-          if (bottom != null) bottom!,
-        ],
-      ),
+    if (enableTransitions) {
+      return AnimatedContainer(
+        duration: transitionDuration,
+        curve: transitionCurve,
+        child: finalWidget,
+      );
+    }
+
+    return finalWidget;
+  }
+}
+
+class SmoothPageRoute<T> extends PageRouteBuilder<T> {
+  final Widget child;
+  final Duration duration;
+  final Curve curve;
+
+  SmoothPageRoute({
+    required this.child,
+    this.duration = const Duration(milliseconds: 300),
+    this.curve = Curves.easeInOut,
+  }) : super(
+         pageBuilder: (context, animation, secondaryAnimation) => child,
+         transitionDuration: duration,
+         reverseTransitionDuration: duration,
+         transitionsBuilder: (context, animation, secondaryAnimation, child) {
+           const begin = Offset(1.0, 0.0);
+           const end = Offset.zero;
+           final tween = Tween(
+             begin: begin,
+             end: end,
+           ).chain(CurveTween(curve: curve));
+           final offsetAnimation = animation.drive(tween);
+
+           return SlideTransition(
+             position: offsetAnimation,
+             child: FadeTransition(opacity: animation, child: child),
+           );
+         },
+       );
+}
+
+extension SmoothNavigation on NavigatorState {
+  Future<T?> pushSmooth<T extends Object?>(Widget page) {
+    return push<T>(SmoothPageRoute(child: page));
+  }
+
+  Future<T?> pushReplacementSmooth<T extends Object?, TO extends Object?>(
+    Widget page, {
+    TO? result,
+  }) {
+    return pushReplacement<T, TO>(SmoothPageRoute(child: page), result: result);
+  }
+}
+
+class AnimatedTabContent extends StatefulWidget {
+  final Widget child;
+  final int currentIndex;
+
+  const AnimatedTabContent({
+    super.key,
+    required this.child,
+    required this.currentIndex,
+  });
+
+  @override
+  State<AnimatedTabContent> createState() => _AnimatedTabContentState();
+}
+
+class _AnimatedTabContentState extends State<AnimatedTabContent>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.02),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+
+    _controller.forward();
+  }
+
+  @override
+  void didUpdateWidget(AnimatedTabContent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.currentIndex != widget.currentIndex) {
+      _controller.reset();
+      _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(position: _slideAnimation, child: widget.child),
     );
   }
 }

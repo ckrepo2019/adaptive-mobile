@@ -3,19 +3,16 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-/// Quick URL check for images.
 bool isNetworkPath(String path) {
   final p = path.trim().toLowerCase();
   return p.startsWith('http://') || p.startsWith('https://');
 }
 
-/// Returns a proper ImageProvider for assets or network.
 ImageProvider<Object> imageProviderFor(String path) {
   final p = path.trim();
   return isNetworkPath(p) ? NetworkImage(p) : AssetImage(p);
 }
 
-/// Verify an asset exists in the bundle.
 Future<bool> assetExists(String assetPath) async {
   try {
     await rootBundle.load(assetPath);
@@ -25,7 +22,6 @@ Future<bool> assetExists(String assetPath) async {
   }
 }
 
-/// Safe widget builder that supports network/asset + loading/fallback.
 Widget buildIconImage(
   String path, {
   double w = 26,
@@ -51,7 +47,6 @@ Widget buildIconImage(
   return Image.asset(path, width: w, height: h, fit: fit);
 }
 
-/// Resolve an ImageProvider into a ui.Image.
 Future<ui.Image> loadUiImage(ImageProvider provider) {
   final completer = Completer<ui.Image>();
   final stream = provider.resolve(const ImageConfiguration());
@@ -72,8 +67,6 @@ Future<ui.Image> loadUiImage(ImageProvider provider) {
   return completer.future;
 }
 
-/// Lightweight average/dominant color from image pixels.
-/// Returns null if it cannot be computed.
 Future<Color?> averageColorFromImage(
   String path, {
   int sampleW = 48,
@@ -99,7 +92,7 @@ Future<Color?> averageColorFromImage(
       final gg = bytes[i + 1];
       final bb = bytes[i + 2];
       final aa = bytes[i + 3];
-      if (aa < 16) continue; // skip near-transparent
+      if (aa < 16) continue;
       r += rr;
       g += gg;
       b += bb;

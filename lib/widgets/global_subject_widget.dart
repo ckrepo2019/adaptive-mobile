@@ -1,11 +1,14 @@
-import 'package:flutter_lms/widgets/base_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_lms/widgets/base_widgets.dart';
+import 'package:flutter_lms/utils/dominant_color_utils.dart';
+import 'package:flutter_lms/utils/palette_utils.dart';
+import 'package:flutter_lms/config/constants.dart'; // <-- add this
 
 class GlobalSubjectWidget extends BaseWidget {
   final String classCode;
   final String subject;
-  final String time; // e.g., "Today, M, T, W • 8:00–9:30 AM"
-  final String teacherName; // full name or 'TBA'
+  final String time;
+  final String teacherName;
   final String? imageUrl;
 
   const GlobalSubjectWidget({
@@ -16,6 +19,124 @@ class GlobalSubjectWidget extends BaseWidget {
     required this.subject,
     required this.imageUrl,
   });
+
+  @override
+  Widget build(BuildContext context) {
+    return _SubjectCard(
+      classCode: classCode,
+      subject: subject,
+      time: time,
+      teacherName: teacherName,
+      imageUrl: imageUrl,
+    );
+  }
+}
+
+class _SubjectCard extends StatefulWidget {
+  final String classCode;
+  final String subject;
+  final String time;
+  final String teacherName;
+  final String? imageUrl;
+
+  const _SubjectCard({
+    required this.classCode,
+    required this.subject,
+    required this.time,
+    required this.teacherName,
+    required this.imageUrl,
+  });
+
+  @override
+  State<_SubjectCard> createState() => _SubjectCardState();
+}
+
+class _SubjectCardState extends State<_SubjectCard> {
+  static const String _kDefaultAsset =
+      'assets/images/default-images/default-classes.jpg';
+
+  String get _imageBaseUrl => AppConstants.imageBaseUrl;
+
+  Color _sideColor = const Color(0xFFFFD400);
+  bool _paletteComputed = false;
+  final Set<int> _used = <int>{};
+
+  String? get _networkUrl {
+    final raw = widget.imageUrl?.trim();
+    if (raw == null || raw.isEmpty) return null;
+
+    final lower = raw.toLowerCase();
+    if (lower.startsWith('http://') || lower.startsWith('https://')) {
+      return raw;
+    }
+
+    if (!lower.startsWith('assets/')) {
+      final hasTrailingSlash = _imageBaseUrl.endsWith('/');
+      final hasLeadingSlash = raw.startsWith('/');
+      final joined = hasTrailingSlash && hasLeadingSlash
+          ? '$_imageBaseUrl${raw.substring(1)}'
+          : (!hasTrailingSlash && !hasLeadingSlash
+                ? '$_imageBaseUrl/$raw'
+                : '$_imageBaseUrl$raw');
+      return joined;
+    }
+    return null;
+  }
+
+  String get _colorSourcePath => _networkUrl ?? _kDefaultAsset;
+
+  @override
+  void initState() {
+    super.initState();
+    _computeSideColor();
+  }
+
+  @override
+  void didUpdateWidget(covariant _SubjectCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.imageUrl != widget.imageUrl) {
+      _paletteComputed = false;
+      _computeSideColor();
+    }
+  }
+
+  Future<void> _computeSideColor() async {
+    if (_paletteComputed) return;
+
+    try {
+      final dom = await DominantColorUtils.fromPath(_colorSourcePath);
+      if (mounted && dom != null) {
+        _used.add(PaletteUtils.rgbKey(dom));
+        setState(() {
+          _sideColor = dom;
+          _paletteComputed = true;
+        });
+        return;
+      }
+
+      final palette = await PaletteUtils.paletteFromPath(
+        _colorSourcePath,
+        maxColors: 5,
+      );
+      if (!mounted) return;
+
+      if (palette.isNotEmpty) {
+        final picked =
+            PaletteUtils.pickDistinct(palette, _used, minDistance: 40) ??
+            palette.first;
+        _used.add(PaletteUtils.rgbKey(picked));
+        setState(() {
+          _sideColor = picked;
+          _paletteComputed = true;
+        });
+      } else {
+        setState(() => _paletteComputed = true);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _paletteComputed = true);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +151,20 @@ class GlobalSubjectWidget extends BaseWidget {
     );
 
     return Card(
-      color: Colors.white, // ✅ full white background
+      color: Colors.white,
       margin: EdgeInsets.only(bottom: screenHeight * 0.015),
       elevation: 5,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white, // ✅ enforce white inside too
+          color: Colors.white,
           borderRadius: BorderRadius.circular(screenWidth * 0.02),
           border: Border(
-            left: BorderSide(color: Colors.yellow, width: screenWidth * 0.005),
+            left: BorderSide(color: _sideColor, width: screenWidth * 0.005),
           ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ===== Top Image with fallback =====
             ClipRRect(
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(screenWidth * 0.025),
@@ -52,12 +172,12 @@ class GlobalSubjectWidget extends BaseWidget {
               ),
               child: _buildHeaderImage(
                 context,
-                imageUrl: imageUrl,
+                networkUrl: _networkUrl,
+                assetFallback: _kDefaultAsset,
                 height: screenHeight * 0.15,
+                onReady: _computeSideColor,
               ),
             ),
-
-            // ===== Text Section =====
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: screenWidth * 0.025,
@@ -66,34 +186,30 @@ class GlobalSubjectWidget extends BaseWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Class code
                   Text(
-                    classCode,
+                    widget.classCode,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: screenWidth * 0.045,
                     ),
                   ),
-
-                  // Subject name
                   Text(
-                    subject,
+                    widget.subject,
                     style: TextStyle(
                       color: Colors.grey.shade500,
                       fontSize: screenWidth * 0.04,
                     ),
                   ),
-
                   SizedBox(height: screenHeight * 0.02),
-
-                  // ===== Bottom (time & teacher) — wraps if needed =====
                   Wrap(
                     spacing: screenWidth * 0.05,
                     runSpacing: screenHeight * 0.008,
                     children: [
                       _infoItem(
                         icon: Icons.calendar_month,
-                        text: time.isNotEmpty ? time : "Schedule TBA",
+                        text: widget.time.isNotEmpty
+                            ? widget.time
+                            : "Schedule TBA",
                         iconColor: iconColor,
                         iconSize: iconSize,
                         textStyle: textStyle,
@@ -101,7 +217,9 @@ class GlobalSubjectWidget extends BaseWidget {
                       ),
                       _infoItem(
                         icon: Icons.person,
-                        text: teacherName.isNotEmpty ? teacherName : 'TBA',
+                        text: widget.teacherName.isNotEmpty
+                            ? widget.teacherName
+                            : 'TBA',
                         iconColor: iconColor,
                         iconSize: iconSize,
                         textStyle: textStyle,
@@ -117,8 +235,6 @@ class GlobalSubjectWidget extends BaseWidget {
       ),
     );
   }
-
-  // ---- helpers ----
 
   Widget _infoItem({
     required IconData icon,
@@ -149,32 +265,45 @@ class GlobalSubjectWidget extends BaseWidget {
 
   Widget _buildHeaderImage(
     BuildContext context, {
-    required String? imageUrl,
+    required String? networkUrl,
+    required String assetFallback,
     required double height,
+    required VoidCallback onReady,
   }) {
-    if (imageUrl == null || imageUrl.trim().isEmpty) {
-      return _fallbackBanner(height);
+    // No network URL (null/empty or an asset path) -> use asset fallback
+    if (networkUrl == null || networkUrl.isEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onReady());
+      return Image.asset(
+        assetFallback,
+        fit: BoxFit.cover,
+        height: height,
+        width: double.infinity,
+      );
     }
 
     return Image.network(
-      imageUrl,
+      networkUrl,
       fit: BoxFit.cover,
       height: height,
       width: double.infinity,
-      errorBuilder: (_, __, ___) => _fallbackBanner(height),
+      errorBuilder: (_, __, ___) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => onReady());
+        return Image.asset(
+          assetFallback,
+          fit: BoxFit.cover,
+          height: height,
+          width: double.infinity,
+        );
+      },
       loadingBuilder: (context, child, progress) {
-        if (progress == null) return child;
+        if (progress == null) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => onReady());
+          return child;
+        }
         return _skeletonBanner(height);
       },
-    );
-  }
-
-  Widget _fallbackBanner(double height) {
-    return Image.asset(
-      'assets/images/default-images/default-classes.jpg',
-      fit: BoxFit.cover,
-      height: height,
-      width: double.infinity,
+      gaplessPlayback: true,
+      filterQuality: FilterQuality.low,
     );
   }
 

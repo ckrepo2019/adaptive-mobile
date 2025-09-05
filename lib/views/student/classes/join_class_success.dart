@@ -4,28 +4,42 @@ import 'package:flutter_lms/config/routes.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:confetti/confetti.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StudentJoinClassSuccess extends StatefulWidget {
   const StudentJoinClassSuccess({super.key});
 
   @override
-  State<StudentJoinClassSuccess> createState() => _JoinClassSuccessState();
+  State<StudentJoinClassSuccess> createState() =>
+      _StudentJoinClassSuccessState();
 }
 
-class _JoinClassSuccessState extends State<StudentJoinClassSuccess> {
-  late ConfettiController _confettiController;
+class _StudentJoinClassSuccessState extends State<StudentJoinClassSuccess> {
+  final ConfettiController _confettiController = ConfettiController(
+    duration: const Duration(seconds: 2),
+  );
 
   @override
   void initState() {
     super.initState();
-    _confettiController = ConfettiController(
-      duration: const Duration(seconds: 2),
-    );
     _confettiController.play();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token') ?? '';
+      final uid = prefs.getString('uid') ?? '';
+      final userType = prefs.getInt('usertype_ID') ?? 4;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.delayed(const Duration(seconds: 5), () {
-        Get.toNamed(AppRoutes.studentClass);
+        if (!mounted) return;
+        Get.offAllNamed(
+          AppRoutes.studentShell,
+          arguments: {
+            'token': token,
+            'uid': uid,
+            'userType': userType,
+            'initialIndex': 1,
+          },
+        );
       });
     });
   }
@@ -36,22 +50,55 @@ class _JoinClassSuccessState extends State<StudentJoinClassSuccess> {
     super.dispose();
   }
 
+  Widget _confettiImage({bool flip = false, double size = 120}) {
+    return Transform(
+      alignment: Alignment.center,
+      transform: Matrix4.identity()..scale(flip ? -1.0 : 1.0, 1.0, 1.0),
+      child: Image.asset(
+        'assets/images/student-class/confetti.png',
+        width: size,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final args = Get.arguments;
+    String subjectCode = 'Your Class';
+    if (args is Map) {
+      subjectCode =
+          (args['subject_code'] ?? args['subjectCode'] ?? args['subject'] ?? '')
+              .toString()
+              .trim();
+      if (subjectCode.isEmpty) subjectCode = 'Your Class';
+    }
+
     return Scaffold(
       backgroundColor: AppConstants.mainColorTheme,
       body: Stack(
         children: [
-          // Confetti at the top center
           Align(
             alignment: Alignment.topCenter,
             child: ConfettiWidget(
               confettiController: _confettiController,
-              blastDirection: 3.14 / 2, // downward
+              blastDirection: 3.14 / 2,
               emissionFrequency: 0.05,
-              numberOfParticles: 30,
-              gravity: 0.3,
+              numberOfParticles: 20,
+              gravity: 0.1,
             ),
+          ),
+          Positioned(top: 200, left: -20, child: _confettiImage(size: 140)),
+          Positioned(
+            top: 100,
+            right: 0,
+            child: _confettiImage(flip: true, size: 100),
+          ),
+          Positioned(bottom: 130, left: 0, child: _confettiImage(size: 120)),
+          Positioned(
+            bottom: -20,
+            right: -20,
+            child: _confettiImage(flip: true, size: 160),
           ),
           SafeArea(
             child: Padding(
@@ -81,14 +128,18 @@ class _JoinClassSuccessState extends State<StudentJoinClassSuccess> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 20,
+                      ),
                       child: Center(
                         child: Text(
-                          "Math 101",
+                          subjectCode,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.poppins(
                             fontSize: 20,
                             color: Colors.white,
-                            fontWeight: FontWeight.w400,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

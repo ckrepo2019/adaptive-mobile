@@ -25,8 +25,6 @@ class UserController {
             },
           )
           .timeout(const Duration(seconds: 20));
-
-      // Try parse body even on non-200 for meaningful message
       Map<String, dynamic>? parsed;
       try {
         final raw = jsonDecode(res.body);
@@ -35,10 +33,9 @@ class UserController {
 
       if (res.statusCode == 200 && (parsed?['success'] == true)) {
         final data = Map<String, dynamic>.from(parsed!['data'] as Map);
+        print(token);
         return ApiResponse(success: true, data: data);
       }
-
-      // Handle common auth errors cleanly
       if (res.statusCode == 401) {
         return ApiResponse(
           success: false,

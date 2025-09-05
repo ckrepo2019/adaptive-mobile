@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'intro_theme.dart';
 
-/// Thumbs button with local visual state.
-/// If [onTap] is supplied, it will be called and the local selected state toggles.
 class ThumbButton extends StatefulWidget {
   final IconData icon;
   final VoidCallback? onTap;
@@ -28,7 +26,9 @@ class _ThumbButtonState extends State<ThumbButton> {
         height: 50,
         width: 150,
         decoration: BoxDecoration(
-          color: _isSelected ? IntroTheme.blue : Colors.white,
+          color: _isSelected
+              ? const Color.fromARGB(255, 11, 27, 58)
+              : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: IntroTheme.blue, width: 1),
         ),

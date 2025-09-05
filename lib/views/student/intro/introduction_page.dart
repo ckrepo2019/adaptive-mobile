@@ -27,10 +27,7 @@ class IntroductionPage extends StatefulWidget {
 }
 
 class _IntroductionPageState extends State<IntroductionPage> {
-  int get totalPages =>
-      3 +
-      _questions
-          .length; // 0:Welcome, 1:Getting Started, 2:Hobbies, then N questions
+  int get totalPages => 3 + _questions.length;
   final PageController _pageController = PageController();
   int _currentPage = 0;
   String? _token;
@@ -44,7 +41,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
     if (v is num) return v.toInt();
     if (v is String) return int.tryParse(v);
     if (v is Map) {
-      // try common shapes
       final m = v.cast<String, dynamic>();
       return _coerceInt(
         m['id'] ??
@@ -138,14 +134,12 @@ class _IntroductionPageState extends State<IntroductionPage> {
           _studentHomeData!['learner_assessment'],
         );
 
-        // Fallbacks if your payload also includes legacy fields
         _syID ??= _coerceInt(_studentHomeData!['syID']);
         _learnerAssessmentID ??= _coerceInt(
           _studentHomeData!['learnerassessmentID'],
         );
       }
 
-      _syID ??= _coerceInt(args['sy']);
       _syID ??= _coerceInt(args['syID']);
 
       _learnerAssessmentID ??= _coerceInt(args['learner_assessment']);
@@ -172,7 +166,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
         curve: Curves.easeInOut,
       );
     } else {
-      // Last page → submit to backend
       if (!_submitting) _submitGetStarted();
     }
   }
@@ -204,7 +197,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
       return;
     }
 
-    // Build responses for ALL questions; default unanswered to "no"
     final responses = _questions.map((q) {
       final isUp = _answers[q.id] == true;
       return {
@@ -225,7 +217,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
       );
 
       if (res.success) {
-        // ✅ Extract student ID from _studentHomeData['student']
         int? studentId;
         final studentData = _studentHomeData?['student'];
         if (studentData is Map) {
@@ -303,7 +294,7 @@ class _IntroductionPageState extends State<IntroductionPage> {
 
   Widget _buildPage(int index) {
     switch (index) {
-      case 0: /* ... unchanged ... */
+      case 0:
         return Container(
           color: IntroTheme.blue,
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -342,14 +333,14 @@ class _IntroductionPageState extends State<IntroductionPage> {
           ),
         );
 
-      case 2: // Hobbies
+      case 2:
         final List<HobbyChipData> items = _backendHobbies.isNotEmpty
             ? _backendHobbies
             : HobbyChipData.defaults();
 
         return HobbiesStep(
-          hobbies: items, // List<HobbyChipData>
-          selectedIds: _selectedHobbyIds, // Set<int>
+          hobbies: items,
+          selectedIds: _selectedHobbyIds,
           onToggleId: (id) {
             setState(() {
               debugPrint('Selected Hobby IDs: $_selectedHobbyIds');
@@ -377,7 +368,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
         );
 
       default:
-        // Question pages start at index 3
         final qIndex = index - 3;
         final q = _questions[qIndex];
 
@@ -386,7 +376,6 @@ class _IntroductionPageState extends State<IntroductionPage> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: ThumbsStep(
             header: "Let's get to know each other",
-            // Use the backend’s question_text as-is
             question: q.text,
             onThumbUp: () => _onQuestionAnswer(q.id, true),
             onThumbDown: () => _onQuestionAnswer(q.id, false),

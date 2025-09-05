@@ -3,7 +3,6 @@ import 'package:flutter_lms/config/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NavigationUtils {
-  /// Navigate back to StudentHome with required arguments
   static Future<void> goHomeWithArgs(BuildContext context) async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
