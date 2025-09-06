@@ -519,13 +519,25 @@ class _StudentHomePageState extends State<StudentHomePage> {
         title: 'Home',
         onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
         onProfileTap: () {
-          final s = _data?['student'];
-          if (s is Map && s.isNotEmpty) {
+          if (_data != null && _data!.isNotEmpty) {
+            // Pass the whole payload under "data"
             Navigator.pushNamed(
               context,
               AppRoutes.profilePage,
-              arguments: {'student': s},
+              arguments: {'data': _data},
             );
+          } else {
+            // Fallback: pass just student if available
+            final s = _data?['student'];
+            if (s is Map && s.isNotEmpty) {
+              Navigator.pushNamed(
+                context,
+                AppRoutes.profilePage,
+                arguments: {
+                  'data': {'student': s},
+                },
+              );
+            }
           }
         },
       ),
