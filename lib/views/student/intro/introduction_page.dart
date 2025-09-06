@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 import 'components/intro_theme.dart';
 import 'components/centered_column.dart';
 import 'components/typography.dart';

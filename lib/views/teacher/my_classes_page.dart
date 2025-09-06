@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
 
 class MyClassroomPage extends StatelessWidget {
   const MyClassroomPage({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/widgets/fancy_student_navbar.dart';
-import 'package:flutter_lms/views/teacher/tabs/teacher_tabs.dart';
-import 'package:flutter_lms/views/teacher/home/home_page.dart';
+import 'package:Adaptive/views/student/widgets/fancy_student_navbar.dart';
+import 'package:Adaptive/views/teacher/tabs/teacher_tabs.dart';
+import 'package:Adaptive/views/teacher/home/home_page.dart';
 
 class TeacherShell extends StatefulWidget {
   final String token;

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/controllers/teacher/teacher_sections_controller.dart';
-import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_subject_widget.dart';
+import 'package:Adaptive/controllers/teacher/teacher_sections_controller.dart';
+import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/global_subject_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'subject_classes.dart'; // 👈 import your subject classes page

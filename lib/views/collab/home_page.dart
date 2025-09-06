@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/controllers/get_user.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:Adaptive/controllers/get_user.dart';
+import 'package:Adaptive/controllers/api_response.dart';
 
 class CollaboratorHomePage extends StatefulWidget {
   const CollaboratorHomePage({super.key});

@@ -9,8 +9,9 @@ class AppConstants {
   // static const String imageBaseUrl = 'http://192.168.50.145:8000/storage/';
 
   // Lix WFH
-  static const String baseURL = 'http://192.168.50.81:8000/api/flutter';
-  static const String imageBaseUrl = 'http://192.168.50.81:8000/storage/';
+  static const String baseURL = 'https://adaptivehub.essentiel.ph/api/flutter';
+  static const String imageBaseUrl =
+      'https://adaptivehub.essentiel.ph/storage/';
 
   // Light Theme
   static const Color mainColorTheme = Color.fromARGB(255, 35, 78, 244);

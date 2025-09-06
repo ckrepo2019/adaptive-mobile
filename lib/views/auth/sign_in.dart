@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/controllers/auth.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/controllers/auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SignInPage extends StatefulWidget {
@@ -33,8 +33,6 @@ class _SignInPageState extends State<SignInPage> {
       username: _usernameCtrl.text,
       password: _passwordCtrl.text,
     );
-
-    print(resp.data);
 
     setState(() => _loading = false);
 

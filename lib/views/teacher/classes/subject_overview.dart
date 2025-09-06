@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/class_progress_card.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
-import 'package:flutter_lms/views/student/home/quick_actions.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/class_progress_card.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
+import 'package:Adaptive/views/student/home/quick_actions.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/widgets/ui_widgets.dart';
+import 'package:Adaptive/widgets/ui_widgets.dart';
 
 class TeacherSubjectOverview extends StatelessWidget {
   const TeacherSubjectOverview({super.key});

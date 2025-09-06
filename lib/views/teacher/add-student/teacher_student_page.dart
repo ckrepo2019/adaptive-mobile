@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
-import 'package:flutter_lms/controllers/teacher/teacher_subject_students_controller.dart';
-import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_chat_widget.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:Adaptive/config/constants.dart';
+import 'package:Adaptive/controllers/api_response.dart';
+import 'package:Adaptive/controllers/teacher/teacher_subject_students_controller.dart';
+import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/global_chat_widget.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
 import 'package:get/get.dart';
 
 class TeacherStudentPage extends StatefulWidget {

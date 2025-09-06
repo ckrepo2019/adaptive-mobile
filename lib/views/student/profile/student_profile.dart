@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});

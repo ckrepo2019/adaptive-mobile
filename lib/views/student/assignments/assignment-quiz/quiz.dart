@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:flutter_lms/controllers/student/student_subject.dart';
+import 'package:Adaptive/controllers/student/student_subject.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});

@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
-import 'package:flutter_lms/controllers/student/student_subject.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/controllers/api_response.dart';
+import 'package:Adaptive/controllers/student/student_subject.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 Future<T> retry<T>(

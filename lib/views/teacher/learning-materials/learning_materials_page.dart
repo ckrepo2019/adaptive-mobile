@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // Your existing imports
-import 'package:flutter_lms/widgets/app_bar.dart'; // GlobalAppBar
+import 'package:Adaptive/widgets/app_bar.dart'; // GlobalAppBar
 
 // This is your InkCardShell
 class InkCardShell extends StatelessWidget {
