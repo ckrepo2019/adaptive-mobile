@@ -22,6 +22,7 @@ import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/student/profile/student_profile.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
 import 'package:flutter_lms/views/teacher/add-student/teacher_student_page.dart';
+import 'package:flutter_lms/views/teacher/books-assigned/assigned_books_page.dart';
 import 'package:flutter_lms/views/teacher/classes/subject_classes.dart';
 import 'package:flutter_lms/views/teacher/classes/subject_overview.dart';
 import 'package:flutter_lms/views/teacher/classes/teacher_sections.dart';
@@ -79,6 +80,7 @@ class AppRoutes {
   static const teacherSections = '/teacher-sections';
   static const teacherStudents = '/teacher-students-page';
   static const teacherSubjectOverview = '/teacher-subject-overview';
+  static const teacherBooks = '/teacher-assigned-books';
 
   // utilities
   static const announcement = '/announcement';
@@ -196,10 +198,26 @@ class AppPages {
       name: AppRoutes.announcement,
       page: () => const AnnouncementsPage(),
     ),
-    GetPage(name: AppRoutes.teacherSubjects, page: () => const TeacherSubjectClasses(sectionName: '',)),
-    GetPage(name: AppRoutes.teacherSections, page: () => const TeacherSectionsPage()),
-    GetPage(name: AppRoutes.teacherStudents, page: () => const TeacherStudentPage()),
-    GetPage(name: AppRoutes.teacherSubjectOverview, page: () => const TeacherSubjectOverview()),
+    GetPage(
+      name: AppRoutes.teacherSubjects,
+      page: () => const TeacherSubjectClasses(sectionName: ''),
+    ),
+    GetPage(
+      name: AppRoutes.teacherSections,
+      page: () => const TeacherSectionsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherStudents,
+      page: () => const TeacherStudentPage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherSubjectOverview,
+      page: () => const TeacherSubjectOverview(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherBooks,
+      page: () => const AssignedBooksPage(),
+    ),
     GetPage(
       name: AppRoutes.teacherShell,
       page: () {

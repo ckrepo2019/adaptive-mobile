@@ -180,7 +180,9 @@ class TeacherSubjectOverview extends StatelessWidget {
                   QuickActionTile(
                     iconAsset: 'assets/images/student-home/classes-quickactions.png',
                     label: 'Learning Materials',
-                    onTap: () {},
+                    onTap: () {
+                      Get.toNamed(AppRoutes.teacherBooks);
+                    },
                   ),
                   QuickActionTile(
                     iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
