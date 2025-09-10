@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NavigationUtils {

@@ -1,8 +1,8 @@
 // lib/widgets/content_node_tile.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/models/node.dart';
-import 'package:flutter_lms/widgets/gradient_cta_button.dart';
+import 'package:Adaptive/models/node.dart';
+import 'package:Adaptive/widgets/gradient_cta_button.dart';
 
 class ContentNodeTile extends StatefulWidget {
   final Node node;

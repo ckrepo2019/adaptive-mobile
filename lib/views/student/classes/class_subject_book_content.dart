@@ -3,23 +3,23 @@ import 'dart:io';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
 import 'dart:typed_data';
 
-import 'package:flutter_lms/controllers/student/student_subject.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
-import 'package:flutter_lms/utils/retry.dart';
-import 'package:flutter_lms/utils/casting.dart';
-import 'package:flutter_lms/parsers/node_parsers.dart';
-import 'package:flutter_lms/models/node.dart';
+import 'package:Adaptive/controllers/student/student_subject.dart';
+import 'package:Adaptive/controllers/api_response.dart';
+import 'package:Adaptive/utils/retry.dart';
+import 'package:Adaptive/utils/casting.dart';
+import 'package:Adaptive/parsers/node_parsers.dart';
+import 'package:Adaptive/models/node.dart';
 
 import 'package:flutter_html/flutter_html.dart';
 
 import 'package:pdfx/pdfx.dart';
 
-import 'package:flutter_lms/config/constants.dart';
+import 'package:Adaptive/config/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PanelController extends ChangeNotifier {

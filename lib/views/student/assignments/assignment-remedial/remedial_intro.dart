@@ -1,9 +1,13 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class RemedialIntroPage extends StatelessWidget {
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/controllers/student/student_remedial.dart';
+import 'package:Adaptive/controllers/api_response.dart';
+
+class RemedialIntroPage extends StatefulWidget {
   const RemedialIntroPage({
     super.key,
     this.onContinue,
@@ -15,15 +19,82 @@ class RemedialIntroPage extends StatelessWidget {
   final String learnerLabel;
   final String imageAsset;
 
+  @override
+  State<RemedialIntroPage> createState() => _RemedialIntroPageState();
+}
+
+class _RemedialIntroPageState extends State<RemedialIntroPage> {
+  bool _didFetch = false;
+  bool _loading = false;
+  String? _error;
+  String? _debugJson;
+  String _learnerPillLabel = '';
+  int? _teacherAssessmentID;
+  int? _assessmentId;
+  Map<String, dynamic>? _masteryData;
+
+  @override
+  void initState() {
+    super.initState();
+    _learnerPillLabel = widget.learnerLabel;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_didFetch) return;
+    _didFetch = true;
+    _loadMasteryFromRoute();
+  }
+
   double _clamp(num v, num min, num max) =>
       v < min ? min.toDouble() : (v > max ? max.toDouble() : v.toDouble());
 
-  @override
-  Widget build(BuildContext context) {
-    final mq = MediaQuery.of(context);
-    final w = mq.size.width;
-    final h = mq.size.height;
+  int? _asInt(dynamic v) {
+    if (v == null) return null;
+    if (v is int) return v;
+    if (v is num) return v.toInt();
+    return int.tryParse(v.toString());
+  }
 
+  int? _firstTeacherAssessmentIdFromDetails(Map<String, dynamic>? details) {
+    if (details == null) return null;
+    final d = Map<String, dynamic>.from(details);
+    final direct = _asInt(
+      d['id'] ??
+          d['teacherAssessmentID'] ??
+          d['teacherAssessmentId'] ??
+          d['teacher_assessment_id'],
+    );
+    if (direct != null && direct > 0) return direct;
+    final act = d['teacher_assessment_activation'];
+    if (act is List && act.isNotEmpty) {
+      final first = act.first;
+      if (first is Map) {
+        final v = _asInt(
+          first['teacherAssessmentID'] ??
+              first['teacherAssessmentId'] ??
+              first['teacher_assessment_id'],
+        );
+        if (v != null && v > 0) return v;
+      }
+    }
+    final sel = d['teacher_assessment_selection'];
+    if (sel is List && sel.isNotEmpty) {
+      final first = sel.first;
+      if (first is Map) {
+        final v = _asInt(
+          first['teacherAssessmentID'] ??
+              first['teacherAssessmentId'] ??
+              first['teacher_assessment_id'],
+        );
+        if (v != null && v > 0) return v;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _loadMasteryFromRoute() async {
     final routeArgs = ModalRoute.of(context)?.settings.arguments;
     final Map<String, dynamic>? args = (routeArgs is Map)
         ? Map<String, dynamic>.from(routeArgs)
@@ -33,26 +104,98 @@ class RemedialIntroPage extends StatelessWidget {
         ? Map<String, dynamic>.from(args!['assessment'])
         : null;
 
-    String derivedLearner = learnerLabel;
-    try {
-      final sp = assessment?['studentprofile'];
-      if (sp is Map) {
-        final lp = sp['learners_profile'];
-        if (lp is List && lp.isNotEmpty && lp.first is Map) {
-          final name = lp.first['learners_type_name'];
+    final Map<String, dynamic>? details =
+        (assessment?['assessment_details'] is Map)
+        ? Map<String, dynamic>.from(assessment!['assessment_details'])
+        : null;
+
+    int? teacherAssessmentID = _asInt(
+      args?['teacherAssessmentID'] ??
+          args?['teacherAssessmentId'] ??
+          args?['teacher_assessment_id'],
+    );
+    teacherAssessmentID ??= _firstTeacherAssessmentIdFromDetails(details);
+    teacherAssessmentID ??= _asInt(
+      assessment?['id'] ??
+          assessment?['teacherAssessmentID'] ??
+          assessment?['teacherAssessmentId'] ??
+          assessment?['teacher_assessment_id'],
+    );
+
+    int? assessmentId = _asInt(args?['assessmentId'] ?? args?['assessmentID']);
+    assessmentId ??= _asInt(
+      details?['assessmentID'] ?? details?['assessmentId'],
+    );
+    assessmentId ??= _asInt(
+      assessment?['assessmentID'] ?? assessment?['assessmentId'],
+    );
+
+    _teacherAssessmentID = teacherAssessmentID;
+    _assessmentId = assessmentId;
+
+    if (_teacherAssessmentID == null || _teacherAssessmentID! <= 0) {
+      setState(() => _error = 'Missing teacherAssessmentID in route args.');
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    final ApiResponse<Map<String, dynamic>> res =
+        await StudentRemedialController.fetchRemedialMastery(
+          teacherAssessmentID: _teacherAssessmentID!,
+        );
+
+    if (!mounted) return;
+
+    if (res.success) {
+      _masteryData = res.data ?? {};
+      try {
+        final pretty = const JsonEncoder.withIndent('  ').convert(res.data);
+        _debugJson = pretty;
+      } catch (_) {
+        _debugJson = jsonEncode(res.data ?? {});
+      }
+
+      String? pill;
+      final lp = res.data?['learners_profile'];
+      if (lp is List && lp.isNotEmpty) {
+        final first = lp.first;
+        if (first is Map) {
+          final name = first['learners_type_name'];
           if (name is String && name.trim().isNotEmpty) {
-            derivedLearner = '${name.trim()} Learner';
+            pill = '${name.trim()} Learner';
           }
         }
       }
-    } catch (_) {}
+
+      setState(() {
+        _loading = false;
+        if (pill != null) _learnerPillLabel = pill;
+      });
+    } else {
+      setState(() {
+        _loading = false;
+        _error = res.message ?? 'Failed to fetch mastery.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final w = mq.size.width;
+    final h = mq.size.height;
 
     final titleSize = _clamp(w * 0.050, 25, 25);
     final pillPaddingH = _clamp(w * 0.06, 18, 26);
     final pillHeight = _clamp(h * 0.055, 38, 46);
     final sidePad = _clamp(w * 0.08, 20, 28);
-
     final titleTop = _clamp(h * 0.15, 104, 170);
+
+    final derivedLearner = _learnerPillLabel;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -84,7 +227,7 @@ class RemedialIntroPage extends StatelessWidget {
                         minHeight: _clamp(h * 1.65, 900, 1800),
                         maxHeight: _clamp(h * 1.65, 900, 1800),
                         child: Image.asset(
-                          imageAsset,
+                          widget.imageAsset,
                           fit: BoxFit.contain,
                           alignment: Alignment.bottomCenter,
                         ),
@@ -92,7 +235,6 @@ class RemedialIntroPage extends StatelessWidget {
                     ),
                   ),
                 ),
-
                 Positioned(
                   left: sidePad,
                   right: sidePad,
@@ -161,7 +303,6 @@ class RemedialIntroPage extends StatelessWidget {
                     ],
                   ),
                 ),
-
                 Positioned(
                   left: sidePad,
                   right: sidePad,
@@ -175,13 +316,24 @@ class RemedialIntroPage extends StatelessWidget {
                         child: Material(
                           color: Colors.white,
                           child: InkWell(
-                            onTap: () {
-                              Navigator.of(context).pushNamedAndRemoveUntil(
-                                AppRoutes.remedialQuiz,
-                                (route) => false,
-                                arguments: {},
-                              );
-                            },
+                            onTap:
+                                (_teacherAssessmentID == null ||
+                                    _masteryData == null)
+                                ? null
+                                : () {
+                                    Navigator.of(
+                                      context,
+                                    ).pushNamedAndRemoveUntil(
+                                      AppRoutes.remedialQuiz,
+                                      (route) => false,
+                                      arguments: {
+                                        'teacherAssessmentID':
+                                            _teacherAssessmentID,
+                                        'assessmentId': _assessmentId,
+                                        'mastery': _masteryData,
+                                      },
+                                    );
+                                  },
                             child: Center(
                               child: Text(
                                 'Continue',
@@ -198,6 +350,72 @@ class RemedialIntroPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                if (_loading)
+                  const Positioned(
+                    left: 16,
+                    top: 12,
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                if (_error != null)
+                  Positioned(
+                    left: 16,
+                    right: 16,
+                    top: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _error!,
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (_debugJson != null)
+                  Positioned(
+                    left: 12,
+                    right: 12,
+                    bottom: _clamp(h * 0.12, 80, 140),
+                    child: Opacity(
+                      opacity: 0.85,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: BoxConstraints(
+                          maxHeight: _clamp(h * 0.25, 120, 220),
+                        ),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            _debugJson!,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              height: 1.2,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

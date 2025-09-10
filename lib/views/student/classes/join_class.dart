@@ -1,10 +1,10 @@
 // lib/views/student/classes/join_class.dart
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
-import 'package:flutter_lms/controllers/student/student_class.dart';
+import 'package:Adaptive/config/constants.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/controllers/api_response.dart';
+import 'package:Adaptive/controllers/student/student_class.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 

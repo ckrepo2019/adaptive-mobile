@@ -1,4 +1,4 @@
-import 'package:flutter_lms/widgets/base_widgets.dart';
+import 'package:Adaptive/widgets/base_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -8,8 +8,8 @@ class CustomChip extends BaseWidget {
   final Color textColor;
   final Color borderColor;
   final String chipTitle;
-  final IconData? iconData;       // For Material Icons
-  final IconData? faIconData;     // For FontAwesome Icons
+  final IconData? iconData;
+  final IconData? faIconData;
 
   const CustomChip({
     super.key,
@@ -34,17 +34,9 @@ class CustomChip extends BaseWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (iconData != null)
-            Icon(
-              iconData,
-              size: 14,
-              color: textColor,
-            )
+            Icon(iconData, size: 14, color: textColor)
           else if (faIconData != null)
-            FaIcon(
-              faIconData,
-              size: 14,
-              color: textColor,
-            ),
+            FaIcon(faIconData, size: 14, color: textColor),
           if (iconData != null || faIconData != null) const SizedBox(width: 6),
           Text(
             chipTitle,

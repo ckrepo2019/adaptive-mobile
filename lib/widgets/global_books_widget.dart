@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/widgets/base_widgets.dart';
-import 'package:flutter_lms/utils/dominant_color_utils.dart';
-import 'package:flutter_lms/utils/palette_utils.dart';
-import 'package:flutter_lms/config/constants.dart'; // <-- add this
+import 'package:Adaptive/widgets/base_widgets.dart';
+import 'package:Adaptive/utils/dominant_color_utils.dart';
+import 'package:Adaptive/utils/palette_utils.dart';
+import 'package:Adaptive/config/constants.dart'; // <-- add this
 
 class GlobalBooksWidget extends BaseWidget {
   final String subject;

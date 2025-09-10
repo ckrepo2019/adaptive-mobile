@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_books_widget.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
-import 'package:flutter_lms/widgets/global_subject_widget.dart';
+import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/global_books_widget.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
+import 'package:Adaptive/widgets/global_subject_widget.dart';
 
 class AssignedBooksPage extends StatelessWidget {
   const AssignedBooksPage({super.key});

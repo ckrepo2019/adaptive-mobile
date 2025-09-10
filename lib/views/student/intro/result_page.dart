@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/views/base_view.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/views/base_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_lms/controllers/student/student_home.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:Adaptive/controllers/student/student_home.dart';
+import 'package:Adaptive/controllers/api_response.dart';
 
 class ResultLeanerPage extends BaseView {
   const ResultLeanerPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/widgets/global_basic_information_widget.dart';
-// import 'package:flutter_lms/widgets/app_bar.dart'; // If you want to swap in your GlobalAppBar
+import 'package:Adaptive/widgets/global_basic_information_widget.dart';
+// import 'package:Adaptive/widgets/app_bar.dart'; // If you want to swap in your GlobalAppBar
 
 class BookDetailsPage extends StatelessWidget {
   const BookDetailsPage({

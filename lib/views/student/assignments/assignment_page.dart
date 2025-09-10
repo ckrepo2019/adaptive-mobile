@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/student_global_layout.dart';
-import 'package:flutter_lms/widgets/cards_list.dart';
-import 'package:flutter_lms/widgets/skeleton_loader.dart';
+import 'package:Adaptive/views/student/student_global_layout.dart';
+import 'package:Adaptive/widgets/cards_list.dart';
+import 'package:Adaptive/widgets/skeleton_loader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
-import 'package:flutter_lms/controllers/student/student_home.dart';
+import 'package:Adaptive/config/constants.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/controllers/api_response.dart';
+import 'package:Adaptive/controllers/student/student_home.dart';
 
-import 'package:flutter_lms/models/items.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:Adaptive/models/items.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
 
 class StudentAssignmentPage extends StatefulWidget {
   final String? token;

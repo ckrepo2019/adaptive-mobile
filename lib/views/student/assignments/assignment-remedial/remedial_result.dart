@@ -1,6 +1,6 @@
 // lib/views/student/quizzes/remedial_quiz_result.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class RemedialQuizResultPage extends StatelessWidget {

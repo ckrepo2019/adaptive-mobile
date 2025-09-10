@@ -1,7 +1,7 @@
 // lib/widgets/top_level_expansion.dart
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/widgets/gradient_cta_button.dart';
+import 'package:Adaptive/widgets/gradient_cta_button.dart';
 
 class TopLevelExpansion extends StatefulWidget {
   final String title;

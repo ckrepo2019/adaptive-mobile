@@ -1,5 +1,5 @@
 // lib/models/parent_state.dart
-import 'package:flutter_lms/models/node.dart';
+import 'package:Adaptive/models/node.dart';
 
 class ParentState {
   bool loading;

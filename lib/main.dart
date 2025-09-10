@@ -1,18 +1,11 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_lms/views/components/schedule_page.dart';
-import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
-import 'package:flutter_lms/views/teacher/attendance/attendance_page.dart';
-import 'package:flutter_lms/views/teacher/books-assigned/assigned_books_page.dart';
-import 'package:flutter_lms/views/teacher/books-assigned/book_details.dart';
-import 'package:flutter_lms/views/teacher/learning-materials/learning_materials_page.dart';
-import 'package:flutter_lms/views/teacher/my_classes_page.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config/routes.dart';
-import 'package:flutter_lms/state/bindings/student/student_home_bindings.dart';
+import 'package:Adaptive/state/bindings/student/student_home_bindings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -83,8 +76,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         useMaterial3: true,
       ),
       initialBinding: StudentHomeBindings(),
-      // home: const _LaunchGate(),
-      home: const MyClassroomsPage(),
+      home: const _LaunchGate(),
+      // home: const SubjectOverview(),
       getPages: AppPages.pages,
     );
   }
@@ -113,7 +106,12 @@ class _LaunchGateState extends State<_LaunchGate> {
     final id = prefs.getInt('id');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (token != null && uid != null && userType != null) {
+      // Only try auto-login if all required credentials are present
+      if (token != null &&
+          uid != null &&
+          userType != null &&
+          token.isNotEmpty &&
+          uid.isNotEmpty) {
         Get.offAllNamed(
           AppRoutes.getUser,
           arguments: {
@@ -124,6 +122,11 @@ class _LaunchGateState extends State<_LaunchGate> {
           },
         );
       } else {
+        // Clear any invalid stored credentials and go to sign in
+        prefs.remove('token');
+        prefs.remove('uid');
+        prefs.remove('usertype_ID');
+        prefs.remove('id');
         Get.offAllNamed(AppRoutes.signIn);
       }
       _goImmersive();

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/base_view.dart';
+import 'package:Adaptive/views/base_view.dart';
 
 class SplashPage extends BaseView {
   const SplashPage({super.key});

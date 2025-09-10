@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/controllers/get_user.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/controllers/get_user.dart';
+import 'package:Adaptive/controllers/api_response.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GetUserPage extends StatefulWidget {
   const GetUserPage({super.key});
@@ -89,6 +90,20 @@ class _GetUserPageState extends State<GetUserPage> {
         _loading = false;
         _error = resp.message ?? 'Failed to fetch user.';
       });
+
+      // If authentication failed, clear stored credentials and go to sign in
+      if (resp.message?.toLowerCase().contains('unauthenticated') == true ||
+          resp.message?.toLowerCase().contains('unauthorized') == true) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('token');
+        await prefs.remove('uid');
+        await prefs.remove('usertype_ID');
+        await prefs.remove('id');
+
+        if (mounted) {
+          Get.offAllNamed(AppRoutes.signIn);
+        }
+      }
     }
   }
 
