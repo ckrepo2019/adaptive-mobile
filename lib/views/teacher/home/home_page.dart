@@ -1,3 +1,5 @@
+import 'package:Adaptive/views/student/profile/student_profile.dart';
+import 'package:Adaptive/views/teacher/notifications/teacher_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:Adaptive/config/routes.dart';
 import 'package:Adaptive/controllers/get_user.dart';
@@ -90,8 +92,13 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Scaffold(
-        appBar: GlobalAppBar(title: 'Home'),
+      return Scaffold(
+        appBar: GlobalAppBar(
+          title: 'Home',
+          onProfileTap: () {
+            Get.toNamed(AppRoutes.profilePage);
+          },
+        ),
         body: Center(child: CircularProgressIndicator()),
       );
     }
@@ -163,24 +170,30 @@ class _TeacherHomePageState extends State<TeacherHomePage> {
                   childAspectRatio: 1.5,
                   children: [
                     QuickActionTile(
-                      iconAsset: 'assets/images/student-home/classes-quickactions.png',
+                      iconAsset:
+                          'assets/images/student-home/classes-quickactions.png',
                       label: 'My Classes',
                       onTap: () => Get.toNamed(AppRoutes.teacherSections),
                     ),
                     QuickActionTile(
-                      iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                      iconAsset:
+                          'assets/images/student-home/leaderboards-quickactions.png',
                       label: 'Announcements',
                       onTap: () => Get.toNamed(AppRoutes.announcement),
                     ),
                     QuickActionTile(
-                      iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                      iconAsset:
+                          'assets/images/student-home/leaderboards-quickactions.png',
                       label: 'Leaderboards',
                       onTap: () {},
                     ),
                     QuickActionTile(
-                      iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                      iconAsset:
+                          'assets/images/student-home/leaderboards-quickactions.png',
                       label: 'Profile',
-                      onTap: () {},
+                      onTap: () {
+                        Get.toNamed(AppRoutes.profilePage);
+                      },
                     ),
                   ],
                 ),

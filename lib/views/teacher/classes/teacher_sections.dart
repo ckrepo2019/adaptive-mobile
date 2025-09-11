@@ -5,7 +5,7 @@ import 'package:Adaptive/widgets/app_bar.dart';
 import 'package:Adaptive/widgets/global_subject_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'subject_classes.dart'; // 👈 import your subject classes page
+import 'subject_classes.dart';
 
 class TeacherSectionsPage extends StatefulWidget {
   const TeacherSectionsPage({super.key});
@@ -31,13 +31,10 @@ class _TeacherSectionsPageState extends State<TeacherSectionsPage> {
       _error = null;
     });
 
-    print('🔍 Fetching sections from API...');
     final resp = await TeacherSectionsController.fetchSections();
-
     if (!mounted) return;
 
     if (!resp.success) {
-      print('❌ Failed: ${resp.message}');
       setState(() {
         _error = resp.message ?? 'Failed to load sections.';
         _loading = false;
@@ -49,12 +46,6 @@ class _TeacherSectionsPageState extends State<TeacherSectionsPage> {
         .whereType<Map>()
         .map((e) => e.map((k, v) => MapEntry(k.toString(), v)))
         .toList();
-
-    print('📊 sections length: ${rawSections.length}');
-    for (final s in rawSections) {
-      print(
-          '• section=${s['section_name']} | level=${s['level_name']} | sy=${s['sy_name']} | subjects=${s['subjects_count']}');
-    }
 
     setState(() {
       _sections = rawSections;
@@ -70,30 +61,20 @@ class _TeacherSectionsPageState extends State<TeacherSectionsPage> {
       body = const Center(child: CircularProgressIndicator());
     } else if (_error != null) {
       body = Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(_error!, textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: _loadSections,
-                child: const Text('Retry'),
-              ),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(_error!, textAlign: TextAlign.center),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _loadSections, child: const Text('Retry'))
+          ],
         ),
       );
     } else if (_sections.isEmpty) {
       body = Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            'No sections found.',
-            style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
-            textAlign: TextAlign.center,
-          ),
+        child: Text(
+          'No sections found.',
+          style: GoogleFonts.poppins(fontSize: 16, color: Colors.grey[700]),
         ),
       );
     } else {
@@ -103,10 +84,8 @@ class _TeacherSectionsPageState extends State<TeacherSectionsPage> {
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final s = _sections[index];
-
           final sectionId = s['id'] as int?;
-          final sectionName =
-              (s['section_name'] ?? 'Unnamed Section').toString();
+          final sectionName = (s['section_name'] ?? 'Unnamed').toString();
           final levelName = (s['level_name'] ?? '—').toString();
           final syName = (s['sy_name'] ?? '').toString();
           final subjectsCount = (s['subjects_count'] ?? 0).toString();
@@ -114,13 +93,12 @@ class _TeacherSectionsPageState extends State<TeacherSectionsPage> {
 
           return InkWell(
             onTap: () {
-              // 👇 navigate to subject classes and pass section info
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (_) => TeacherSubjectClasses(
                     sectionName: sectionName,
-                    sectionId: sectionId,
+                    sectionId: sectionId, // ✅ Pass sectionId here
                   ),
                 ),
               );
@@ -140,10 +118,7 @@ class _TeacherSectionsPageState extends State<TeacherSectionsPage> {
     return Scaffold(
       appBar: GlobalAppBar(title: 'My Sections', showBack: true),
       body: TeacherGlobalLayout(
-        child: RefreshIndicator(
-          onRefresh: _loadSections,
-          child: body,
-        ),
+        child: RefreshIndicator(onRefresh: _loadSections, child: body),
       ),
     );
   }

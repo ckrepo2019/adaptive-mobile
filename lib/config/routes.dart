@@ -1,6 +1,8 @@
 import 'package:Adaptive/views/collab/home_page.dart';
 import 'package:Adaptive/views/components/announcements.dart';
+import 'package:Adaptive/views/components/information_page.dart';
 import 'package:Adaptive/views/components/leaderboard_page.dart';
+import 'package:Adaptive/views/teacher/add-student/add_student_page.dart';
 import 'package:Adaptive/views/teacher/attendance/attendance_page.dart';
 import 'package:Adaptive/views/teacher/books-assigned/assigned_books_page.dart';
 import 'package:Adaptive/views/student/assignments/achievement-top.dart';
@@ -27,6 +29,7 @@ import 'package:Adaptive/views/student/student_shell.dart';
 import 'package:Adaptive/views/teacher/add-student/teacher_student_page.dart';
 import 'package:Adaptive/views/teacher/classes/subject_classes.dart';
 import 'package:Adaptive/views/teacher/classes/subject_overview.dart';
+import 'package:Adaptive/views/teacher/classes/teacher_add_student_success.dart';
 import 'package:Adaptive/views/teacher/classes/teacher_sections.dart';
 import 'package:Adaptive/views/teacher/teacher_shell.dart';
 import 'package:get/get.dart';
@@ -85,6 +88,9 @@ class AppRoutes {
   static const teacherBooks = '/teacher-assigned-books';
   static const teacherAttendance = '/attendance-page';
   static const teacherLeaderboards = '/leaderboards-page';
+  static const announcementInformation = '/announcement-information';
+  static const addStudent = '/add-student-page';
+  static const teacherAddStudentSuccess = '/teacher-add-success';
 
   // utilities
   static const announcement = '/announcement';
@@ -230,6 +236,12 @@ class AppPages {
       name: AppRoutes.teacherLeaderboards,
       page: () => const LeaderboardPage(),
     ),
+    GetPage(
+      name: AppRoutes.announcementInformation,
+      page: () => const InformationPage(),
+    ),
+    GetPage(name: AppRoutes.addStudent, page: () => const AddStudentPage()),
+    GetPage(name: AppRoutes.teacherAddStudentSuccess, page: () => const TeacherAddStudentSuccess()),
     GetPage(
       name: AppRoutes.teacherShell,
       page: () {

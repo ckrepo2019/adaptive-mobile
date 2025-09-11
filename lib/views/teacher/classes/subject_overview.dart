@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:Adaptive/config/routes.dart';
 import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
 import 'package:Adaptive/widgets/app_bar.dart';
@@ -6,6 +5,7 @@ import 'package:Adaptive/widgets/class_progress_card.dart';
 import 'package:Adaptive/widgets/global_chip.dart';
 import 'package:Adaptive/views/student/home/quick_actions.dart';
 import 'package:get/get.dart';
+import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:Adaptive/widgets/ui_widgets.dart';
 
@@ -15,24 +15,26 @@ class TeacherSubjectOverview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final args = Get.arguments is Map ? (Get.arguments as Map) : const {};
+
     final subjectId = args['subjectId'] as int?;
-    final subjectName = (args['subject_name'] ?? 'Subject Overview').toString();
+    final subjectName = (args['subjectName'] ?? args['subject_name'] ?? 'Subject Overview').toString();
     final subjectCode = (args['subjectCode'] ?? '—').toString();
     final sectionName = (args['sectionName'] ?? '—').toString();
     final levelName = (args['levelName'] ?? '—').toString();
     final teacherFullname = (args['teacherFullname'] ?? 'TBA').toString();
     final imageUrl = args['image']?.toString();
+    final sectionId = args['sectionId']; // ✅ Extract sectionId
 
     print(
       '📄 SubjectOverview args => '
       'id=$subjectId, name=$subjectName, code=$subjectCode, section=$sectionName, '
-      'level=$levelName, teacher=$teacherFullname, image=$imageUrl',
+      'level=$levelName, teacher=$teacherFullname, image=$imageUrl, sectionId=$sectionId',
     );
 
     return Scaffold(
       appBar: GlobalAppBar(
         title: 'Subject Overview',
-        subtitle: subjectName, // ✅ subtitle uses the tapped subject name
+        subtitle: subjectName,
         showBack: true,
         showProfile: false,
         showNotifications: false,
@@ -155,7 +157,6 @@ class TeacherSubjectOverview extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Quick Actions header
               Row(
                 children: [
                   const Icon(Icons.open_in_new),
@@ -180,16 +181,14 @@ class TeacherSubjectOverview extends StatelessWidget {
                 childAspectRatio: 1.5,
                 children: [
                   QuickActionTile(
-                    iconAsset:
-                        'assets/images/student-home/classes-quickactions.png',
+                    iconAsset: 'assets/images/student-home/classes-quickactions.png',
                     label: 'Learning Materials',
                     onTap: () {
                       Get.toNamed(AppRoutes.teacherBooks);
                     },
                   ),
                   QuickActionTile(
-                    iconAsset:
-                        'assets/images/student-home/leaderboards-quickactions.png',
+                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
                     label: 'Leaderboards',
                     onTap: () {
                       Get.toNamed(AppRoutes.teacherLeaderboards);
@@ -202,15 +201,15 @@ class TeacherSubjectOverview extends StatelessWidget {
                       Get.toNamed(
                         AppRoutes.teacherAttendance,
                         arguments: {
-                          'subjectId': subjectId,   // Pass subjectId
+                          'subjectId': subjectId,
                           'subjectName': subjectName,
+                          'sectionId': sectionId, // ✅ Pass sectionId here
                         },
                       );
                     },
                   ),
                   QuickActionTile(
-                    iconAsset:
-                        'assets/images/student-home/leaderboards-quickactions.png',
+                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
                     label: 'Students',
                     onTap: () {
                       Get.toNamed(
@@ -219,6 +218,7 @@ class TeacherSubjectOverview extends StatelessWidget {
                           'subjectId': subjectId,
                           'subjectName': subjectName,
                           'sectionName': sectionName,
+                          'sectionId': sectionId, // ✅ Pass sectionId here
                         },
                       );
                     },

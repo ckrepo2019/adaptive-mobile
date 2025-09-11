@@ -1,3 +1,4 @@
+import 'package:Adaptive/config/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:Adaptive/config/constants.dart';
 import 'package:Adaptive/controllers/api_response.dart';
@@ -138,12 +139,12 @@ class _TeacherStudentPageState extends State<TeacherStudentPage> {
                 ),
               ),
               onPressed: () {
-                // Get.toNamed(AppRoutes.addStudentPage, arguments: {
-                //   'subjectId': _subjectId,
-                //   'subject_name': _subjectName,
-                //   'sectionId': _sectionId,
-                //   'section_name': _sectionName,
-                // });
+                Get.toNamed(AppRoutes.addStudent, arguments: {
+                  'subjectId': _subjectId,
+                  'subject_name': _subjectName,
+                  'sectionId': _sectionId,
+                  'section_name': _sectionName,
+                });
               },
               child: const Text(
                 'Add Student',
