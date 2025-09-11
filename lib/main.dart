@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'config/routes.dart';
-import 'package:flutter_lms/state/bindings/student/student_home_bindings.dart';
+import 'package:Adaptive/state/bindings/student/student_home_bindings.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -107,7 +107,12 @@ class _LaunchGateState extends State<_LaunchGate> {
     final id = prefs.getInt('id');
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (token != null && uid != null && userType != null) {
+      // Only try auto-login if all required credentials are present
+      if (token != null &&
+          uid != null &&
+          userType != null &&
+          token.isNotEmpty &&
+          uid.isNotEmpty) {
         Get.offAllNamed(
           AppRoutes.getUser,
           arguments: {
@@ -118,6 +123,11 @@ class _LaunchGateState extends State<_LaunchGate> {
           },
         );
       } else {
+        // Clear any invalid stored credentials and go to sign in
+        prefs.remove('token');
+        prefs.remove('uid');
+        prefs.remove('usertype_ID');
+        prefs.remove('id');
         Get.offAllNamed(AppRoutes.signIn);
       }
       _goImmersive();

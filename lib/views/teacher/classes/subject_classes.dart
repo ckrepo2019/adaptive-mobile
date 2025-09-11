@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/controllers/teacher/teacher_class_subjects.dart';
-import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_subject_widget.dart';
+import 'package:Adaptive/controllers/teacher/teacher_class_subjects.dart';
+import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/global_subject_widget.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:get/get.dart';
 
-import 'package:flutter_lms/utils/schedule_utils.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/utils/schedule_utils.dart';
+import 'package:Adaptive/config/routes.dart';
 
 class TeacherSubjectClasses extends StatefulWidget {
   final String sectionName;

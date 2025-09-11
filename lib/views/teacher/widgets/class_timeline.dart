@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/widgets/ui_widgets.dart';
+import 'package:Adaptive/config/constants.dart';
+import 'package:Adaptive/widgets/ui_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ClassTimeline extends StatelessWidget {

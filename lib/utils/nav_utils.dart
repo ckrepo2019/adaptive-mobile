@@ -1,6 +1,6 @@
 // lib/utils/nav_utils.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 
 /// Navigation helpers shared across student pages.
 class NavUtils {

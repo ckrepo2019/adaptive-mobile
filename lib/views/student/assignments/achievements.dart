@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 
 class AchievementsPage extends StatelessWidget {
   const AchievementsPage({

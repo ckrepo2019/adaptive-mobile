@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/student_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/cards_list.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
-import 'package:flutter_lms/widgets/skeleton_loader.dart';
-import 'package:flutter_lms/models/items.dart';
+import 'package:Adaptive/views/student/student_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/cards_list.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
+import 'package:Adaptive/widgets/skeleton_loader.dart';
+import 'package:Adaptive/models/items.dart';
 
 class StudentNotificationPage extends StatefulWidget {
   const StudentNotificationPage({super.key});

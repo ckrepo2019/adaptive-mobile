@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/assignments/assignment_page.dart';
-import 'package:flutter_lms/views/student/classes/classes_page.dart';
-import 'package:flutter_lms/views/student/home/home_page.dart';
-import 'package:flutter_lms/views/student/notification/student_notification.dart';
-import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
-import 'package:flutter_lms/views/student/widgets/fancy_student_navbar.dart';
+import 'package:Adaptive/views/student/assignments/assignment_page.dart';
+import 'package:Adaptive/views/student/classes/classes_page.dart';
+import 'package:Adaptive/views/student/home/home_page.dart';
+import 'package:Adaptive/views/student/notification/student_notification.dart';
+import 'package:Adaptive/views/student/tabs/student_tabs.dart';
+import 'package:Adaptive/views/student/widgets/fancy_student_navbar.dart';
 
 class StudentShell extends StatefulWidget {
   final String token;

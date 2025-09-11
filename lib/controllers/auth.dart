@@ -47,4 +47,34 @@ class AuthController {
       return ApiResponse(success: false, message: 'Network error: $e');
     }
   }
+
+  // 🔹 Logout function
+  static Future<ApiResponse<void>> logout({required String token}) async {
+    final uri = Uri.parse('${AppConstants.baseURL}/logout');
+
+    try {
+      final res = await http.post(
+        uri,
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      final body = jsonDecode(res.body);
+
+      if (res.statusCode == 200 && body['success'] == true) {
+        return ApiResponse(success: true, message: body['message']);
+      }
+
+      return ApiResponse(
+        success: false,
+        message: body is Map && body['message'] != null
+            ? body['message'].toString()
+            : 'Logout failed (${res.statusCode})',
+      );
+    } catch (e) {
+      return ApiResponse(success: false, message: 'Network error: $e');
+    }
+  }
 }

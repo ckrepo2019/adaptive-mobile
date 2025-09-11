@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
-import 'package:flutter_lms/controllers/student/student_home.dart';
-import 'package:flutter_lms/views/student/home/quick_actions.dart';
-import 'package:flutter_lms/views/student/student_global_layout.dart';
-import 'package:flutter_lms/views/student/tabs/student_tabs.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/cards_list.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
-import 'package:flutter_lms/widgets/skeleton_loader.dart';
+import 'package:Adaptive/config/routes.dart';
+import 'package:Adaptive/controllers/api_response.dart';
+import 'package:Adaptive/controllers/student/student_home.dart';
+import 'package:Adaptive/views/student/home/quick_actions.dart';
+import 'package:Adaptive/views/student/student_global_layout.dart';
+import 'package:Adaptive/views/student/tabs/student_tabs.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/cards_list.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
+import 'package:Adaptive/widgets/skeleton_loader.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/models/items.dart';
+import 'package:Adaptive/config/constants.dart';
+import 'package:Adaptive/models/items.dart';
 
 class StudentHomePage extends StatefulWidget {
   final String token;
@@ -519,13 +519,25 @@ class _StudentHomePageState extends State<StudentHomePage> {
         title: 'Home',
         onNotificationsTap: () => StudentTabs.of(context).setIndex(3),
         onProfileTap: () {
-          final s = _data?['student'];
-          if (s is Map && s.isNotEmpty) {
+          if (_data != null && _data!.isNotEmpty) {
+            // Pass the whole payload under "data"
             Navigator.pushNamed(
               context,
               AppRoutes.profilePage,
-              arguments: {'student': s},
+              arguments: {'data': _data},
             );
+          } else {
+            // Fallback: pass just student if available
+            final s = _data?['student'];
+            if (s is Map && s.isNotEmpty) {
+              Navigator.pushNamed(
+                context,
+                AppRoutes.profilePage,
+                arguments: {
+                  'data': {'student': s},
+                },
+              );
+            }
           }
         },
       ),

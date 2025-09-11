@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/views/student/student_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_announcement_card.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:Adaptive/views/student/student_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/global_announcement_card.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
 
 class AnnouncementsPage extends StatelessWidget {
   const AnnouncementsPage({super.key});

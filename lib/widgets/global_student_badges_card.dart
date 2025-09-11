@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/widgets/ui_widgets.dart';
+import 'package:Adaptive/widgets/ui_widgets.dart';
 
 class BadgesCard extends StatelessWidget {
   final String subject;

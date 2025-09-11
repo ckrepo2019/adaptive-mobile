@@ -33,7 +33,6 @@ class UserController {
 
       if (res.statusCode == 200 && (parsed?['success'] == true)) {
         final data = Map<String, dynamic>.from(parsed!['data'] as Map);
-        print(token);
         return ApiResponse(success: true, data: data);
       }
       if (res.statusCode == 401) {

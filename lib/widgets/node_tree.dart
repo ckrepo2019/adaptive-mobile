@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_lms/models/node.dart';
-import 'package:flutter_lms/widgets/assessment_buttons.dart';
+import 'package:Adaptive/models/node.dart';
+import 'package:Adaptive/widgets/assessment_buttons.dart';
 
 typedef NodeLeadingBuilder = Widget Function(BuildContext context, Node node);
 typedef NodeTitleBuilder = Widget Function(BuildContext context, Node node);

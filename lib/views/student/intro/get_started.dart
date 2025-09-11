@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/routes.dart';
+import 'package:Adaptive/config/routes.dart';
 import 'intro_layout.dart';
 
 class GetStartedPage extends StatefulWidget {
