@@ -141,7 +141,6 @@ class _AssignedBooksPageState extends State<AssignedBooksPage> {
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           itemCount: _books.length,
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {

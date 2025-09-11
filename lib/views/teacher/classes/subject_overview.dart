@@ -196,11 +196,16 @@ class TeacherSubjectOverview extends StatelessWidget {
                     },
                   ),
                   QuickActionTile(
-                    iconAsset:
-                        'assets/images/student-home/leaderboards-quickactions.png',
+                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
                     label: 'Attendance',
                     onTap: () {
-                      Get.toNamed(AppRoutes.teacherAttendance);
+                      Get.toNamed(
+                        AppRoutes.teacherAttendance,
+                        arguments: {
+                          'subjectId': subjectId,   // Pass subjectId
+                          'subjectName': subjectName,
+                        },
+                      );
                     },
                   ),
                   QuickActionTile(
