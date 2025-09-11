@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/controllers/teacher/teacher_book_controller.dart';
-import 'package:flutter_lms/views/teacher/books-assigned/book_details.dart';
+import 'package:Adaptive/config/constants.dart';
+import 'package:Adaptive/controllers/teacher/teacher_book_controller.dart';
+import 'package:Adaptive/views/teacher/books-assigned/book_details.dart';
 import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
 import 'package:Adaptive/widgets/app_bar.dart';
 import 'package:Adaptive/widgets/global_books_widget.dart';

@@ -1,6 +1,8 @@
 import 'package:Adaptive/views/collab/home_page.dart';
 import 'package:Adaptive/views/components/announcements.dart';
-import 'package:flutter_lms/views/components/leaderboard_page.dart';
+import 'package:Adaptive/views/components/leaderboard_page.dart';
+import 'package:Adaptive/views/teacher/attendance/attendance_page.dart';
+import 'package:Adaptive/views/teacher/books-assigned/assigned_books_page.dart';
 import 'package:Adaptive/views/student/assignments/achievement-top.dart';
 import 'package:Adaptive/views/student/assignments/achievement_quiz_streak.dart';
 import 'package:Adaptive/views/student/assignments/achievements.dart';
@@ -23,8 +25,6 @@ import 'package:Adaptive/views/student/classmates/my_classmates.dart';
 import 'package:Adaptive/views/student/profile/student_profile.dart';
 import 'package:Adaptive/views/student/student_shell.dart';
 import 'package:Adaptive/views/teacher/add-student/teacher_student_page.dart';
-import 'package:flutter_lms/views/teacher/attendance/attendance_page.dart';
-import 'package:flutter_lms/views/teacher/books-assigned/assigned_books_page.dart';
 import 'package:Adaptive/views/teacher/classes/subject_classes.dart';
 import 'package:Adaptive/views/teacher/classes/subject_overview.dart';
 import 'package:Adaptive/views/teacher/classes/teacher_sections.dart';

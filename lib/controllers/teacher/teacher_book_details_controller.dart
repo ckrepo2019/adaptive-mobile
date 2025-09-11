@@ -3,8 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter_lms/config/constants.dart';
-import 'package:flutter_lms/controllers/api_response.dart';
+import 'package:Adaptive/config/constants.dart';
+import 'package:Adaptive/controllers/api_response.dart';
 
 class TeacherBookDetailsController {
   /// ✅ Resolve token from SharedPreferences if not provided explicitly

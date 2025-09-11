@@ -1,6 +1,6 @@
+import 'package:Adaptive/controllers/teacher/teacher_book_details_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_lms/controllers/teacher/teacher_book_details_controller.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class BookDetailsPage extends StatefulWidget {

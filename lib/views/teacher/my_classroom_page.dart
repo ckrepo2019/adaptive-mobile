@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
-import 'package:flutter_lms/views/teacher/learning-materials/learning_materials_page.dart';
-import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
-import 'package:flutter_lms/widgets/app_bar.dart';
-import 'package:flutter_lms/widgets/global_chip.dart';
+import 'package:Adaptive/views/teacher/learning-materials/learning_materials_page.dart';
+import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:Adaptive/widgets/global_chip.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class MyClassroomPage extends StatelessWidget {
