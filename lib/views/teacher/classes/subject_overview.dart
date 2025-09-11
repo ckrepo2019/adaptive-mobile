@@ -23,9 +23,11 @@ class TeacherSubjectOverview extends StatelessWidget {
     final teacherFullname = (args['teacherFullname'] ?? 'TBA').toString();
     final imageUrl = args['image']?.toString();
 
-    print('📄 SubjectOverview args => '
-        'id=$subjectId, name=$subjectName, code=$subjectCode, section=$sectionName, '
-        'level=$levelName, teacher=$teacherFullname, image=$imageUrl');
+    print(
+      '📄 SubjectOverview args => '
+      'id=$subjectId, name=$subjectName, code=$subjectCode, section=$sectionName, '
+      'level=$levelName, teacher=$teacherFullname, image=$imageUrl',
+    );
 
     return Scaffold(
       appBar: GlobalAppBar(
@@ -178,24 +180,32 @@ class TeacherSubjectOverview extends StatelessWidget {
                 childAspectRatio: 1.5,
                 children: [
                   QuickActionTile(
-                    iconAsset: 'assets/images/student-home/classes-quickactions.png',
+                    iconAsset:
+                        'assets/images/student-home/classes-quickactions.png',
                     label: 'Learning Materials',
                     onTap: () {
                       Get.toNamed(AppRoutes.teacherBooks);
                     },
                   ),
                   QuickActionTile(
-                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                    iconAsset:
+                        'assets/images/student-home/leaderboards-quickactions.png',
                     label: 'Leaderboards',
-                    onTap: () {},
+                    onTap: () {
+                      Get.toNamed(AppRoutes.teacherLeaderboards);
+                    },
                   ),
                   QuickActionTile(
-                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                    iconAsset:
+                        'assets/images/student-home/leaderboards-quickactions.png',
                     label: 'Attendance',
-                    onTap: () {},
+                    onTap: () {
+                      Get.toNamed(AppRoutes.teacherAttendance);
+                    },
                   ),
                   QuickActionTile(
-                    iconAsset: 'assets/images/student-home/leaderboards-quickactions.png',
+                    iconAsset:
+                        'assets/images/student-home/leaderboards-quickactions.png',
                     label: 'Students',
                     onTap: () {
                       Get.toNamed(
@@ -222,10 +232,7 @@ class _SectionTitle extends StatelessWidget {
   final IconData iconData;
   final String sectionTitle;
 
-  const _SectionTitle({
-    required this.iconData,
-    required this.sectionTitle,
-  });
+  const _SectionTitle({required this.iconData, required this.sectionTitle});
 
   @override
   Widget build(BuildContext context) {

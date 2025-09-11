@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lms/config/constants.dart';
 import 'package:flutter_lms/controllers/teacher/teacher_book_controller.dart';
+import 'package:flutter_lms/views/teacher/books-assigned/book_details.dart';
 import 'package:flutter_lms/views/teacher/teacher_global_layout.dart';
 import 'package:flutter_lms/widgets/app_bar.dart';
 import 'package:flutter_lms/widgets/global_books_widget.dart';
@@ -53,8 +54,10 @@ class _AssignedBooksPageState extends State<AssignedBooksPage> {
 
     print('✅ Received ${list.length} assigned books');
     for (final b in list) {
-      print('• id=${b['bookID']} | title=${b['courseware_name']} | created_at=${b['created_at']} '
-            '| teachers=${(b['teachers'] as List?)?.length ?? 0} | collaborators=${(b['collaborators'] as List?)?.length ?? 0}');
+      print(
+        '• id=${b['bookID']} | title=${b['courseware_name']} | created_at=${b['created_at']} '
+        '| teachers=${(b['teachers'] as List?)?.length ?? 0} | collaborators=${(b['collaborators'] as List?)?.length ?? 0}',
+      );
     }
 
     setState(() {
@@ -74,7 +77,20 @@ class _AssignedBooksPageState extends State<AssignedBooksPage> {
   }
 
   String _month(int m) {
-    const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const names = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return (m >= 1 && m <= 12) ? names[m - 1] : '—';
   }
 
@@ -105,7 +121,11 @@ class _AssignedBooksPageState extends State<AssignedBooksPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+              Text(
+                _error!,
+                style: const TextStyle(color: Colors.red),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 12),
               ElevatedButton(onPressed: _load, child: const Text('Retry')),
             ],
@@ -118,21 +138,26 @@ class _AssignedBooksPageState extends State<AssignedBooksPage> {
       content = RefreshIndicator(
         onRefresh: _load,
         child: ListView.separated(
-          physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
           itemCount: _books.length,
           separatorBuilder: (_, __) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             final b = _books[index];
 
-            final title = (b['courseware_name'] ?? 'Untitled Courseware').toString();
+            final title = (b['courseware_name'] ?? 'Untitled Courseware')
+                .toString();
             final created = _formatDate(b['created_at']?.toString());
             final img = _resolveImage(b['image']?.toString());
 
             // We don’t have grade levels or true “total sections” in this teacher-only payload.
             // For now, show a placeholder for grade_level and use number of teacher assignees
             // as a lightweight “count” in the totalSections slot (you can rename the label in your widget later).
-            final teacherCount = (b['teachers'] is List) ? (b['teachers'] as List).length : 0;
+            final teacherCount = (b['teachers'] is List)
+                ? (b['teachers'] as List).length
+                : 0;
 
             // If you want tap -> book overview later, wrap with GestureDetector and navigate:
             // return GestureDetector(
@@ -140,12 +165,22 @@ class _AssignedBooksPageState extends State<AssignedBooksPage> {
             //   child: GlobalBooksWidget(...),
             // );
 
-            return GlobalBooksWidget(
-              grade_level: '—',                // not provided by this endpoint
-              totalSections: '$teacherCount', // placeholder count (assignees)
-              dateAssined: created,
-              subject: title,
-              imageUrl: img ?? '',
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => BookDetailsPage(bookId: b['bookID']),
+                  ),
+                );
+              },
+              child: GlobalBooksWidget(
+                grade_level: '—',
+                totalSections: '$teacherCount',
+                dateAssined: created,
+                subject: title,
+                imageUrl: img ?? '',
+              ),
             );
           },
         ),

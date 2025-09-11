@@ -1,5 +1,6 @@
 import 'package:flutter_lms/views/collab/home_page.dart';
 import 'package:flutter_lms/views/components/announcements.dart';
+import 'package:flutter_lms/views/components/leaderboard_page.dart';
 import 'package:flutter_lms/views/student/assignments/achievement-top.dart';
 import 'package:flutter_lms/views/student/assignments/achievement_quiz_streak.dart';
 import 'package:flutter_lms/views/student/assignments/achievements.dart';
@@ -22,6 +23,7 @@ import 'package:flutter_lms/views/student/classmates/my_classmates.dart';
 import 'package:flutter_lms/views/student/profile/student_profile.dart';
 import 'package:flutter_lms/views/student/student_shell.dart';
 import 'package:flutter_lms/views/teacher/add-student/teacher_student_page.dart';
+import 'package:flutter_lms/views/teacher/attendance/attendance_page.dart';
 import 'package:flutter_lms/views/teacher/books-assigned/assigned_books_page.dart';
 import 'package:flutter_lms/views/teacher/classes/subject_classes.dart';
 import 'package:flutter_lms/views/teacher/classes/subject_overview.dart';
@@ -81,6 +83,8 @@ class AppRoutes {
   static const teacherStudents = '/teacher-students-page';
   static const teacherSubjectOverview = '/teacher-subject-overview';
   static const teacherBooks = '/teacher-assigned-books';
+  static const teacherAttendance = '/attendance-page';
+  static const teacherLeaderboards = '/leaderboards-page';
 
   // utilities
   static const announcement = '/announcement';
@@ -217,6 +221,14 @@ class AppPages {
     GetPage(
       name: AppRoutes.teacherBooks,
       page: () => const AssignedBooksPage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherAttendance,
+      page: () => const AttendancePage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherLeaderboards,
+      page: () => const LeaderboardPage(),
     ),
     GetPage(
       name: AppRoutes.teacherShell,

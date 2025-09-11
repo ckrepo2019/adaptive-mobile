@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AttendancePage extends StatelessWidget {
@@ -23,8 +25,12 @@ class AttendancePage extends StatelessWidget {
         backgroundColor: Colors.blue.shade700,
         titleSpacing: 0,
         leading: IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.arrow_back_ios), color: Colors.white,),
+          onPressed: () {
+            Get.back();
+          },
+          icon: Icon(Icons.arrow_back_ios),
+          color: Colors.white,
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -38,10 +44,7 @@ class AttendancePage extends StatelessWidget {
             ),
             Text(
               "Essential Algebra for Beginners",
-              style: GoogleFonts.poppins(
-                fontSize: 12,
-                color: Colors.white70,
-              ),
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
             ),
           ],
         ),
@@ -73,16 +76,33 @@ class AttendancePage extends StatelessWidget {
             child: Column(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue.shade700,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(12),
+                    ),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: const [
-                      Text("Name", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text("Status", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      Text(
+                        "Name",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "Status",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -97,7 +117,10 @@ class AttendancePage extends StatelessWidget {
               itemBuilder: (context, index) {
                 return Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(color: Colors.grey.shade300),
@@ -139,10 +162,7 @@ class AttendancePage extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style: TextStyle(
-            color: color.shade100,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: color.shade100, fontWeight: FontWeight.bold),
         ),
       ),
     );

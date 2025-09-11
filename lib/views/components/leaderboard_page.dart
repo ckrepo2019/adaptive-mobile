@@ -15,7 +15,7 @@ class LeaderboardPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: const GlobalAppBar(title: 'Leaderboard'),
+      appBar: const GlobalAppBar(title: 'Leaderboard', showBack: true, showProfile: false, showNotifications: false,),
       body: Column(
         children: [
           /// --- Profile Card ---
