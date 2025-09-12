@@ -1,3 +1,6 @@
+import 'package:Adaptive/views/components/schedule_page.dart';
+import 'package:Adaptive/views/teacher/classes/teacher_sections.dart';
+import 'package:Adaptive/views/teacher/notifications/teacher_notifications.dart';
 import 'package:flutter/material.dart';
 import 'package:Adaptive/views/student/widgets/fancy_student_navbar.dart';
 import 'package:Adaptive/views/teacher/tabs/teacher_tabs.dart';
@@ -87,6 +90,11 @@ class _TeacherShellState extends State<TeacherShell>
         uid: widget.uid,
         userType: widget.userType,
       ),
+
+      TeacherSectionsPage(),
+      SchedulePage(),
+      TeacherNotifications(),
+      
     ];
 
     return TeacherTabs(

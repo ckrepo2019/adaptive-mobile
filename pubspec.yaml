@@ -80,7 +80,8 @@ flutter:
     - assets/images/default-images/default-classes.jpg
     - assets/images/default-images/default-female-teacher-class.png
     - assets/images/default-images/default-subject-unit.png
- #   - assets/images/default-images/default-male-teacher-class.png
+    - assets/images/utilities/
+  #   - assets/images/default-images/default-male-teacher-class.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

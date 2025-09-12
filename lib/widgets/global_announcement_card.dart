@@ -1,5 +1,8 @@
+import 'package:Adaptive/config/routes.dart';
 import 'package:Adaptive/widgets/base_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class GlobalAnnouncementCard extends BaseWidget {
@@ -27,7 +30,7 @@ class GlobalAnnouncementCard extends BaseWidget {
     );
 
     return InkWell(
-      // onTap: () => Get.toNamed(AppRoutes.),
+      onTap: () => Get.toNamed(AppRoutes.announcementInformation),
       child: Card(
         color: Colors.white, // ✅ full white background
         margin: EdgeInsets.only(bottom: screenHeight * 0.015),

@@ -1,221 +1,114 @@
+import 'package:Adaptive/controllers/teacher/teacher_book_details_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:Adaptive/widgets/global_basic_information_widget.dart';
-// import 'package:Adaptive/widgets/app_bar.dart'; // If you want to swap in your GlobalAppBar
+import 'package:Adaptive/widgets/app_bar.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-class BookDetailsPage extends StatelessWidget {
-  const BookDetailsPage({
-    super.key,
-    this.title = 'Essential Algebra for Beginners',
-    this.subtitle = 'Book Details',
-    this.author = 'Robert U. Fox',
-    this.assignedSince = 'Feb 18, 2025',
-    this.coverUrl,
-  });
+class BookDetailsPage extends StatefulWidget {
+  const BookDetailsPage({super.key, required this.bookId});
+  final int bookId;
 
-  final String title;
-  final String subtitle;
-  final String author;
-  final String assignedSince;
-  final String? coverUrl;
+  @override
+  State<BookDetailsPage> createState() => _BookDetailsPageState();
+}
 
-  static const _brandBlue = Color(0xFF2563EB);
+class _BookDetailsPageState extends State<BookDetailsPage> {
+  bool _loading = true;
+  String? _error;
+  Map<String, dynamic>? _book;
+  List<String> _tags = [];
+  List<String> _grades = [];
+  List<String> _courses = [];
+  List<Map<String, dynamic>> _subjects = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetails();
+  }
+
+  Future<void> _loadDetails() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    final resp = await TeacherBookDetailsController.fetchBookDetails(
+      bookId: widget.bookId,
+    );
+
+    if (!mounted) return;
+
+    if (!resp.success) {
+      setState(() {
+        _loading = false;
+        _error = resp.message ?? 'Failed to load book details.';
+      });
+      return;
+    }
+
+    setState(() {
+      _book = resp.data?['book'];
+      _tags = (resp.data?['tags'] as List?)?.cast<String>() ?? [];
+      _grades = (resp.data?['grades'] as List?)?.cast<String>() ?? [];
+      _courses = (resp.data?['courses'] as List?)?.cast<String>() ?? [];
+      _subjects = (resp.data?['subjects'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      _loading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    const brandBlue = Color(0xFF2563EB);
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        // If you want to use your GlobalAppBar, replace this AppBar with GlobalAppBar:
-        // appBar: GlobalAppBar(
-        //   title: 'Book Details',
-        //   showBack: true,
-        //   showNotifications: false,
-        //   showProfile: false,
-        //   backgroundColor: _brandBlue,
-        // ),
-        appBar: AppBar(
-          backgroundColor: _brandBlue,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-            onPressed: () => Navigator.maybePop(context),
-          ),
-          title: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Book Details',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-              Text(
-                title,
-                style: const TextStyle(color: Colors.white70, fontSize: 12),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ),
-        ),
-        backgroundColor: const Color(0xFFF3F4F6),
-        body: Stack(
+    if (_loading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (_error != null) {
+      return _errorView(_error!, brandBlue);
+    }
+
+    final title = _book?['courseware_name'] ?? 'Untitled';
+    final description = _book?['description'] ?? 'No description';
+    final author = (_book?['author'] ?? 'Unknown Author').toString();
+    final assignedSince = _book?['created_at']?.toString() ?? '—';
+    final coverUrl = _book?['image']?.toString();
+
+    return Scaffold(
+      appBar: GlobalAppBar(
+        title: 'Book Details',
+        subtitle: title,
+        showNotifications: false,
+        showBack: true,
+        showProfile: false,
+        backgroundColor: brandBlue,
+      ),
+      backgroundColor: const Color(0xFFF3F4F6),
+      body: DefaultTabController(
+        length: 3,
+        child: Stack(
           children: [
-            // Blue curved header shape
             Container(
-              height: 180,
+              height: 240,
               decoration: const BoxDecoration(
-                color: _brandBlue,
+                color: brandBlue,
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(28),
-                  bottomRight: Radius.circular(28),
+                  bottomLeft: Radius.circular(32),
+                  bottomRight: Radius.circular(32),
                 ),
               ),
             ),
-            // Main scrollable content
             SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              padding: const EdgeInsets.only(top: 180, bottom: 24),
               child: Column(
                 children: [
-                  // Floating cover card
-                  Align(
-                    alignment: Alignment.topCenter,
-                    child: Container(
-                      width: 250,
-                      height: 250,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(.12),
-                            blurRadius: 24,
-                            offset: const Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(16),
-                          child: coverUrl == null || coverUrl!.isEmpty
-                              ? _PlaceholderCover()
-                              : Image.network(coverUrl!, fit: BoxFit.cover),
-                        ),
-                      ),
-                    ),
-                  ),
+                  _coverImage(coverUrl),
                   const SizedBox(height: 16),
-
-                  // White content card
-                  Container(
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(.06),
-                          blurRadius: 12,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Title & author
-                          Text(
-                            title,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: .2,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                author,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: Colors.black.withOpacity(.7),
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              const Icon(Icons.verified, color: _brandBlue, size: 16),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Tabs
-                          TabBar(
-                            labelColor: _brandBlue,
-                            unselectedLabelColor: Colors.black54,
-                            labelStyle: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
-                            unselectedLabelStyle: theme.textTheme.bodyMedium,
-                            indicatorColor: _brandBlue,
-                            tabs: const [
-                              Tab(text: 'About Book'),
-                              Tab(text: 'Assigned to'),
-                              Tab(text: 'Learners'),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-
-                          // Tab content (fixed height to let page scroll)
-                          SizedBox(
-                            height: 520, // tune height as needed
-                            child: TabBarView(
-                              children: [
-                                _AboutBookTab(assignedSince: assignedSince),
-                                _AssignedToTab(),
-                                _LearnersTab(),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // Bottom actions
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: _brandBlue,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                          ),
-                          onPressed: () {},
-                          child: Text('Manage Book', style: TextStyle(color: Colors.white),),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          style: OutlinedButton.styleFrom(
-                            backgroundColor: Colors.red,
-                            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            side: BorderSide(color: Colors.red.shade500),
-                          ),
-                          onPressed: () {},
-                          icon: Icon(Icons.block, color: Colors.white, size: 18),
-                          label: Text('Unassign Book',
-                              style: TextStyle(color: Colors.white)),
-                        ),
-                      ),
-                    ],
-                  ),
+                  _titleAndAuthor(title, author, brandBlue),
+                  const SizedBox(height: 20),
+                  _detailsContainer(description, assignedSince),
                 ],
               ),
             ),
@@ -224,201 +117,267 @@ class BookDetailsPage extends StatelessWidget {
       ),
     );
   }
-}
 
-class _PlaceholderCover extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFFFFEDD5),
-      child: Center(
-        child: Text(
-          'Cover',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: const Color(0xFFFB923C),
-                fontWeight: FontWeight.w700,
-              ),
+  Widget _errorView(String message, Color brandBlue) {
+    return Scaffold(
+      appBar: GlobalAppBar(
+        title: 'Book Details',
+        subtitle: 'Error',
+        showNotifications: false,
+        showBack: true,
+        showProfile: false,
+        backgroundColor: brandBlue,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _loadDetails, child: const Text('Retry')),
+          ],
         ),
       ),
     );
   }
-}
 
-class _AboutBookTab extends StatelessWidget {
-  const _AboutBookTab({required this.assignedSince});
-  final String assignedSince;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final grey = theme.textTheme.bodySmall?.copyWith(color: Colors.black54);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SectionTitle('About'),
-          const SizedBox(height: 6),
-          Text(
-            'Essential Algebra for Beginners',
-            style: theme.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 10),
-          _MutedRow('Assigned to you since $assignedSince'),
-          const SizedBox(height: 14),
-          _SectionTitle('Description'),
-          const SizedBox(height: 6),
-          Text(
-            "Start your algebra journey with confidence! This book introduces the core concepts of algebra in a clear, step-by-step way—perfect for students who are just getting started. Learn how to work with variables, simplify expressions, solve equations, and apply algebra in real-life situations.",
-            style: theme.textTheme.bodyMedium?.copyWith(height: 1.35),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: const [
-              _ChipPill('Beginner-friendly'),
-              _ChipPill('Step-by-step'),
-              _ChipPill('Practice Included'),
-            ],
-          ),
-        ],
+  Widget _coverImage(String? url) {
+    return Center(
+      child: Container(
+        width: 180,
+        height: 220,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(.12),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: (url == null || url.isEmpty)
+              ? Image.asset(
+                  'assets/images/default-images/default-female-teacher-class.png',
+                  fit: BoxFit.cover,
+                )
+              : Image.network(url, fit: BoxFit.cover),
+        ),
       ),
     );
   }
-}
 
-class _AssignedToTab extends StatelessWidget {
-  _AssignedToTab({super.key});
-
-  // Demo data – swap with your real API data
-  final List<_ClassInfo> _classes = const [
-    _ClassInfo(
-      classTitle: 'Grade 6 - Section A',
-      subject: 'Essential Algebra for Beginners',
-      time: '8:00–9:30 AM',
-      duration: '90 mins',
-    ),
-    _ClassInfo(
-      classTitle: 'Grade 6 - Section B',
-      subject: 'Essential Algebra for Beginners',
-      time: '10:00–11:30 AM',
-      duration: '90 mins',
-    ),
-    _ClassInfo(
-      classTitle: 'Grade 6 - Section C',
-      subject: 'Essential Algebra for Beginners',
-      time: '1:30–3:00 PM',
-      duration: '90 mins',
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-      itemCount: _classes.length,
-      itemBuilder: (_, i) {
-        final c = _classes[i];
-        return GlobalBasicInformationWidget(
-          classTitle: c.classTitle,
-          subject: c.subject,
-          time: c.time,
-          duration: c.duration,
-        );
-      },
-    );
-  }
-}
-
-class _ClassInfo {
-  final String classTitle;
-  final String subject;
-  final String time;
-  final String duration;
-  const _ClassInfo({
-    required this.classTitle,
-    required this.subject,
-    required this.time,
-    required this.duration,
-  });
-}
-
-
-class _LearnersTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: const EdgeInsets.only(top: 8, bottom: 8),
-      itemCount: 12,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (_, i) {
-        return ListTile(
-          contentPadding: EdgeInsets.zero,
-          leading: CircleAvatar(
-            backgroundColor: Colors.indigo.shade100,
-            child: Text(
-              'S${i + 1}',
-              style: TextStyle(color: Colors.indigo.shade700, fontWeight: FontWeight.w600),
+  Widget _titleAndAuthor(String title, String author, Color brandBlue) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              author,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.black.withOpacity(0.7),
+              ),
             ),
-          ),
-          title: Text('Student ${i + 1}'),
-          subtitle: const Text('Active • Last seen 2h ago'),
-          trailing: Icon(Icons.chevron_right, color: Colors.black.withOpacity(.3)),
-          onTap: () {},
-        );
-      },
+            const SizedBox(width: 6),
+            Icon(Icons.verified, color: brandBlue, size: 16),
+          ],
+        ),
+      ],
     );
   }
-}
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text.toUpperCase(),
-      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            letterSpacing: .6,
-            fontWeight: FontWeight.bold,
-            fontSize: 20
+  Widget _detailsContainer(String description, String assignedSince) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.06),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
           ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const TabBar(
+              labelColor: Color(0xFF2563EB),
+              unselectedLabelColor: Colors.black54,
+              indicatorColor: Color(0xFF2563EB),
+              tabs: [
+                Tab(text: 'About Book'),
+                Tab(text: 'Assigned To'),
+                Tab(text: 'Learners'),
+              ],
+            ),
+            SizedBox(
+              height: 400,
+              child: TabBarView(
+                children: [
+                  _AboutBookContent(
+                    title: description,
+                    assignedSince: assignedSince,
+                    tags: _tags,
+                    grades: _grades,
+                    courses: _courses,
+                  ),
+                  _AssignedToTab(subjects: _subjects),
+                  _LearnersTab(subjects: _subjects),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            _actionButtons(),
+          ],
+        ),
+      ),
     );
   }
-}
 
-class _MutedRow extends StatelessWidget {
-  const _MutedRow(this.text);
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _actionButtons() {
     return Row(
       children: [
-        const Icon(Icons.schedule, size: 16, color: Colors.black45),
-        const SizedBox(width: 6),
-        Text(text, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.black54)),
+        Expanded(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {},
+            child: const Text('Manage Book', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.block, color: Colors.red),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: const BorderSide(color: Colors.red),
+            ),
+            onPressed: () {},
+            label: const Text('Unassign Book', style: TextStyle(color: Colors.red)),
+          ),
+        ),
       ],
     );
   }
 }
 
-class _ChipPill extends StatelessWidget {
-  const _ChipPill(this.label);
-  final String label;
+class _AboutBookContent extends StatelessWidget {
+  const _AboutBookContent({
+    required this.title,
+    required this.assignedSince,
+    required this.tags,
+    required this.grades,
+    required this.courses,
+  });
+
+  final String title;
+  final String assignedSince;
+  final List<String> tags;
+  final List<String> grades;
+  final List<String> courses;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(label, style: const TextStyle(fontSize: 12)),
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      children: [
+        Text('About', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 6),
+        Text('$title\nAssigned since $assignedSince', style: GoogleFonts.poppins(fontSize: 14)),
+        const SizedBox(height: 12),
+        Text('Grades: ${grades.isEmpty ? 'N/A' : grades.join(', ')}',
+            style: GoogleFonts.poppins(fontSize: 14)),
+        const SizedBox(height: 6),
+        if (courses.isNotEmpty)
+          Text('Courses: ${courses.join(', ')}', style: GoogleFonts.poppins(fontSize: 14)),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 6,
+          runSpacing: 6,
+          children: tags.map((t) => Chip(label: Text(t))).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _AssignedToTab extends StatelessWidget {
+  final List<Map<String, dynamic>> subjects;
+  const _AssignedToTab({required this.subjects});
+
+  @override
+  Widget build(BuildContext context) {
+    if (subjects.isEmpty) {
+      return const Center(child: Text('No classes assigned.'));
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: subjects.length,
+      itemBuilder: (_, i) {
+        final s = subjects[i];
+        return ListTile(
+          title: Text(s['subject_name'] ?? 'Unknown Subject'),
+          subtitle: Text(s['section_name'] ?? 'Section'),
+          trailing: Text('${s['enrolled_students_count'] ?? 0} learners'),
+        );
+      },
+    );
+  }
+}
+
+class _LearnersTab extends StatelessWidget {
+  final List<Map<String, dynamic>> subjects;
+  const _LearnersTab({required this.subjects});
+
+  @override
+  Widget build(BuildContext context) {
+    final learners = subjects.expand((s) {
+      final students = s['students'] as List<dynamic>? ?? [];
+      return students;
+    }).toList();
+
+    if (learners.isEmpty) {
+      return const Center(child: Text('No learners found.'));
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: learners.length,
+      separatorBuilder: (_, __) => const Divider(),
+      itemBuilder: (_, i) {
+        final l = learners[i] as Map<String, dynamic>;
+        return ListTile(
+          leading: CircleAvatar(child: Text((l['firstname'] ?? 'S')[0])),
+          title: Text('${l['firstname']} ${l['lastname']}'),
+          subtitle: Text(l['level_name'] ?? ''),
+        );
+      },
     );
   }
 }

@@ -1,5 +1,10 @@
 import 'package:Adaptive/views/collab/home_page.dart';
 import 'package:Adaptive/views/components/announcements.dart';
+import 'package:Adaptive/views/components/information_page.dart';
+import 'package:Adaptive/views/components/leaderboard_page.dart';
+import 'package:Adaptive/views/teacher/add-student/add_student_page.dart';
+import 'package:Adaptive/views/teacher/attendance/attendance_page.dart';
+import 'package:Adaptive/views/teacher/books-assigned/assigned_books_page.dart';
 import 'package:Adaptive/views/student/assignments/achievement-top.dart';
 import 'package:Adaptive/views/student/assignments/achievement_quiz_streak.dart';
 import 'package:Adaptive/views/student/assignments/achievements.dart';
@@ -24,6 +29,7 @@ import 'package:Adaptive/views/student/student_shell.dart';
 import 'package:Adaptive/views/teacher/add-student/teacher_student_page.dart';
 import 'package:Adaptive/views/teacher/classes/subject_classes.dart';
 import 'package:Adaptive/views/teacher/classes/subject_overview.dart';
+import 'package:Adaptive/views/teacher/classes/teacher_add_student_success.dart';
 import 'package:Adaptive/views/teacher/classes/teacher_sections.dart';
 import 'package:Adaptive/views/teacher/teacher_shell.dart';
 import 'package:get/get.dart';
@@ -79,6 +85,12 @@ class AppRoutes {
   static const teacherSections = '/teacher-sections';
   static const teacherStudents = '/teacher-students-page';
   static const teacherSubjectOverview = '/teacher-subject-overview';
+  static const teacherBooks = '/teacher-assigned-books';
+  static const teacherAttendance = '/attendance-page';
+  static const teacherLeaderboards = '/leaderboards-page';
+  static const announcementInformation = '/announcement-information';
+  static const addStudent = '/add-student-page';
+  static const teacherAddStudentSuccess = '/teacher-add-success';
 
   // utilities
   static const announcement = '/announcement';
@@ -196,10 +208,40 @@ class AppPages {
       name: AppRoutes.announcement,
       page: () => const AnnouncementsPage(),
     ),
-    GetPage(name: AppRoutes.teacherSubjects, page: () => const TeacherSubjectClasses(sectionName: '',)),
-    GetPage(name: AppRoutes.teacherSections, page: () => const TeacherSectionsPage()),
-    GetPage(name: AppRoutes.teacherStudents, page: () => const TeacherStudentPage()),
-    GetPage(name: AppRoutes.teacherSubjectOverview, page: () => const TeacherSubjectOverview()),
+    GetPage(
+      name: AppRoutes.teacherSubjects,
+      page: () => const TeacherSubjectClasses(sectionName: ''),
+    ),
+    GetPage(
+      name: AppRoutes.teacherSections,
+      page: () => const TeacherSectionsPage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherStudents,
+      page: () => const TeacherStudentPage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherSubjectOverview,
+      page: () => const TeacherSubjectOverview(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherBooks,
+      page: () => const AssignedBooksPage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherAttendance,
+      page: () => const AttendancePage(),
+    ),
+    GetPage(
+      name: AppRoutes.teacherLeaderboards,
+      page: () => const LeaderboardPage(),
+    ),
+    GetPage(
+      name: AppRoutes.announcementInformation,
+      page: () => const InformationPage(),
+    ),
+    GetPage(name: AppRoutes.addStudent, page: () => const AddStudentPage()),
+    GetPage(name: AppRoutes.teacherAddStudentSuccess, page: () => const TeacherAddStudentSuccess()),
     GetPage(
       name: AppRoutes.teacherShell,
       page: () {

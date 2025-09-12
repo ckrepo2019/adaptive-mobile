@@ -4,21 +4,31 @@ import 'package:Adaptive/widgets/ui_widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ClassTimeline extends StatelessWidget {
-  const ClassTimeline({super.key});
+  final String time;
+  final String title;
+  final String subtitle;
+
+  const ClassTimeline({
+    super.key,
+    required this.time,
+    required this.title,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final parts = time.split(' ');
+    final displayTime = parts.isNotEmpty ? parts.first : time;
+    final meridian = parts.length > 1 ? parts.last : '';
+
     return InkCardShell(
       leftAccent: AppConstants.mainColorTheme,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center, // align left
             children: [
               Text(
-                '07:00',
+                displayTime,
                 style: GoogleFonts.poppins(
                   color: Colors.blue.shade800,
                   fontWeight: FontWeight.bold,
@@ -26,32 +36,29 @@ class ClassTimeline extends StatelessWidget {
                 ),
               ),
               Text(
-                "AM",
-                style: const TextStyle(
-                  height: 0.1, // reduce spacing between
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
+                meridian,
+                style: const TextStyle(fontSize: 14),
               ),
             ],
           ),
-
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 12),
             width: 2,
-            height: 60, // adjust height as needed
+            height: 60,
             color: Colors.grey.shade400.withOpacity(0.5),
           ),
-
           Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Mathematics", style: TextStyle(fontWeight: FontWeight.w400, color: Colors.grey.shade500),),
-              Text("Essential Algebra\nFor Beginners", style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 20),),
+              Text(subtitle,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      color: Colors.grey.shade500)),
+              Text(title,
+                  style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600, fontSize: 20)),
             ],
-          )
-
+          ),
         ],
       ),
     );

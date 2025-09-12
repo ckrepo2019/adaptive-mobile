@@ -1,74 +1,219 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:Adaptive/controllers/teacher/teacher_add_students_controller.dart';
 import 'package:Adaptive/config/routes.dart';
 import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
 import 'package:Adaptive/widgets/app_bar.dart';
-import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-class AddStudentPage extends StatelessWidget {
+/// Simple model for added students.
+class AddedStudent {
+  final String id;
+  final String name;
+
+  AddedStudent({required this.id, required this.name});
+}
+
+class AddStudentPage extends StatefulWidget {
   const AddStudentPage({super.key});
+
+  @override
+  State<AddStudentPage> createState() => _AddStudentPageState();
+}
+
+class _AddStudentPageState extends State<AddStudentPage> {
+  final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+
+  final List<AddedStudent> _addedStudents = [];
+  bool _loading = false;
+  String? _error;
+
+  /// Handles input of a student ID (triggered by space or enter).
+  Future<void> _handleInput(String value) async {
+    final sid = value.trim();
+    if (sid.isEmpty) return;
+
+    setState(() => _loading = true);
+
+    final resp = await TeacherAddStudentsController.getStudentBySid(sid: sid);
+
+    setState(() => _loading = false);
+
+    if (resp.success && resp.data != null) {
+      final student = resp.data!;
+      final internalId = student['id'].toString();
+      final name = '${student['firstname']} ${student['lastname']}';
+
+      if (!_addedStudents.any((s) => s.id == internalId)) {
+        setState(() {
+          _addedStudents.add(AddedStudent(id: internalId, name: name));
+        });
+      }
+    } else {
+      setState(() => _error = resp.message ?? 'Student ID $sid not found.');
+    }
+
+    _controller.clear();
+    _focusNode.requestFocus();
+  }
+
+  /// Remove a student chip.
+  void _removeStudent(AddedStudent s) {
+    setState(() => _addedStudents.remove(s));
+  }
+
+  /// Submit added students to the backend.
+  Future<void> _submitStudents() async {
+    if (_addedStudents.isEmpty) {
+      setState(() => _error = 'Please add at least one student.');
+      return;
+    }
+
+    final args = Get.arguments ?? {};
+    final subjectId = args['subjectId'];
+    final sectionId = args['sectionId'];
+
+    if (subjectId == null || sectionId == null) {
+      setState(() => _error = 'Missing subject or section information.');
+      return;
+    }
+
+    final ids = _addedStudents
+        .map((e) => int.tryParse(e.id) ?? -1)
+        .where((id) => id != -1)
+        .toList();
+
+    if (ids.isEmpty) {
+      setState(() => _error = 'Invalid student IDs. Please re-add.');
+      return;
+    }
+
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+
+    final resp = await TeacherAddStudentsController.addStudents(
+      studentIds: ids,
+      subjectId: subjectId,
+      sectionId: sectionId,
+    );
+
+    setState(() => _loading = false);
+
+    if (resp.success) {
+      Get.toNamed(AppRoutes.teacherAddStudentSuccess);
+    } else {
+      setState(() => _error = resp.message ?? 'Failed to add students.');
+    }
+  }
+
+  /// Displays error text if present.
+  Widget _buildErrorText() {
+    return _error == null
+        ? const SizedBox.shrink()
+        : Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              _error!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: GlobalAppBar(
+      appBar: const GlobalAppBar(
         title: 'Adding students',
         subtitle: 'Essential Algebra for Beginners',
         showBack: true,
       ),
       body: TeacherGlobalLayout(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            SizedBox(height: 25),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 25),
+              Center(
+                child: Image.asset(
+                  'assets/images/utilities/students.png',
+                  height: 200,
+                  width: 200,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                "Add students",
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(height: 25),
 
-            Center(
-              child: Image(
-                image: AssetImage('assets/images/utilities/students.png'),
-                height: 200,
-                width: 200,
+              /// Chips for added students.
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: _addedStudents
+                    .map((s) => Chip(
+                          label: Text('${s.id} - ${s.name}'),
+                          deleteIcon: const Icon(Icons.close),
+                          onDeleted: () => _removeStudent(s),
+                        ))
+                    .toList(),
               ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              "Add a student",
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            SizedBox(height: 25),
-            Card(
-              elevation: 10,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const TextField(
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.black),
-                    decoration: InputDecoration(
-                      hintText: "Student ID",
-                      hintStyle: TextStyle(color: Colors.black38),
+              const SizedBox(height: 12),
+
+              /// Input field.
+              Card(
+                elevation: 10,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: TextField(
+                    controller: _controller,
+                    focusNode: _focusNode,
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(color: Colors.black),
+                    decoration: const InputDecoration(
+                      hintText: "Type Student ID and press space or enter",
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(vertical: 16),
                     ),
+                    onSubmitted: _handleInput,
+                    onChanged: (val) {
+                      if (val.endsWith(' ')) _handleInput(val);
+                    },
                   ),
-                  Positioned(
-                    right: 8,
-                    child: IconButton(
-                      onPressed: () {
-                        Get.toNamed(AppRoutes.studentJoinClassSuccess);
-                      },
-                      icon: const Icon(Icons.add, color: Colors.black),
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+
+              if (_loading)
+                const Padding(
+                  padding: EdgeInsets.only(top: 12),
+                  child: CircularProgressIndicator(),
+                ),
+
+              _buildErrorText(),
+              const Spacer(),
+
+              /// Submit button.
+              ElevatedButton.icon(
+                icon: const Icon(Icons.send),
+                label: const Text('Submit Students'),
+                onPressed: _submitStudents,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                ),
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
