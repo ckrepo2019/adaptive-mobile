@@ -48,10 +48,10 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
 
     setState(() {
       _book = resp.data?['book'];
-      _tags = (resp.data?['tags'] as List<String>? ?? []);
-      _grades = (resp.data?['grades'] as List<String>? ?? []);
-      _courses = (resp.data?['courses'] as List<String>? ?? []);
-      _subjects = (resp.data?['subjects'] as List<Map<String, dynamic>>? ?? []);
+      _tags = (resp.data?['tags'] as List?)?.cast<String>() ?? [];
+      _grades = (resp.data?['grades'] as List?)?.cast<String>() ?? [];
+      _courses = (resp.data?['courses'] as List?)?.cast<String>() ?? [];
+      _subjects = (resp.data?['subjects'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       _loading = false;
     });
   }
@@ -67,26 +67,7 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
     }
 
     if (_error != null) {
-      return Scaffold(
-        appBar: GlobalAppBar(
-          title: 'Book Details',
-          subtitle: 'Error',
-          showNotifications: false,
-          showBack: true,
-          showProfile: false,
-          backgroundColor: brandBlue,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(_error!, style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 12),
-              ElevatedButton(onPressed: _loadDetails, child: const Text('Retry')),
-            ],
-          ),
-        ),
-      );
+      return _errorView(_error!, brandBlue);
     }
 
     final title = _book?['courseware_name'] ?? 'Untitled';
@@ -109,7 +90,6 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
         length: 3,
         child: Stack(
           children: [
-            // Blue header
             Container(
               height: 240,
               decoration: const BoxDecoration(
@@ -124,154 +104,185 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
               padding: const EdgeInsets.only(top: 180, bottom: 24),
               child: Column(
                 children: [
-                  // Book cover
-                  Center(
-                    child: Container(
-                      width: 180,
-                      height: 220,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(.12),
-                            blurRadius: 16,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: coverUrl == null || coverUrl.isEmpty
-                            ? Image.asset(
-                                'assets/images/default-images/default-female-teacher-class.png',
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(coverUrl, fit: BoxFit.cover),
-                      ),
-                    ),
-                  ),
+                  _coverImage(coverUrl),
                   const SizedBox(height: 16),
-
-                  // Title & author
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 20,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        author,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          color: Colors.black.withOpacity(0.7),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Icon(Icons.verified, color: brandBlue, size: 16),
-                    ],
-                  ),
+                  _titleAndAuthor(title, author, brandBlue),
                   const SizedBox(height: 20),
-
-                  // Details container
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(.06),
-                          blurRadius: 10,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          const TabBar(
-                            labelColor: brandBlue,
-                            unselectedLabelColor: Colors.black54,
-                            indicatorColor: brandBlue,
-                            tabs: [
-                              Tab(text: 'About Book'),
-                              Tab(text: 'Assigned To'),
-                              Tab(text: 'Learners'),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 400,
-                            child: TabBarView(
-                              children: [
-                                _AboutBookContent(
-                                  title: description,
-                                  assignedSince: assignedSince,
-                                  tags: _tags,
-                                  grades: _grades,
-                                  courses: _courses,
-                                ),
-                                _AssignedToTab(subjects: _subjects),
-                                _LearnersTab(subjects: _subjects),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-
-                          // Action buttons
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: brandBlue,
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  onPressed: () {},
-                                  child: const Text('Manage Book', style: TextStyle(color: Colors.white),),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: OutlinedButton.icon(
-                                  icon: const Icon(Icons.block, color: Colors.red),
-                                  style: OutlinedButton.styleFrom(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 14),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    side: const BorderSide(color: Colors.red),
-                                  ),
-                                  onPressed: () {},
-                                  label: const Text(
-                                    'Unassign Book',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
+                  _detailsContainer(description, assignedSince),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _errorView(String message, Color brandBlue) {
+    return Scaffold(
+      appBar: GlobalAppBar(
+        title: 'Book Details',
+        subtitle: 'Error',
+        showNotifications: false,
+        showBack: true,
+        showProfile: false,
+        backgroundColor: brandBlue,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(message, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _loadDetails, child: const Text('Retry')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _coverImage(String? url) {
+    return Center(
+      child: Container(
+        width: 180,
+        height: 220,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(.12),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: (url == null || url.isEmpty)
+              ? Image.asset(
+                  'assets/images/default-images/default-female-teacher-class.png',
+                  fit: BoxFit.cover,
+                )
+              : Image.network(url, fit: BoxFit.cover),
+        ),
+      ),
+    );
+  }
+
+  Widget _titleAndAuthor(String title, String author, Color brandBlue) {
+    return Column(
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.w700,
+            fontSize: 20,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              author,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: Colors.black.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(width: 6),
+            Icon(Icons.verified, color: brandBlue, size: 16),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _detailsContainer(String description, String assignedSince) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.06),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const TabBar(
+              labelColor: Color(0xFF2563EB),
+              unselectedLabelColor: Colors.black54,
+              indicatorColor: Color(0xFF2563EB),
+              tabs: [
+                Tab(text: 'About Book'),
+                Tab(text: 'Assigned To'),
+                Tab(text: 'Learners'),
+              ],
+            ),
+            SizedBox(
+              height: 400,
+              child: TabBarView(
+                children: [
+                  _AboutBookContent(
+                    title: description,
+                    assignedSince: assignedSince,
+                    tags: _tags,
+                    grades: _grades,
+                    courses: _courses,
+                  ),
+                  _AssignedToTab(subjects: _subjects),
+                  _LearnersTab(subjects: _subjects),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            _actionButtons(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _actionButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: () {},
+            child: const Text('Manage Book', style: TextStyle(color: Colors.white)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            icon: const Icon(Icons.block, color: Colors.red),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              side: const BorderSide(color: Colors.red),
+            ),
+            onPressed: () {},
+            label: const Text('Unassign Book', style: TextStyle(color: Colors.red)),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -296,32 +307,15 @@ class _AboutBookContent extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.symmetric(vertical: 12),
       children: [
-        Text(
-          'About',
-          style: GoogleFonts.poppins(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        Text('About', style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w700)),
         const SizedBox(height: 6),
-        Text(
-          '$title\nAssigned since $assignedSince',
-          style: GoogleFonts.poppins(fontSize: 14),
-        ),
+        Text('$title\nAssigned since $assignedSince', style: GoogleFonts.poppins(fontSize: 14)),
         const SizedBox(height: 12),
-        Text(
-          'Grades: ${grades.isEmpty ? 'N/A' : grades.join(', ')}',
-          style: GoogleFonts.poppins(fontSize: 14),
-        ),
+        Text('Grades: ${grades.isEmpty ? 'N/A' : grades.join(', ')}',
+            style: GoogleFonts.poppins(fontSize: 14)),
         const SizedBox(height: 6),
-
-        courses.isEmpty
-        ? const SizedBox.shrink()
-        : Text(
-            'Courses: ${courses.join(', ')}',
-            style: GoogleFonts.poppins(fontSize: 14),
-          ),
-
+        if (courses.isNotEmpty)
+          Text('Courses: ${courses.join(', ')}', style: GoogleFonts.poppins(fontSize: 14)),
         const SizedBox(height: 12),
         Wrap(
           spacing: 6,
@@ -363,7 +357,6 @@ class _LearnersTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Combine learners if backend adds them later
     final learners = subjects.expand((s) {
       final students = s['students'] as List<dynamic>? ?? [];
       return students;

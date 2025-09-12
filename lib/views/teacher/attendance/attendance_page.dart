@@ -1,10 +1,11 @@
 import 'dart:convert';
-import 'package:Adaptive/config/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:Adaptive/config/constants.dart';
 
 class AttendancePage extends StatefulWidget {
   const AttendancePage({super.key});
@@ -24,9 +25,15 @@ class _AttendancePageState extends State<AttendancePage> {
     _fetchStudents();
   }
 
-  Future<void> _fetchStudents() async {
+  /// Safely parse arguments from GetX.
+  dynamic _getArg(String key) {
     final args = Get.arguments as Map? ?? {};
-    final subjectId = args['subjectId'];
+    return args[key];
+  }
+
+  /// Fetch students for the attendance page.
+  Future<void> _fetchStudents() async {
+    final subjectId = _getArg('subjectId');
     if (subjectId == null) {
       setState(() {
         _error = 'No subject ID provided.';
@@ -71,6 +78,7 @@ class _AttendancePageState extends State<AttendancePage> {
     }
   }
 
+  /// Builds a status button for attendance states.
   Widget _attendanceButton(String text, Color color) {
     return Container(
       width: 110,
@@ -82,7 +90,10 @@ class _AttendancePageState extends State<AttendancePage> {
       child: Center(
         child: Text(
           text,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -90,7 +101,7 @@ class _AttendancePageState extends State<AttendancePage> {
 
   @override
   Widget build(BuildContext context) {
-    final subjectName = (Get.arguments as Map?)?['subjectName'] ?? 'Attendance';
+    final subjectName = _getArg('subjectName') ?? 'Attendance';
 
     return Scaffold(
       appBar: AppBar(
@@ -103,11 +114,18 @@ class _AttendancePageState extends State<AttendancePage> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Attendance',
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold, fontSize: 20, color: Colors.white)),
-            Text(subjectName,
-                style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70)),
+            Text(
+              'Attendance',
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              subjectName,
+              style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
+            ),
           ],
         ),
         bottom: PreferredSize(
@@ -128,48 +146,58 @@ class _AttendancePageState extends State<AttendancePage> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(_error!,
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center),
-                  ),
-                )
+              ? _errorView(_error!)
               : _students.isEmpty
                   ? const Center(child: Text('No students found.'))
-                  : ListView.builder(
-                      padding: const EdgeInsets.only(top: 8),
-                      itemCount: _students.length,
-                      itemBuilder: (context, index) {
-                        final s = _students[index];
-                        final name = '${s['firstname']} ${s['lastname']}';
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(color: Colors.grey.shade300),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Checkbox(value: false, onChanged: (v) {}),
-                                  Text(name),
-                                ],
-                              ),
-                              Switch(
-                                value: true,
-                                onChanged: (v) {},
-                                activeColor: Colors.green,
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                  : _studentsList(),
+    );
+  }
+
+  Widget _errorView(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          message,
+          style: const TextStyle(color: Colors.red),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  Widget _studentsList() {
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8),
+      itemCount: _students.length,
+      itemBuilder: (context, index) {
+        final s = _students[index];
+        final name = '${s['firstname']} ${s['lastname']}';
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade300),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Checkbox(value: false, onChanged: (v) {}),
+                  Text(name),
+                ],
+              ),
+              Switch(
+                value: true,
+                onChanged: (v) {},
+                activeColor: Colors.green,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

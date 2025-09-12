@@ -1,20 +1,16 @@
-import 'dart:async';
-import 'dart:convert';
-import 'package:Adaptive/controllers/teacher/teacher_add_students_controller.dart';
 import 'package:flutter/material.dart';
-import 'package:Adaptive/config/constants.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:Adaptive/controllers/teacher/teacher_add_students_controller.dart';
 import 'package:Adaptive/config/routes.dart';
 import 'package:Adaptive/views/teacher/teacher_global_layout.dart';
 import 'package:Adaptive/widgets/app_bar.dart';
-import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
-/// Simple model for added students
+/// Simple model for added students.
 class AddedStudent {
   final String id;
   final String name;
+
   AddedStudent({required this.id, required this.name});
 }
 
@@ -33,49 +29,20 @@ class _AddStudentPageState extends State<AddStudentPage> {
   bool _loading = false;
   String? _error;
 
-  /// Fetch a student's name from the backend using their SID
-  Future<String?> _fetchStudentName(String studentId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-      final uri = Uri.parse('${AppConstants.baseURL}/teacher/students/$studentId');
-
-      final res = await http.get(
-        uri,
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (res.statusCode == 200) {
-        final body = jsonDecode(res.body);
-        if (body['success'] == true) {
-          return '${body['student']['firstname']} ${body['student']['lastname']}';
-        }
-      }
-      return null;
-    } catch (e) {
-      debugPrint('❌ Error fetching student: $e');
-      return null;
-    }
-  }
-
-  /// Handles input of a student ID (triggered by space or enter)
+  /// Handles input of a student ID (triggered by space or enter).
   Future<void> _handleInput(String value) async {
     final sid = value.trim();
     if (sid.isEmpty) return;
 
     setState(() => _loading = true);
 
-    // Use TeacherAddStudentsController to fetch both internal id and name
     final resp = await TeacherAddStudentsController.getStudentBySid(sid: sid);
 
     setState(() => _loading = false);
 
     if (resp.success && resp.data != null) {
       final student = resp.data!;
-      final internalId = student['id'].toString(); // internal DB id
+      final internalId = student['id'].toString();
       final name = '${student['firstname']} ${student['lastname']}';
 
       if (!_addedStudents.any((s) => s.id == internalId)) {
@@ -91,15 +58,12 @@ class _AddStudentPageState extends State<AddStudentPage> {
     _focusNode.requestFocus();
   }
 
-
-  /// Remove a student chip
+  /// Remove a student chip.
   void _removeStudent(AddedStudent s) {
-    setState(() {
-      _addedStudents.remove(s);
-    });
+    setState(() => _addedStudents.remove(s));
   }
 
-  /// Submit added students to the backend
+  /// Submit added students to the backend.
   Future<void> _submitStudents() async {
     if (_addedStudents.isEmpty) {
       setState(() => _error = 'Please add at least one student.');
@@ -110,15 +74,12 @@ class _AddStudentPageState extends State<AddStudentPage> {
     final subjectId = args['subjectId'];
     final sectionId = args['sectionId'];
 
-    debugPrint('Args received: $args');
-
     if (subjectId == null || sectionId == null) {
       setState(() => _error = 'Missing subject or section information.');
       return;
     }
 
     final ids = _addedStudents
-        .where((e) => e.id.isNotEmpty)
         .map((e) => int.tryParse(e.id) ?? -1)
         .where((id) => id != -1)
         .toList();
@@ -127,8 +88,6 @@ class _AddStudentPageState extends State<AddStudentPage> {
       setState(() => _error = 'Invalid student IDs. Please re-add.');
       return;
     }
-
-    debugPrint('Submitting: ids=$ids, subject=$subjectId, section=$sectionId');
 
     setState(() {
       _loading = true;
@@ -150,6 +109,18 @@ class _AddStudentPageState extends State<AddStudentPage> {
     }
   }
 
+  /// Displays error text if present.
+  Widget _buildErrorText() {
+    return _error == null
+        ? const SizedBox.shrink()
+        : Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              _error!,
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +154,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
               ),
               const SizedBox(height: 25),
 
-              // Chips for added students
+              /// Chips for added students.
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -195,10 +166,9 @@ class _AddStudentPageState extends State<AddStudentPage> {
                         ))
                     .toList(),
               ),
-
               const SizedBox(height: 12),
 
-              // Input field
+              /// Input field.
               Card(
                 elevation: 10,
                 shape: RoundedRectangleBorder(
@@ -217,9 +187,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     ),
                     onSubmitted: _handleInput,
                     onChanged: (val) {
-                      if (val.endsWith(' ')) {
-                        _handleInput(val);
-                      }
+                      if (val.endsWith(' ')) _handleInput(val);
                     },
                   ),
                 ),
@@ -231,17 +199,10 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   child: CircularProgressIndicator(),
                 ),
 
-              if (_error != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    _error!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-
+              _buildErrorText(),
               const Spacer(),
 
+              /// Submit button.
               ElevatedButton.icon(
                 icon: const Icon(Icons.send),
                 label: const Text('Submit Students'),
